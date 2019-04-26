@@ -47,6 +47,59 @@ def spectral(dist, neighbours=10, k=10, sigma=1):
     ev /= np.linalg.norm(ev, axis=1, keepdims=True)
     return ew, ev
 
+def spray_compute(data, nneighbours=10, nevals=10):
+    condist = pdist(data)
+    dist = squareform(condist)
+    ew, ev = spectral(dist, neighbours=nneighbours, k=nevals)
+
+    centroid, _, _ = k_means(ev, nneighbours)
+    specspac = dist @ ev
+    cluster = cdist(centroid, specspac).argmax(0)
+
+    emb = TSNE().fit_transform(specspac)
+    return ew, ev, centroid, cluster, emb
+
+def spray_visualize(data, ew, ev, centroid, cluster, emb, target, nevals, plotprefix, shape=(28, 28)):
+        # Eigenvalue Plot
+        fig = plt.figure()
+        ax = plt.subplot(111)
+        ax.scatter(range(len(ew))[::-1], ew)
+        fig.savefig(plotprefix + 'eigenval.{:02d}.png'.format(target))
+        plt.close(fig)
+
+        # Examples for different clusters
+        nexamples = 10
+        height, width = shape
+        examples = np.zeros((nevals, nexamples, height, width))
+        nuniq = 0
+        for nc in range(nevals):
+            sub = data[cluster == nc][:nexamples]
+            rlen = sub.shape[0]
+            if rlen > 0:
+                examples[nc, :rlen].flat = sub.flat
+        examples = examples[::-1].transpose(0, 2, 1, 3).reshape(nevals * height, nexamples * width)
+        fig = plt.figure()
+        ax = plt.subplot(111)
+        vabs = np.abs(examples).max()
+        ax.imshow(examples, cmap='seismic', vmin=-vabs, vmax=vabs)
+        ax.set_xlabel('Examples')
+        ax.set_ylabel('Clusters')
+        sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ax=ax)
+        fig.savefig(plotprefix + 'examples.{:02d}.png'.format(target))
+        plt.close(fig)
+
+        # TSNE visualization
+        fig = plt.figure()
+        ax = plt.subplot(111)
+        ax.scatter(*emb.T, c=cluster, cmap='tab10', vmin=0, vmax=nevals)
+        sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ax=ax)
+        fig.savefig(plotprefix + 'tsne.{:02d}.png'.format(target))
+        plt.close(fig)
+
 def main():
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.INFO)
@@ -64,11 +117,7 @@ def main():
         fdata = fd['data'][:]
         flabel = fd['label'][:]
     nclasses = 10
-    height = 28
-    width = 28
-
-    nneighbours = args.nneighbours
-    nevals = args.nevals
+    shape = (28, 28)
 
     for target in range(nclasses):
         fname = args.checkpoint.format(target)
@@ -76,14 +125,7 @@ def main():
         data = data.reshape(data.shape[0], np.prod(data.shape[1:]))
         if not path.exists(fname) or args.overwrite:
             logger.info('Computing {}'.format(fname))
-            condist = pdist(data)
-            dist = squareform(condist)
-            ew, ev = spectral(dist, neighbours=nneighbours, k=nevals)
-
-            centroid, _, _ = k_means(ev, nneighbours)
-            cluster = cdist(centroid, dist @ ev).argmax(0)
-
-            emb = TSNE(metric='precomputed').fit_transform(dist)
+            ew, ev, centroid, cluster, emb = spray_compute(data, args.nneighbours, args.nevals)
             with h5py.File(fname, 'w') as fd:
                 fd['ew'] = ew
                 fd['ev'] = ev
@@ -99,48 +141,12 @@ def main():
                 cluster = fd['cluster'][:]
                 emb = fd['emb'][:]
 
-        belongs = (cluster[None] == np.arange(nevals)[:, None]).sum(1)
+        belongs = (cluster[None] == np.arange(args.nevals)[:, None]).sum(1)
         logger.info('Samples in clusters: {}'.format(", ".join([str(n) for n in belongs])))
 
         logger.info('Visualizing {}'.format(fname))
+        spray_visualize(data, ew, ev, centroid, cluster, emb, target, args.nevals, args.plotprefix, shape=shape)
 
-        # Eigenvalue Plot
-        fig = plt.figure()
-        ax = plt.subplot(111)
-        ax.scatter(range(len(ew))[::-1], ew)
-        fig.savefig(args.plotprefix + 'eigenval.{:02d}.png'.format(target))
-        plt.close(fig)
-
-        # Examples for different clusters
-        nexamples = 10
-        examples = np.zeros((nevals, nexamples, height, width))
-        nuniq = 0
-        for nc in range(nevals):
-            sub = data[cluster == nc][:nexamples]
-            rlen = sub.shape[0]
-            if rlen > 0:
-                examples[nc, :rlen].flat = sub.flat
-        examples = examples[::-1].transpose(0, 2, 1, 3).reshape(nevals * height, nexamples * width)
-        fig = plt.figure()
-        ax = plt.subplot(111)
-        ax.imshow(examples, cmap='hot')
-        ax.set_xlabel('Examples')
-        ax.set_ylabel('Clusters')
-        sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ax=ax)
-        fig.savefig(args.plotprefix + 'examples.{:02d}.png'.format(target))
-        plt.close(fig)
-
-        # TSNE visualization
-        fig = plt.figure()
-        ax = plt.subplot(111)
-        ax.scatter(*emb.T, c=cluster, cmap='tab10', vmin=0, vmax=nevals)
-        sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ax=ax)
-        fig.savefig(args.plotprefix + 'tsne.{:02d}.png'.format(target))
-        plt.close(fig)
 
 
 if __name__ == '__main__':

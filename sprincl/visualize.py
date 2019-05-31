@@ -3,17 +3,23 @@ import logging
 
 import numpy as np
 
+from os import path
+
 from matplotlib import pyplot as plt
 from matplotlib import cm
 
 logger = logging.getLogger(__name__)
 
-def spray_visualize(data, ew, ev, centroid, cluster, emb, target, nevals, plotprefix, shape=(28, 28)):
+def spray_visualize(data, ew, ev, centroid, cluster, emb, fpath, nevals, shape):
+    def fname(desc):
+        fdir, fbase = path.split(fpath)
+        return path.join(fdir, '{}.{}.png'.format(fbase, desc))
+
     # Eigenvalue Plot
     fig = plt.figure()
     ax = plt.subplot(111)
     ax.scatter(range(len(ew))[::-1], ew)
-    fig.savefig(plotprefix + 'eigenval.{:02d}.png'.format(target))
+    fig.savefig(fname('eigenval'))
     plt.close(fig)
 
     # Examples for different clusters
@@ -36,7 +42,7 @@ def spray_visualize(data, ew, ev, centroid, cluster, emb, target, nevals, plotpr
     sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax)
-    fig.savefig(plotprefix + 'examples.{:02d}.png'.format(target))
+    fig.savefig(fname('examples'))
     plt.close(fig)
 
     # TSNE visualization
@@ -46,6 +52,6 @@ def spray_visualize(data, ew, ev, centroid, cluster, emb, target, nevals, plotpr
     sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax)
-    fig.savefig(plotprefix + 'tsne.{:02d}.png'.format(target))
+    fig.savefig(fname('tsne'))
     plt.close(fig)
 

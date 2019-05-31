@@ -16,7 +16,7 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('attribution')
-    parser.add_argument('-d', '--datadir')
+    parser.add_argument('output')
     parser.add_argument('-w', '--overwrite', action='store_true')
     parser.add_argument('--nneighbours', type=int, default=10)
     parser.add_argument('--nevals', type=int, default=10)
@@ -29,11 +29,8 @@ def main():
     data  = data.mean(1)
     shape = data.shape
 
-    fdir, fdir = path.split(args.attribution)
-    fbase, _   = path.splitext(fbase)
-    datadir    = args.datadir if args.datadir else path.join(fdir, 'data')
-    fname      = path.join(datadir, '{}.h5'.format(fbase))
-    os.makedirs(datadir, exist_ok=True)
+    fname = args.output
+    os.makedirs(path.dirname(fname), exist_ok=True)
 
     data = data.reshape(shape[0], np.prod(shape[1:]))
     if not path.exists(fname) or args.overwrite:
@@ -58,7 +55,7 @@ def main():
     logger.info('Samples in clusters: {}'.format(", ".join([str(n) for n in belongs])))
 
     logger.info('Visualizing {}'.format(fname))
-    spray_visualize(data, ew, ev, centroid, cluster, emb, path.join(datadir, fbase), args.nevals, shape[1:])
+    spray_visualize(data, ew, ev, centroid, cluster, emb, args.output, args.nevals, shape[1:])
 
 
 if __name__ == '__main__':

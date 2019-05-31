@@ -11,8 +11,9 @@ from matplotlib import cm
 logger = logging.getLogger(__name__)
 
 def spray_visualize(data, ew, ev, centroid, cluster, emb, fpath, nevals, shape):
+    fdir, fbase = path.split(fpath)
+    fbase, _ = path.splitext(fbase)
     def fname(desc):
-        fdir, fbase = path.split(fpath)
         return path.join(fdir, '{}.{}.png'.format(fbase, desc))
 
     # Eigenvalue Plot

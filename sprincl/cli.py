@@ -9,6 +9,7 @@ from os import path
 from argparse import ArgumentParser
 
 from sklearn.manifold import TSNE
+from sklearn.cluster import k_means
 
 from .core import spectral_clustering
 from .visualize import spray_visualize
@@ -23,6 +24,8 @@ def main():
     parser.add_argument('attribution')
     parser.add_argument('output')
     parser.add_argument('-w', '--overwrite', action='store_true')
+    parser.add_argument('--relabel', action='store_true')
+    parser.add_argument('--retsne', action='store_true')
     parser.add_argument('--nneighbours', type=int, default=10)
     parser.add_argument('--nevals', type=int, default=10)
     parser.add_argument('--nclusters', type=int, default=10)
@@ -55,12 +58,16 @@ def main():
             ev = fd['ev'][:]
             label = fd['label'][:]
             tsne = fd['tsne'][:]
+        if args.relabel:
+            _, label, _ = k_means(ev[:, -args.nevals:], args.nclusters)
+        if args.retsne:
+            tsne = TSNE().fit_transform(ev[:, -args.nevals:])
 
     belongs = (label[None] == np.arange(args.nevals)[:, None]).sum(1)
     logger.info('Samples in clusters: {}'.format(", ".join([str(n) for n in belongs])))
 
     logger.info('Visualizing {}'.format(fname))
-    spray_visualize(data, ew, ev, label, tsne, args.output, args.nevals, shape[1:])
+    spray_visualize(data, ew, ev, label, tsne, args.output, args.nclusters, shape[1:])
 
 
 if __name__ == '__main__':

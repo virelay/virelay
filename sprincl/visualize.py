@@ -10,7 +10,7 @@ from matplotlib import cm
 
 logger = logging.getLogger(__name__)
 
-def spray_visualize(data, ew, ev, cluster, tsne, fpath, nevals, shape, dpi=300):
+def spray_visualize(data, ew, ev, cluster, tsne, fpath, nclusters, shape, dpi=300):
     fdir, fbase = path.split(fpath)
     fbase, _ = path.splitext(fbase)
     def fname(desc):
@@ -26,14 +26,14 @@ def spray_visualize(data, ew, ev, cluster, tsne, fpath, nevals, shape, dpi=300):
     # Examples for different clusters
     nexamples = 10
     height, width = shape
-    examples = np.zeros((nevals, nexamples, height, width))
+    examples = np.zeros((nclusters, nexamples, height, width))
     nuniq = 0
-    for nc in range(nevals):
+    for nc in range(nclusters):
         sub = data[cluster == nc][:nexamples]
         rlen = sub.shape[0]
         if rlen > 0:
             examples[nc, :rlen].flat = sub.flat
-    examples = examples[::-1].transpose(0, 2, 1, 3).reshape(nevals * height, nexamples * width)
+    examples = examples[::-1].transpose(0, 2, 1, 3).reshape(nclusters * height, nexamples * width)
     fig = plt.figure(figsize=(6.4, 4.8))
     ax = plt.subplot(111)
     vabs = np.abs(examples).max()
@@ -44,7 +44,7 @@ def spray_visualize(data, ew, ev, cluster, tsne, fpath, nevals, shape, dpi=300):
     ax.set_ylabel('Clusters')
     ax.set_yticks([])
     ax.set_yticklabels([])
-    sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
+    sm = cm.ScalarMappable(norm=plt.Normalize(0, nclusters), cmap='tab10')
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax)
     fig.savefig(fname('examples'), bbox_inches='tight', dpi=dpi)
@@ -53,8 +53,8 @@ def spray_visualize(data, ew, ev, cluster, tsne, fpath, nevals, shape, dpi=300):
     # TSNE visualization
     fig = plt.figure(figsize=(4.8, 4.8))
     ax = plt.subplot(111)
-    ax.scatter(*tsne.T, c=cluster, cmap='tab10', vmin=0, vmax=nevals)
-    sm = cm.ScalarMappable(norm=plt.Normalize(0, nevals), cmap='tab10')
+    ax.scatter(*tsne.T, c=cluster, cmap='tab10', vmin=0, vmax=nclusters)
+    sm = cm.ScalarMappable(norm=plt.Normalize(0, nclusters), cmap='tab10')
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax)
     fig.savefig(fname('tsne'), bbox_inches='tight', dpi=dpi)

@@ -7,6 +7,7 @@ import numpy as np
 import click
 
 from os import path
+from sys import stdout
 from argparse import Namespace
 
 from sklearn.manifold import TSNE
@@ -23,12 +24,9 @@ def csints(arg):
 @click.group(chain=True)
 @click.option('--log', type=click.File(), default=stdout)
 @click.option('-v', '--verbose', count=True)
-@click.pass_context
-def main(ctx, log, verbose, threads, device):
-    logger.addHandler(logging.FileHandler(log))
+def main(log, verbose):
+    logger.addHandler(logging.StreamHandler(log))
     logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
-
-    ctx.ensure_object(Namespace)
 
 @main.command()
 @click.argument('attribution', type=click.Path())
@@ -36,7 +34,7 @@ def main(ctx, log, verbose, threads, device):
 @click.option('--overwrite/--no-overwrite', default=False)
 @click.option('--eigvals', type=int, default=32)
 @click.option('--knn', type=int, default=10)
-def embed():
+def embed(attribution, embedding, overwrite, eigvals, knn):
     if not path.exists(embedding) or overwrite:
         logger.info('Computing embedding: {}'.format(embedding))
         with h5py.File(attribution, 'r') as fd:
@@ -49,7 +47,7 @@ def embed():
 
         os.makedirs(path.dirname(embedding), exist_ok=True)
 
-        ew, ev = spectral_embedding(data, args.nneighbours, args.nevals, precomputed=False)
+        ew, ev = spectral_embedding(data, knn, eigvals, precomputed=False)
         with h5py.File(embedding, 'w') as fd:
             fd['ew'] = ew
             fd['ev'] = ev
@@ -61,20 +59,20 @@ def embed():
 @click.argument('clustering', type=click.Path())
 @click.option('--overwrite/--no-overwrite', default=False)
 @click.option('--eigvals', type=int, default=8)
-@click.option('--knn', type=csints, default=[2, 3, 4, 5])
-def cluster(embedding, clustering, overwrite, eigvals, knn):
+@click.option('--clusters', type=csints, default='2,3,4,5')
+def cluster(embedding, clustering, overwrite, eigvals, clusters):
     if not path.exists(clustering) or overwrite:
         logger.info('Computing clustering: {}'.format(clustering))
         with h5py.File(embedding, 'r') as fd:
             ev = fd['ev'][:]
 
         llabels = []
-        for k in args.nclusters:
+        for k in clusters:
             _, lab, _ = k_means(ev[:, -eigvals:], k)
             llabels.append(lab)
 
         label = np.stack(llabels).astype('uint8')
-        kcluster = np.array(args.nclusters, dtype='uint8')
+        kcluster = np.array(clusters, dtype='uint8')
 
         with h5py.File(clustering, 'w') as fd:
             fd['label'] = label
@@ -97,10 +95,10 @@ def tsne(embedding, tsne, overwrite, eigvals):
         with h5py.File(embedding, 'r') as fd:
             ev = fd['ev'][:]
 
-        tsne = TSNE().fit_transform(ev[:, -eigvals:])
+        etsne = TSNE().fit_transform(ev[:, -eigvals:])
 
         with h5py.File(tsne, 'w') as fd:
-            fd['tsne'] = tsne
+            fd['tsne'] = etsne
     else:
         logger.info('File exists, not overwriting TSNE: {}'.format(embedding))
 

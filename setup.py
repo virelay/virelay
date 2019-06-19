@@ -11,5 +11,6 @@ setup(
         'numpy>=1.16.3',
         'scikit-learn>=0.20.3',
         'scipy>=1.2.1',
+        'Click>=7.0',
     ],
 )

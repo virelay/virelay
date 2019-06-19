@@ -35,17 +35,20 @@ def laplacian(dist, neighbours=10, sigma=1.):
     lap = deg @ sim @ deg
     return lap
 
-def spectral_embedding(dist, neighbours=10, k=10, sigma=1):
-    lap = laplacian(dist, neighbours)
+def spectral_embedding(data, neighbours=10, k=10, sigma=1., precomputed=False):
+    if precomputed:
+        dist = data
+    else:
+        condist = pdist(data)
+        dist = squareform(condist)
+    lap = laplacian(dist, neighbours, sigma=sigma)
     ew, ev = eigsh(lap, k=k, which='LM')
     ew = 1. - ew
     ev /= np.linalg.norm(ev, axis=1, keepdims=True)
     return ew, ev
 
 def spectral_clustering(data, nneighbours=10, nevals=10, nclusters=None):
-    condist = pdist(data)
-    dist = squareform(condist)
-    ew, ev = spectral_embedding(dist, neighbours=nneighbours, k=nevals)
+    ew, ev = spectral_embedding(data, neighbours=nneighbours, k=nevals, precomputed=False)
 
     _, label, _ = k_means(ev, nevals if nclusters is None else nclusters)
 

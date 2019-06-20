@@ -24,9 +24,12 @@ def csints(arg):
 @click.group(chain=True)
 @click.option('--log', type=click.File(), default=stdout)
 @click.option('-v', '--verbose', count=True)
-def main(log, verbose):
+@click.pass_context
+def main(ctx, log, verbose):
     logger.addHandler(logging.StreamHandler(log))
     logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
+
+    ctx.ensure_object(Namespace)
 
 @main.command()
 @click.argument('attribution', type=click.Path())
@@ -34,7 +37,9 @@ def main(log, verbose):
 @click.option('--overwrite/--no-overwrite', default=False)
 @click.option('--eigvals', type=int, default=32)
 @click.option('--knn', type=int, default=10)
-def embed(attribution, embedding, overwrite, eigvals, knn):
+@click.option('--pass/--no-pass', 'dopass', default=False)
+@click.pass_context
+def embed(ctx, attribution, embedding, overwrite, eigvals, knn, dopass):
     if not path.exists(embedding) or overwrite:
         logger.info('Computing embedding: {}'.format(embedding))
         with h5py.File(attribution, 'r') as fd:
@@ -51,6 +56,8 @@ def embed(attribution, embedding, overwrite, eigvals, knn):
         with h5py.File(embedding, 'w') as fd:
             fd['ew'] = ew
             fd['ev'] = ev
+        if dopass:
+            ctx.obj.ev = ev
     else:
         logger.info('File exists, not overwriting embedding: {}'.format(embedding))
 
@@ -60,11 +67,15 @@ def embed(attribution, embedding, overwrite, eigvals, knn):
 @click.option('--overwrite/--no-overwrite', default=False)
 @click.option('--eigvals', type=int, default=8)
 @click.option('--clusters', type=csints, default='2,3,4,5')
-def cluster(embedding, clustering, overwrite, eigvals, clusters):
+@click.pass_context
+def cluster(ctx, embedding, clustering, overwrite, eigvals, clusters):
     if not path.exists(clustering) or overwrite:
         logger.info('Computing clustering: {}'.format(clustering))
-        with h5py.File(embedding, 'r') as fd:
-            ev = fd['ev'][:]
+        if 'ev' in ctx.obj:
+            ev = ctx.obj.ev
+        else:
+            with h5py.File(embedding, 'r') as fd:
+                ev = fd['ev'][:]
 
         llabels = []
         for k in clusters:
@@ -89,11 +100,15 @@ def cluster(embedding, clustering, overwrite, eigvals, clusters):
 @click.argument('tsne', type=click.Path())
 @click.option('--overwrite/--no-overwrite', default=False)
 @click.option('--eigvals', type=int, default=8)
-def tsne(embedding, tsne, overwrite, eigvals):
+@click.pass_context
+def tsne(ctx, embedding, tsne, overwrite, eigvals):
     if not path.exists(tsne) or overwrite:
         logger.info('Computing TSNE: {}'.format(tsne))
-        with h5py.File(embedding, 'r') as fd:
-            ev = fd['ev'][:]
+        if 'ev' in ctx.obj:
+            ev = ctx.obj.ev
+        else:
+            with h5py.File(embedding, 'r') as fd:
+                ev = fd['ev'][:]
 
         etsne = TSNE().fit_transform(ev[:, -eigvals:])
 

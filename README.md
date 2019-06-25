@@ -15,12 +15,12 @@ sprincl \
         --eigvals 8 \
         --clusters 2,3,4,5,6,7,8,9,10,11,12 \
         --overwrite \
-        "/path/to/attribution.h5" \
-        "/path/to/analysis.h5" \
+        "/path/to/source/analysis.h5" \
+        "/path/to/output/analysis.h5" \
     tsne \
         --eigvals 8 \
-        "/path/to/attribution.h5" \
-        "/path/to/analysis.h5" \
+        "/path/to/source/analysis.h5" \
+        "/path/to/output/analysis.h5"
 ```
 
 #### vispr for visualization

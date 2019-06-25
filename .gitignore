@@ -1,6 +1,13 @@
-*.gz
+
+# IDEs and Code editors
+.vscode
+.idea
+.venv
+
+# Python output
 .python
 *.egg-info
 __pycache__
-sandbox
-/result
+
+# Results output
+result

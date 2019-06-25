@@ -12,5 +12,12 @@ setup(
         'scikit-learn>=0.20.3',
         'scipy>=1.2.1',
         'Click>=7.0',
+        'bokeh>=1.2.0',
     ],
+    entry_points={
+        'console_scripts': [
+            'sprincl = sprincl.cli:main',
+            'vispr = vispr.cli:main',
+        ]
+    }
 )

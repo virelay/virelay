@@ -1,4 +1,5 @@
 import logging
+from sys import stdout
 
 import click
 from bokeh.server.server import Server
@@ -16,7 +17,12 @@ logger = logging.getLogger(__name__)
 @click.option('--address', default='127.0.0.1')
 @click.option('--allow-websocket-origin', multiple=True, default=['127.0.0.1:5096'])
 @click.option('--num-procs', type=int, default=1)
-def main(input_path, attribution_path, analysis_path, wordmap, port, address, allow_websocket_origin, num_procs):
+@click.option('--log', type=click.File(), default=stdout)
+@click.option('-v', '--verbose', count=True)
+def main(input_path, attribution_path, analysis_path, wordmap, port, address, allow_websocket_origin, num_procs, log,
+         verbose):
+    logger.addHandler(logging.StreamHandler(log))
+    logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
 
     server_kwargs = {
         'port': port,

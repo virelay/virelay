@@ -22,131 +22,140 @@ def csints(arg):
     return [int(s) for s in arg.split(',')]
 
 @click.group(chain=True)
+@click.argument('data', type=click.Path())
+@click.option('--overwrite/--no-overwrite', default=False)
+@click.option('--modify/--no-modify', default=False)
 @click.option('--log', type=click.File(), default=stdout)
 @click.option('-v', '--verbose', count=True)
 @click.pass_context
-def main(ctx, log, verbose):
+def main(ctx, data, overwrite, modify, log, verbose):
     logger.addHandler(logging.StreamHandler(log))
     logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
 
+    defaults = {
+        'data': data,
+        'modify': modify,
+        'overwrite': overwrite,
+    }
+    ctx.default_map = dict(zip(('embed', 'cluster', 'tsne'), (defaults,)*3))
     ctx.ensure_object(Namespace)
 
 @main.command()
 @click.argument('attribution', type=click.Path())
-@click.argument('embedding', type=click.Path())
+@click.option('--data', type=click.Path())
 @click.option('--overwrite/--no-overwrite', default=False)
+@click.option('--modify/--no-modify', default=False)
 @click.option('--eigvals', type=int, default=32)
 @click.option('--knn', type=int, default=10)
-@click.option('--pass/--no-pass', 'dopass', default=False)
 @click.pass_context
-def embed(ctx, attribution, embedding, overwrite, eigvals, knn, dopass):
-    if not path.exists(embedding) or overwrite:
-        logger.info('Computing embedding: {}'.format(embedding))
+def embed(ctx, attribution, data, overwrite, modify, eigvals, knn):
+    fout = data
+
+    if not path.exists(fout) or modify:
+        logger.info('Computing embedding: {}'.format(fout))
         with h5py.File(attribution, 'r') as fd:
-            data  = fd['attribution'][:]
+            attr  = fd['attribution'][:]
             label = fd['label'][:]
 
-        data  = data.mean(1)
-        shape = data.shape
-        data = data.reshape(shape[0], np.prod(shape[1:]))
+        #attr  = attr.mean(1)
+        shape = attr.shape
+        attr = attr.reshape(shape[0], np.prod(shape[1:]))
 
-        os.makedirs(path.dirname(embedding), exist_ok=True)
+        os.makedirs(path.dirname(fout), exist_ok=True)
 
-        ew, ev = spectral_embedding(data, knn, eigvals, precomputed=False)
-        with h5py.File(embedding, 'w') as fd:
-            fd['ew'] = ew
-            fd['ev'] = ev
-        if dopass:
-            ctx.obj.ev = ev
+        ew, ev = spectral_embedding(attr, knn, eigvals, precomputed=False)
+        with h5py.File(fout, 'a') as fd:
+            for key, val in zip(('eigenvalue', 'eigenvector'), (ew, ev)):
+                if key in fd and overwrite:
+                    del fd[key]
+                fd[key] = val.astype('float32')
+        ctx.obj.ev = ev
     else:
-        logger.info('File exists, not overwriting embedding: {}'.format(embedding))
+        logger.info('File exists, not overwriting embedding: {}'.format(fout))
 
 @main.command()
-@click.argument('embedding', type=click.Path())
-@click.argument('clustering', type=click.Path())
+@click.option('--data', type=click.Path())
+@click.option('--output', type=click.Path())
 @click.option('--overwrite/--no-overwrite', default=False)
+@click.option('--modify/--no-modify', default=False)
+@click.option('--computed/--loaded', default=True)
 @click.option('--eigvals', type=int, default=8)
 @click.option('--clusters', type=csints, default='2,3,4,5')
 @click.pass_context
-def cluster(ctx, embedding, clustering, overwrite, eigvals, clusters):
-    if not path.exists(clustering) or overwrite:
-        logger.info('Computing clustering: {}'.format(clustering))
-        if 'ev' in ctx.obj:
+def cluster(ctx, data, output, overwrite, modify, computed, eigvals, clusters):
+    fout = data if output is None else output
+
+    if not path.exists(fout) or modify:
+        logger.info('Computing clustering: {}'.format(fout))
+        if computed and ('ev' in ctx.obj):
             ev = ctx.obj.ev
         else:
-            with h5py.File(embedding, 'r') as fd:
-                ev = fd['ev'][:]
+            try:
+                with h5py.File(data, 'r') as fd:
+                    ev = fd['eigenvector'][:]
+            except KeyError:
+                logger.error('Embedding must be either computed or already exist in data.')
+                return
 
         llabels = []
         for k in clusters:
             _, lab, _ = k_means(ev[:, -eigvals:], k)
-            llabels.append(lab)
+            llabels.append(lab.astype('uint8'))
 
-        label = np.stack(llabels).astype('uint8')
-        kcluster = np.array(clusters, dtype='uint8')
-
-        with h5py.File(clustering, 'w') as fd:
-            fd['label'] = label
-            fd['kcluster'] = kcluster
-
-        #belongs = (label[None] == np.arange(eigvals)[:, None]).sum(1)
-        #logger.info('Samples in clusters: {}'.format(", ".join([str(n) for n in belongs])))
-
+        with h5py.File(fout, 'a') as fd:
+            fdl = fd.require_group('cluster')
+            for kval, lab in zip(clusters, llabels):
+                key = 'kmeans-%d'%kval
+                if key in fdl:
+                    if overwrite:
+                        del fdl[key]
+                    else:
+                        logger.error('Key already exists and overwrite is disabled: %s'%key)
+                        continue
+                fdl[key] = lab
+                fdl[key].attrs.create('k', kval, dtype=np.uint8)
+                fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
     else:
-        logger.info('File exists, not overwriting clustering: {}'.format(clustering))
+        logger.info('File exists, not overwriting clustering: {}'.format(fout))
 
 @main.command()
-@click.argument('embedding', type=click.Path())
-@click.argument('tsne', type=click.Path())
+@click.option('--data', type=click.Path())
+@click.option('--output', type=click.Path())
 @click.option('--overwrite/--no-overwrite', default=False)
+@click.option('--modify/--no-modify', default=False)
+@click.option('--computed/--loaded', default=True)
 @click.option('--eigvals', type=int, default=8)
 @click.pass_context
-def tsne(ctx, embedding, tsne, overwrite, eigvals):
-    if not path.exists(tsne) or overwrite:
-        logger.info('Computing TSNE: {}'.format(tsne))
-        if 'ev' in ctx.obj:
+def tsne(ctx, data, output, overwrite, modify, computed, eigvals):
+    fout = data if output is None else output
+
+    if not path.exists(fout) or modify:
+        logger.info('Computing TSNE: {}'.format(fout))
+        if computed and ('ev' in ctx.obj):
             ev = ctx.obj.ev
         else:
-            with h5py.File(embedding, 'r') as fd:
-                ev = fd['ev'][:]
+            try:
+                with h5py.File(data, 'r') as fd:
+                    ev = fd['eigenvector'][:]
+            except KeyError:
+                logger.error('Embedding must be either computed or already exist in data.')
+                return
 
-        etsne = TSNE().fit_transform(ev[:, -eigvals:])
+        tsne = TSNE().fit_transform(ev[:, -eigvals:])
 
-        with h5py.File(tsne, 'w') as fd:
-            fd['tsne'] = etsne
+        with h5py.File(fout, 'a') as fd:
+            fdl = fd.require_group('visualization')
+            key = 'tsne'
+            if key in fdl:
+                if overwrite:
+                    del fdl[key]
+                else:
+                    logger.error('Key already exists and overwrite is disabled: %s'%key)
+                    return
+            fdl[key] = tsne.astype(np.float32)
+            fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
     else:
-        logger.info('File exists, not overwriting TSNE: {}'.format(embedding))
-
-@click.argument('attribution', type=click.Path())
-@click.argument('embedding', type=click.Path())
-@click.argument('clustering', type=click.Path())
-@click.argument('tsne', type=click.Path())
-@click.argument('output', type=click.Path())
-@click.option('--knn', type=int, default=2)
-def visualize(embedding, clustering, tsne, output):
-    logger.info('Visualizing: {}'.format(output))
-    with h5py.File(attribution, 'r') as fd:
-        data  = fd['attribution'][:]
-        label = fd['label'][:]
-
-    data  = data.mean(1)
-    shape = data.shape
-    data = data.reshape(shape[0], np.prod(shape[1:]))
-
-    os.makedirs(path.dirname(embedding), exist_ok=True)
-
-    with h5py.File(embedding, 'r') as fd:
-        ev = fd['ev'][:]
-        ew = fd['ew'][:]
-    with h5py.File(clustering, 'r') as fd:
-        label = fd['label']
-        kcluster = fd['kcluster']
-    with h5py.File(tsne, 'r') as fd:
-        tsne = fd['tsne']
-
-    logger.info('Visualizing {}'.format(embedding))
-    assert (kcluster == knn).any()
-    spray_visualize(data, ew, ev, label[(kcluster == knn).argmax()], tsne, output, knn, data.shape[1:])
+        logger.info('File exists, not overwriting TSNE: {}'.format(fout))
 
 if __name__ == '__main__':
     main()

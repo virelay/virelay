@@ -5,22 +5,19 @@ There are two command-line interfaces:
 #### sprincl for analysis
 ```sh
 sprincl \
+        --modify \
+        --overwrite \
+        "/path/to/data.h5" \
     embed \
         --eigvals 32 \
         --knn 8 \
-        --pass \
+        --no-modify
         "/path/to/attribution.h5" \
-        "/path/to/analysis.h5" \
     cluster \
         --eigvals 8 \
         --clusters 2,3,4,5,6,7,8,9,10,11,12 \
-        --overwrite \
-        "/path/to/source/analysis.h5" \
-        "/path/to/output/analysis.h5" \
     tsne \
-        --eigvals 8 \
-        "/path/to/source/analysis.h5" \
-        "/path/to/output/analysis.h5"
+        --eigvals 8
 ```
 
 #### vispr for visualization

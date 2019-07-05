@@ -60,9 +60,10 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
         with h5py.File(attribution, 'r') as fd:
             raw_label = fd['label'][:]
             if label_filter is None:
-                inds = slice(None)
+                #inds = slice(None)
+                inds = np.arange(len(raw_label), dtype=np.uint32)
             else:
-                inds, = np.nonzero(np.in1d(raw_label[:, None], label_filter))
+                inds, = np.nonzero(np.in1d(raw_label, label_filter))
                 if not len(inds):
                     logger.error('No matches found for filter: %s'%str(label_filter))
                     return
@@ -76,17 +77,18 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
 
         os.makedirs(path.dirname(fout), exist_ok=True)
 
-        ew, ev = spectral_embedding(attr, knn, eigvals, precomputed=False)
+        ew, ev = (val.astype(np.float32) for val in spectral_embedding(attr, knn, eigvals, precomputed=False))
+        inds = inds.astype(np.uint32)
         with h5py.File(fout, 'a') as fd:
             subfd = fd.require_group(exname)
-            for key, val in zip(('eigenvalue', 'eigenvector'), (ew, ev)):
+            for key, val in zip(('index', 'eigenvalue', 'eigenvector'), (inds, ew, ev)):
                 if key in subfd:
                     if overwrite:
                         del subfd[key]
                     else:
                         logger.error('Key already exists and overwrite is disabled: %s'%key)
                         continue
-                subfd[key] = val.astype('float32')
+                subfd[key] = val
         ctx.obj.ev = ev
     else:
         logger.info('File exists, not overwriting embedding: {}'.format(fout))

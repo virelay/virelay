@@ -3,6 +3,7 @@ import re
 import logging
 
 import numpy as np
+import h5py
 from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
@@ -18,8 +19,26 @@ def center_crop(img, output_size):
     return crop(img, i, j, th, tw)
 
 class AttrImage(object):
-    def __init__(self, anpath):
-        pass
+    def __init__(self, atpath):
+        self._atpath = atpath
+
+    def _load_index(self, key):
+        with h5py.File(self._atpath, 'r') as fd:
+            attribution = fd['attribution'][key].mean(0)[::-1]
+        return attribution
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            key = range(*key.indices(len(self)))
+        if isinstance(key, (range, list, tuple, np.ndarray)):
+            return [self._load_index(k) for k in key]
+        else:
+            return self._load_index(key)
+
+    def __len__(self):
+        with h5py.File(self._atpath, 'r') as fd:
+            length = len(fd['attribution'])
+        return length
 
 class OrigImage(object):
     def __init__(self, inpath):

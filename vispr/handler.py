@@ -13,7 +13,7 @@ from bokeh.plotting import figure, curdoc
 from bokeh.models.widgets import RadioButtonGroup, Select, Slider
 from bokeh.palettes import brewer, d3
 
-from .data import OrigImage
+from .data import OrigImage, AttrImage
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
 
     # loader for original input images
     original_loader = OrigImage(original_path)
+    #attribution_loader = AttrImage(attribution_path)
 
     # Namespace to store data references
     data = Namespace()

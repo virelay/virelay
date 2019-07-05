@@ -1,5 +1,5 @@
 import logging
-from sys import stdout
+from sys import stdout, stderr
 
 import click
 from bokeh.server.server import Server
@@ -13,16 +13,20 @@ logger = logging.getLogger(__name__)
 @click.argument('attribution_path', type=click.Path())
 @click.argument('analysis_path', type=click.Path())
 @click.argument('wordmap', type=click.Path())
+@click.argument('wnids', type=click.Path())
 @click.option('--port', type=int, default=5096)
 @click.option('--address', default='127.0.0.1')
 @click.option('--allow-websocket-origin', multiple=True, default=['127.0.0.1:5096'])
 @click.option('--num-procs', type=int, default=1)
-@click.option('--log', type=click.File(), default=stdout)
+@click.option('--log', type=click.File(), default=stderr)
 @click.option('-v', '--verbose', count=True)
-def main(input_path, attribution_path, analysis_path, wordmap, port, address, allow_websocket_origin, num_procs, log,
-         verbose):
-    logger.addHandler(logging.StreamHandler(log))
-    logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
+def main(input_path, attribution_path, analysis_path, wordmap, wnids, port, address, allow_websocket_origin, num_procs,
+         log, verbose):
+    root_logger = logging.getLogger()
+    log_handler = logging.StreamHandler(log)
+    log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    root_logger.addHandler(log_handler)
+    root_logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
 
     server_kwargs = {
         'port': port,
@@ -31,7 +35,8 @@ def main(input_path, attribution_path, analysis_path, wordmap, port, address, al
         'num_procs': num_procs,
     }
 
-    server = Server({'/': (lambda doc: modify_doc(doc, input_path, attribution_path, analysis_path, wordmap))},
+    logger.info('Starting server at {address}:{port}'.format(**server_kwargs))
+    server = Server({'/': (lambda doc: modify_doc(doc, input_path, attribution_path, analysis_path, wordmap, wnids))},
                     **server_kwargs)
 
     server.io_loop.add_callback(server.show, '/')

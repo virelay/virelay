@@ -1,7 +1,11 @@
 import os
+import re
+import logging
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+
+logger = logging.getLogger(__name__)
 
 def crop(img, i, j, h, w):
     return img.crop((j, i, j + w, i + h))
@@ -13,22 +17,33 @@ def center_crop(img, output_size):
     j = int(round((w - tw) / 2.))
     return crop(img, i, j, th, tw)
 
+class AttrImage(object):
+    def __init__(self, anpath):
+        pass
+
 class OrigImage(object):
     def __init__(self, inpath):
         dmatch = re.compile(r'n\d{8}\.tar').fullmatch
         fmatch = re.compile(r'n\d{8}_\d+\.JPEG').fullmatch
+
+        self._dummy = Image.new('RGBA', (224, 224), color=(255, 0, 0, 255))
+
         self._fpath = inpath
         self._index = list(
-            os.path.join(dname, fname)
+            os.path.join(inpath, dname, fname)
             for dname in sorted(filter(dmatch, os.listdir(inpath)))
-            for fname in sorted(filter(fmatch, os.listdir(dname)))
+            for fname in sorted(filter(fmatch, os.listdir(os.path.join(inpath, dname))))
         )
 
     def _load_index(self, key):
-        img = Image.open(self._index[key])
-        img = center_crop(img, (224, 224))
-        img = img.convert('RGB')
-        img.putalpha(255)
+        try:
+            img = Image.open(self._index[key])
+            img = center_crop(img, (224, 224))
+            img = img.convert('RGB')
+            img.putalpha(255)
+        except FileNotFoundError:
+            img = self._dummy
+            logger.warning('File not found, using dummy: {}'.format(self._index[key]))
         return np.array(img)[::-1]
 
     def __len__(self):

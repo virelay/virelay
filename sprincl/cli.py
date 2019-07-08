@@ -79,7 +79,7 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
 
         eigval, eigvec = SpectralEmbedding(
             n_eigval=eigvals,
-            affinity_fn=SparseKNN(k_neighbours=knn)
+            affinity_fn=SparseKNN(k_neighbors=knn)
         )(attr)
         eigval, eigvec = (val.astype(np.float32) for val in (eigval, eigvec))
 

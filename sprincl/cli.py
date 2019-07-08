@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 import logging
 import os
-
-import h5py
-import numpy as np
-import click
-
 from os import path
 from sys import stdout
 from argparse import Namespace
 
+import h5py
+import numpy as np
+import click
 from sklearn.manifold import TSNE
 from sklearn.cluster import k_means
 
-from .core import spectral_clustering, spectral_embedding
-from .visualize import spray_visualize
+from .spectral import SpectralEmbedding
+from .affinity import SparseKNN
 
 logger = logging.getLogger(__name__)
+
 
 def csints(arg):
     return [int(s) for s in arg.split(',')]
@@ -77,11 +76,17 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
 
         os.makedirs(path.dirname(fout), exist_ok=True)
 
-        ew, ev = (val.astype(np.float32) for val in spectral_embedding(attr, knn, eigvals, precomputed=False))
+
+        eigval, eigvec = SpectralEmbedding(
+            n_eigval=eigvals,
+            affinity_fn=SparseKNN(k_neighbours=knn)
+        )(attr)
+        eigval, eigvec = (val.astype(np.float32) for val in (eigval, eigvec))
+
         inds = inds.astype(np.uint32)
         with h5py.File(fout, 'a') as fd:
             subfd = fd.require_group(exname)
-            for key, val in zip(('index', 'eigenvalue', 'eigenvector'), (inds, ew, ev)):
+            for key, val in zip(('index', 'eigenvalue', 'eigenvector'), (inds, eigval, eigvec)):
                 if key in subfd:
                     if overwrite:
                         del subfd[key]
@@ -89,7 +94,7 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
                         logger.error('Key already exists and overwrite is disabled: %s'%key)
                         continue
                 subfd[key] = val
-        ctx.obj.ev = ev
+        ctx.obj.ev = eigvec
     else:
         logger.info('File exists, not overwriting embedding: {}'.format(fout))
 

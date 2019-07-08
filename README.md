@@ -7,11 +7,13 @@ There are two command-line interfaces:
 sprincl \
         --modify \
         --overwrite \
+        --exname n38194990 \
         "/path/to/data.h5" \
     embed \
         --eigvals 32 \
         --knn 8 \
         --no-modify
+        --label-filter 382 \
         "/path/to/attribution.h5" \
     cluster \
         --eigvals 8 \
@@ -28,6 +30,7 @@ vispr \
     "/path/to/input/image/folder" \
     "/path/to/attribution.h5" \
     "/path/to/analysis.h5" \
-    "/path/to/wordmapping.json"
+    "/path/to/wordmap.json" \
+    "/path/to/label_wnids.txt"
 ```
 

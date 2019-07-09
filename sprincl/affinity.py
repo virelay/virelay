@@ -74,7 +74,7 @@ class SparseKNN(Affinity):
         # set up indices for sparse representation of nearest neighbors
         cols = distance.argsort(1)[:, 1:k+1]
         rows = np.mgrid[:n, :k][0]
-        # connected notes are denoted with ones
+        # existing edges are denoted with ones
         vals = np.ones((n, k), dtype=distance.dtype)
         affinity = sp.csr_matrix((vals.flat, (rows.flat, cols.flat)), shape=(n, n))
 

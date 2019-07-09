@@ -17,6 +17,7 @@ class SpectralEmbedding(object):
 
     """
     def __init__(self, *args, n_eigval=32,
+                 preprocessing_fn=(lambda x: x),
                  pairwise_distance_fn=(lambda x: squareform(pdist(x))),
                  affinity_fn=(lambda x: SparseKNN(k_neighbours=10, symmetric=True)(x)),
                  laplacian_fn=laplacian_normal_symmetric,
@@ -27,6 +28,8 @@ class SpectralEmbedding(object):
         ----------
         n_eigval : int, optional
             Number of smallest eigenvalues of the graph laplacian to compute.
+        preprocessing_fn : callable, optional
+            data pre-processing function of signature: (data : :obj:`numpy.ndarray`,) -> :obj:`numpy.ndarray`
         pairwise_distance_fn : callable, optional
             pairwise distance function of signature: (data : :obj:`numpy.ndarray`,) -> :obj:`numpy.ndarray`
         affinity_fn : callable, optional
@@ -68,7 +71,8 @@ class SpectralEmbedding(object):
         laplacian and return one minus the eigenvalue.
 
         """
-        distance = self._pairwise_distance_fn(data)
+        processed = self._preprocessing_fn(data)
+        distance = self._pairwise_distance_fn(processed)
         affinity = self._affinity_fn(distance)
         laplacian = self._laplacian_fn(affinity)
 
@@ -79,7 +83,7 @@ class SpectralEmbedding(object):
         return eigval, eigvec
 
 class SpectralClustering(SpectralEmbedding):
-    """Compute a spectral embedding and a corresponding clustering
+    """Clustering on a spectral embedding
 
     """
     def __init__(self, *args, clustering_fn=(lambda x: KMeans(n_clusters=8).fit_predict(x)), **kwargs):

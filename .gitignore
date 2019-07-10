@@ -9,5 +9,9 @@
 *.egg-info
 __pycache__
 
+# Setup output
+build/
+dist/
+
 # Results output
 result

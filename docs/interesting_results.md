@@ -17,3 +17,6 @@
 - Mexican hairless (n02113978)
     - kmeans-10, cluster 2
         - facing right
+- guillotine (n03467068)
+    - kmeans-10, cluster 9
+        - padding small image

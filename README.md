@@ -8,7 +8,7 @@ sprincl \
         --modify \
         --overwrite \
         --exname n38194990 \
-        "/path/to/data.h5" \
+        "/path/to/analysis/output.h5" \
     embed \
         --eigvals 32 \
         --knn 8 \

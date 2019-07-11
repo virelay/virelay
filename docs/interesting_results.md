@@ -20,3 +20,6 @@
 - guillotine (n03467068)
     - kmeans-10, cluster 9
         - padding small image
+- butternut squash (n07717556)
+    - kmeans-10, cluster 6
+        - texture-only

@@ -1,3 +1,4 @@
+import glob
 import os
 import re
 import logging
@@ -44,15 +45,21 @@ class AttrImage(object):
 
 class OrigImage(object):
     def __init__(self, inpath):
+        """
+        Parameters
+        ----------
+        inpath: str
+            Path to a directory containing images: class_name/image_name.jpg
+            or path to a file containing absolute paths to images.
+        """
         self._dummy = Image.new('RGBA', (224, 224), color=(255, 0, 0, 255))
         self._fpath = inpath
-        image_path_file = inpath + '_paths.txt'
-        dir_path = os.path.dirname(inpath)
-        if os.path.exists(image_path_file):
-            with open(image_path_file, 'r') as f:
-                self._index = sorted([os.path.join(dir_path, x.strip()) for x in f.readlines()])
+
+        if os.path.isdir(inpath):
+            self._index = sorted(glob.glob(os.path.join(inpath, '*/*')))
         else:
-            raise NotImplementedError('Create image_path_file: {}'.format(image_path_file))
+            with open(inpath, 'r') as f:
+                self._index = sorted([x.strip() for x in f.readlines()])
 
     def _load_index(self, key):
         try:

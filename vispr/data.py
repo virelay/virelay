@@ -42,17 +42,15 @@ class AttrImage(object):
 
 class OrigImage(object):
     def __init__(self, inpath):
-        dmatch = re.compile(r'n\d{8}\.tar').fullmatch
-        fmatch = re.compile(r'n\d{8}_\d+\.JPEG').fullmatch
-
         self._dummy = Image.new('RGBA', (224, 224), color=(255, 0, 0, 255))
-
         self._fpath = inpath
-        self._index = list(
-            os.path.join(inpath, dname, fname)
-            for dname in sorted(filter(dmatch, os.listdir(inpath)))
-            for fname in sorted(filter(fmatch, os.listdir(os.path.join(inpath, dname))))
-        )
+        image_path_file = inpath + '_paths.txt'
+        dir_path = os.path.dirname(inpath)
+        if os.path.exists(image_path_file):
+            with open(image_path_file, 'r') as f:
+                self._index = sorted([os.path.join(dir_path, x.strip()) for x in f.readlines()])
+        else:
+            raise NotImplementedError('Create image_path_file: {}'.format(image_path_file))
 
     def _load_index(self, key):
         try:

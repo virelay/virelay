@@ -61,9 +61,10 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
             data.sel.vis = next(iter(data.visualization))
 
         # attribution data
+        inds = list(range(num))
         with h5py.File(attribution_path, 'r') as fd:
-            data.attribution = fd['attribution'][data.index, :].mean(1)[:, ::-1]
             data.prediction = fd['prediction'][data.index, :]
+            data.attribution = list(np.stack([fd['attribution'][data.index[x]] for x in inds]).mean(1)[:, ::-1])
 
         # label descriptions for each sample prediction
         visual_desc = [mapwnid(wnids[label_id]) for label_id in data.prediction.argmax(1)]
@@ -77,9 +78,8 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
         sample_src.selected.indices = []
 
         # decide which images to show in image_src
-        inds = list(range(num))
         image_src.data.update({
-            'attribution': list(data.attribution[inds]),
+            'attribution': data.attribution,
             'original'   : list(original_loader[data.index[inds]]),
             'x'          : (np.arange(len(inds), dtype=int)*wid)%maxwid,
             'y'          : (np.arange(len(inds), dtype=int)*wid)//maxwid*hei,
@@ -152,9 +152,11 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     def update_selection(attr, old, new):
         sample_table.view = CDSView(source=sample_src, filters=[IndexFilter(new)])
         inds = sample_src.selected.indices[:num] if len(sample_src.selected.indices) else list(range(num))
-
+        inds = sorted(inds)
+        with h5py.File(attribution_path, 'r') as fd:
+            data.attribution = list(np.stack([fd['attribution'][data.index[x]] for x in inds]).mean(1)[:, ::-1])
         image_src.data.update({
-            'attribution': list(data.attribution[inds]),
+            'attribution': data.attribution,
             'original'  : list(original_loader[data.index[inds]]),
             'x'     : (np.arange(len(inds), dtype=int)*wid)%maxwid,
             'y'     : (np.arange(len(inds), dtype=int)*wid)//maxwid*hei,

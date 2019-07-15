@@ -33,7 +33,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
 
     # loader for original input images
     original_loader = OrigImage(original_path)
-    #attribution_loader = AttrImage(attribution_path)
+    attribution_loader = AttrImage(attribution_path)
 
     # Namespace to store data references
     data = Namespace()
@@ -64,7 +64,6 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
         inds = list(range(num))
         with h5py.File(attribution_path, 'r') as fd:
             data.prediction = fd['prediction'][data.index, :]
-            data.attribution = list(np.stack([fd['attribution'][data.index[x]] for x in inds]).mean(1)[:, ::-1])
 
         # label descriptions for each sample prediction
         visual_desc = [mapwnid(wnids[label_id]) for label_id in data.prediction.argmax(1)]
@@ -79,7 +78,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
 
         # decide which images to show in image_src
         image_src.data.update({
-            'attribution': data.attribution,
+            'attribution': attribution_loader[data.index[inds]],
             'original'   : list(original_loader[data.index[inds]]),
             'x'          : (np.arange(len(inds), dtype=int)*wid)%maxwid,
             'y'          : (np.arange(len(inds), dtype=int)*wid)//maxwid*hei,
@@ -153,10 +152,8 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
         sample_table.view = CDSView(source=sample_src, filters=[IndexFilter(new)])
         inds = sample_src.selected.indices[:num] if len(sample_src.selected.indices) else list(range(num))
         inds = sorted(inds)
-        with h5py.File(attribution_path, 'r') as fd:
-            data.attribution = list(np.stack([fd['attribution'][data.index[x]] for x in inds]).mean(1)[:, ::-1])
         image_src.data.update({
-            'attribution': data.attribution,
+            'attribution': attribution_loader[data.index[inds]],
             'original'  : list(original_loader[data.index[inds]]),
             'x'     : (np.arange(len(inds), dtype=int)*wid)%maxwid,
             'y'     : (np.arange(len(inds), dtype=int)*wid)//maxwid*hei,

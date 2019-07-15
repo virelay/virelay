@@ -21,10 +21,10 @@ def center_crop(img, output_size):
 class AttrImage(object):
     def __init__(self, atpath):
         self._atpath = atpath
+        self._f = h5py.File(atpath, 'r')
 
     def _load_index(self, key):
-        with h5py.File(self._atpath, 'r') as fd:
-            attribution = fd['attribution'][key].mean(0)[::-1]
+        attribution = self._f['attribution'][key].mean(0)[::-1]
         return attribution
 
     def __getitem__(self, key):
@@ -36,9 +36,11 @@ class AttrImage(object):
             return self._load_index(key)
 
     def __len__(self):
-        with h5py.File(self._atpath, 'r') as fd:
-            length = len(fd['attribution'])
+        length = len(self._f['attribution'])
         return length
+
+    def close(self):
+        self._f.close()
 
 class OrigImage(object):
     def __init__(self, inpath):

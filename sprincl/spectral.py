@@ -45,6 +45,7 @@ class SpectralEmbedding(object):
 
         """
         super().__init__(*args, **kwargs)
+        self._preprocessing_fn = preprocessing_fn
         self._pairwise_distance_fn = pairwise_distance_fn
         self._affinity_fn = affinity_fn
         self._laplacian_fn = laplacian_fn

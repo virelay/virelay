@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import random
 from argparse import Namespace
 
 import h5py
@@ -38,7 +39,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     # Namespace to store data references
     data = Namespace()
     data.sel = Namespace()
-    data.sel.cat = categories[0]
+    data.sel.cat = categories[random.randint(0, len(categories))]
     data.sel.clu = None
     data.sel.vis = None
 
@@ -117,7 +118,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     # === Cluster Visualization Figure (e.g. TSNE) ===
     visual_fig  = figure(tools=TOOLS, plot_width=600, plot_height=800, min_border=1, min_border_left=1,
                         toolbar_location="above", x_axis_location=None, y_axis_location=None,
-                        title="Visualization")
+                        title="Visualization", active_drag='box_select')
     visual_cmap = linear_cmap('cluster', cmap, 0, len(cmap) - 1)
     visual_rend = visual_fig.scatter('x', 'y', source=sample_src, size=6, color=visual_cmap,
                                     nonselection_alpha=0.2, nonselection_color=visual_cmap)
@@ -139,11 +140,11 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     # === Widgets ==
     category_select = Select(value=data.sel.cat, options=[(k, '{} ({})'.format(words[k], k)) for k in categories])
     cluster_select  = Select(value=data.sel.clu, options=[k for k in data.cluster], width=200)
-    alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=100)
+    alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
 
     # === Document Layout ===
-    top = row(category_select, cluster_select, alpha_slider)
-    bottom = row(eigval_fig, sample_table, visual_fig, image_fig)
+    top = row(category_select, cluster_select)
+    bottom = row(eigval_fig, sample_table, visual_fig, column(image_fig, alpha_slider))
     layout = column(top, bottom)
     doc.add_root(layout)
     doc.title = "Sprincl TSNE"

@@ -1,32 +1,25 @@
 import numpy as np
 
-class Preprocessor(object):
+from .base import Processor
+
+class PreProcessor(Processor):
     """Base-class for preprocessing.
 
     """
-    def __call__(self, data):
-        raise NotImplementedError
+    pass
 
-    def __add__(self, other):
-        assert isinstance(other, __class__)
-        return (lambda x: self(other(x)))
-
-class Histogram(Preprocessor):
+class Histogram(PreProcessor):
     """Channel-wise histograms of data
 
+    Parameters
+    ----------
+    bins : int
+        number of bins for histograms
+
     """
-    def __init__(self, *args, bins=32, **kwargs):
-        """Initialize Histogram Preprocessor
+    bins = Param(int, 32)
 
-        Parameters
-        ----------
-        bins : int
-            number of bins for histograms
-
-        """
-        self._bins = bins
-
-    def __call__(self, data):
+    def function(self, data):
         """Compute channel-wise histograms from data
 
         Parameters
@@ -44,6 +37,6 @@ class Histogram(Preprocessor):
         # channel-wise range
         trange = zip(data.min((0, 2, 3), data.max(0, 2, 3)))
         hist = np.histogramdd(data.reshape(n * c, h * w),
-                              bins=self._bins, range=trange, density=True).reshape(n, c, self._bins)
+                              bins=self.bins, range=trange, density=True).reshape(n, c, self._bins)
         return hist
 

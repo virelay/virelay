@@ -7,10 +7,10 @@ class Task(object):
     """A single item in a Pipeline Task Scheme
 
     """
-    def __init__(self, ttype=object, default=(lambda x: x), is_output=False):
+    def __init__(self, proc_type=object, default=(lambda x: x), is_output=False):
         default = ensure_processor(default)
         if not isinstance(default, proc_type):
-            raise TypeError('Task default processor {} is not of type {}!'.format(default, ttype))
+            raise TypeError('Task default processor {} is not of type {}!'.format(default, proc_type))
         self.proc_type = proc_type
         self.default = default
         self.is_output = is_output
@@ -24,9 +24,7 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         for key, task in self.task_scheme.items():
             proc = ensure_processor(kwargs.get(key, task.default.copy()), is_output=task.is_output)
             if not isinstance(proc, task.proc_type):
-                raise TypeError('Task {} function {} is not of type {}!'.format(key, ftask.func, task.ttype))
-            if not callable(func):
-                raise RuntimeError('Task {} function {} is not callable!'.format(key, ftask.func))
+                raise TypeError('Task {} function {} is not of type {}!'.format(key, ftask.func, task.proc_type))
             self.processes[key] = proc
 
     def checkpoint_processes(self):

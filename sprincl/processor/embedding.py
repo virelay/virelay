@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.sparse.linalg import eigsh
 
-from .base import processor
+from .base import Processor, Param
 
 class Embedding(Processor):
     pass
@@ -35,7 +35,7 @@ class EigenDecomposition(Embedding):
         data and return one minus the eigenvalue.
 
         """
-        eigval, eigvec = eigsh(data, k=self._n_eigval, which='LM')
+        eigval, eigvec = eigsh(data, k=self.n_eigval, which=self.which)
         eigval = 1. - eigval
 
         if self.normalize:

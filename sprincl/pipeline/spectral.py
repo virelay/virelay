@@ -33,10 +33,10 @@ class SpectralEmbedding(Pipeline):
     Pre-computed graph laplacian matrices can be supplied by further passing `laplacian`=(lambda x: x).
 
     """
-    preprocessing=Task(default=(lambda x: x)),
-    pairwise_distance=Task(default=SciPyPDist(metric='euclidean')),
-    affinity=Task(default=SparseKNN(k_neighbours=10, symmetric=True)),
-    laplacian=Task(default=SymmetricNormalLaplacian()),
+    preprocessing=Task(default=(lambda x: x))
+    pairwise_distance=Task(default=SciPyPDist(metric='euclidean'))
+    affinity=Task(default=SparseKNN(k_neighbours=10, symmetric=True))
+    laplacian=Task(default=SymmetricNormalLaplacian())
     embedding=Task(default=EigenDecomposition(n_eigval=32), is_output=True)
 
 class SpectralClustering(SpectralEmbedding):

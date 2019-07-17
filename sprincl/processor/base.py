@@ -26,8 +26,11 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             self.checkpoint_data = out
         return out
 
+    def param_values(self):
+        return {key: getattr(self, key) for key in self.params}
+
     def copy(self):
-        new = type(self)(**self.params)
+        new = type(self)(**self.param_values())
         new.checkpoint_data = self.checkpoint_data
         return new
 
@@ -38,10 +41,10 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
     #     if not isinstance(other, common_base)
     #         raise TypeError("Processor-chaining: expected instance of type '{}', got '{}'.".format(common_base, type(other)))
     #     if not isinstance(self, ChainedProcessor):
-    #         chained_proc = type("Chained{}".format(common_base), [common_base, ChainedProcessor], {})(chain=[self, other], **self.params)
+    #         chained_proc = type("Chained{}".format(common_base), [common_base, ChainedProcessor], {})(chain=[self, other], **self.param_values())
     #     else:
     #         chain = self.chain + [other]
-    #         chained_proc = type(self)(**self.params)
+    #         chained_proc = type(self)(**self.param_values())
     #     return chained_proc
 
 class ChainedProcessor(Processor):
@@ -61,7 +64,7 @@ class FunctionProcessor(Processor):
 def ensure_processor(proc, **kwargs):
     if not isinstance(proc, Processor):
         if callable(proc):
-            proc = FunctionProcessor(proc)
+            proc = FunctionProcessor(function=proc)
         else:
             raise TypeError('Supplied processor {} is neither a Processor, nor callable!')
     for key, val in kwargs.items():

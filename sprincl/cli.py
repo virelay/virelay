@@ -11,8 +11,12 @@ import click
 from sklearn.manifold import TSNE
 from sklearn.cluster import k_means
 
-from .spectral import SpectralEmbedding
-from .affinity import SparseKNN
+from .pipeline.spectral import SpectralEmbedding
+from .processor.affinity import SparseKNN
+from .processor.clustering import KMeans
+from .processor.distance import SciPyPDist
+from .processor.embedding import EigenDecomposition
+from .processor.laplacian import SymmetricNormalLaplacian
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +82,10 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
 
 
         eigval, eigvec = SpectralEmbedding(
-            n_eigval=eigvals,
-            affinity_fn=SparseKNN(k_neighbors=knn)
+            distance=SciPyPDist(metric='euclidean'),
+            affinity=SparseKNN(k_neighbors=knn),
+            laplacian=SymmetricNormalLaplacian(),
+            embedding=EigenDecomposition(n_eigval=eigvals),
         )(attr)
         eigval, eigvec = (val.astype(np.float32) for val in (eigval, eigvec))
 
@@ -126,7 +132,9 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
 
         llabels = []
         for k in clusters:
-            _, lab, _ = k_means(ev[:, -eigvals:], k)
+            k_means = KMeans(n_cluster=k, index=(slice(None), slice(-eigvals, None)))
+            lab = k_means(ev)
+            #_, lab, _ = k_means(ev[:, -eigvals:], k)
             llabels.append(lab.astype('uint8'))
 
         with h5py.File(fout, 'a') as fd:

@@ -3,7 +3,7 @@ import logging
 import numpy as np
 from scipy import sparse as sp
 
-from .base import Processor
+from .base import Processor, Param
 
 logger = logging.getLogger(__name__)
 

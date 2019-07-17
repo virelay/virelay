@@ -3,7 +3,7 @@ import logging
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
-from .base import processor
+from .base import Processor, Param
 
 logger = logging.getLogger(__name__)
 

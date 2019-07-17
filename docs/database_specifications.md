@@ -63,7 +63,7 @@
     - if **float32**: *samples x classes*
 
 ## Analysis Output Data
-- stored at `<data-root>/analysis/<dataset>/<model>-<attribution-method>-<analysis-topic>.analysis.h5`
+- stored at `<data-root>/analysis/<dataset>/<model>-<attribution-method>-<attribution-strategy>-<analysis-topic>.analysis.h5`
   - `<analysis-topic>` is an identifier for the analysis approach, e.g. different distance metrics, graph methods etc.
 - HDF5 structure
   - `<analysis-identifier>` **group** with name of the analysis as subkeys (not necessarily classes!, wordnet-id for classwise ImageNet Analysis)

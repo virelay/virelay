@@ -6,13 +6,17 @@
 - `<variable>`
 
 - HDF5 structure
-  - `key`: **group**
-    - `<subkey-variable>`: variable subkey without type
+  - `key`: **group**, or **dtype** if members have same shape and no identifiers
+    - if **group**, `<subkey-variable>`: **dype** variable subkey without type
       - attributes:
         - `attribute`: attribute valid for all subkeys of `key`
-    - `subkey`: **data type** *shape* fixed subkey of group `key`, effectively `key/subkey` in the hierarchy
-      - attributes:
-        - attributes that only apply explicitly to `key/subkey`
+    - if **dtype**: *shape* same shape for all members
+  - `other-key`: **group** `<clustering>` **dtype** *shape* definition for all group members
+    - attributes: (attributes are used to define parameters of the used algorithm)
+      - `other-attr`: **dype** *shape* all members have this attribute
+    - `specific-member`: properties for some specific member of group
+      - attributes
+        - `some-attr`: **dtype** *shape* only `specific-member` has this attribute
 
 ## General Data Specification
 - all data is stored on `vca-gpu-211-01` at `<data-root>` = `/data/shared/sprincl/`
@@ -29,40 +33,52 @@
 - shape for image data is *samples x channel x heigth x width*
 - since preprocessing depends on the model, we supply a file `<model>.input.h5` with all preprocessing steps applied
 - HDF5 structure
-  - `data`: **group** or **float32** if every sample has same dimensions
-    - `<data-id>` **float32** *channel x height x width* if group, `<data-id>` can be a filename or an identifier
-  - `label`: **group**, or **uint** *samples* for single label, **bool** *samples x classes* for multi label if `data` is **float32**
-    - `<data-id>` **uint** *1* for single label or **bool** *classes* for multi label, if group, `<data-id>` is the same as in `data`
-  - `index`: **group**, optional, if `data` is a group, assign indices to keys, otherwise natural sort order of keys is assumed
-    - `<data-id>` **int** *1* `<data-id> is the same as `data`
+  - `data`: **group**, or **float32** if every sample has same dimensions
+    - if **group**: `<data-id>` **float32** *channel x height x width* if group, `<data-id>` can be a filename or an identifier
+    - if **float32**: **float32** *samples x channel x height x width*
+  - `label`: **group**, or **uint** if data is **group**
+    - if **group**: `<data-id>` **uint** *1* for single label, or **bool** *classes* for multi label
+    - if **uint**: *samples* for single label, **bool** *samples x classes* for multi label if `data` is **float32**
+  - `index`: **group** `<data-id>` **uint** *1*, optional
+    - if `data` is **group**, assign indices to keys
+    - otherwise natural sort order of keys is assumed
 
 ## Attribution of Input Data
-- stored at `<data-root>/attributions/<dataset>/<model>-<attribution-method>.attribution.h5`
+- stored at `<data-root>/attributions/<dataset>/<model>-<attribution-method>-<attribution-strategy>.attribution.h5`
+- `<attribution-strategy>` can be:
+  - `true`: for true label
+  - `model`: for model prediction
+  - `<integer>` for choosing a fixed label
+  - `<else>` for something I did not think of
 - HDF5 structure
-  - `attribution`: **float32** *samples x channel x height x width* or **group** Attributions with full channel information
-    - if group, keys are the same as in input data
-  - `label` **uint16** *samples x {1, <classes>}* or **group**
-    - if group, keys are the same as in input data
-  - `prediction` **float32** *samples x classes* or **group**
-    - if group, keys are the same as in input data
+  - `attribution`: **group** or **float32** attributions with full channel information
+    - if **group**: `<data-id>` **float32** *channel x height x width*
+    - if **float32**: *samples x channel x height x width*
+  - `label` **group** or **uint16**
+    - if **group**: `<data-id>` *samples x {1, <classes>}*
+    - if **uint16**: *samples x {1, <classes>}*
+  - `prediction`: **group** or **float32**
+    - if **group**: `<data-id>` **float32** *classes*
+    - if **float32**: *samples x classes*
 
 ## Analysis Output Data
 - stored at `<data-root>/analysis/<dataset>/<model>-<attribution-method>-<analysis-topic>.analysis.h5`
   - `<analysis-topic>` is an identifier for the analysis approach, e.g. different distance metrics, graph methods etc.
 - HDF5 structure
   - `<analysis-identifier>` **group** with name of the analysis as subkeys (not necessarily classes!, wordnet-id for classwise ImageNet Analysis)
-    - `index`: **uint32** *samples* Sample indices in the input attribution file
-    - `eigenvalue`: **float32** *eigenvalues* Eigenvalues for the spectral embedding
-    - `eigenvector`: **float32** *samples x eigenvalues* Eigenvectors for the spectral embedding
-    - `cluster`: **group** of clustering methods
-      - `<clustering>` **uint32** *samples* labels for clustering on spectral embedding with name `<clustering>`
-        - attributes: (attributes are used to define parameters of the used algorithm)
-          - `eigenvector`: **uint** the indices of the used eigenvectors
-      - `kmeans-<k>`: **uint32** *samples* Label for clusters on the spectral embedding using k-means with k=`<k>`
+    - `index`: **uint32** *samples* sample indices in the input attribution file, shared among embeddings
+    - `embedding`: **group** `<embedding-id>`
+      - `spectral`: **float32** *samples x eigenvalues* Eigenvectors of EigenDecomposition
+        - attributes:
+          - `eigenvalue` **float32** *eigenvalues* Eigenvalues for the spectral embedding
+      - `tsne`: **float32** *samples x 2* t-SNE Embedding
+        - attributes:
+          - `embedding`: **string** 1 the embedding used for tsne, non-existent if T-SNE on data
+          - `index`: **uint** the indices of the used embedding, non-existent if T-SNE on data
+    - `cluster`: **group** `<clustering>` **uint32** *samples* labels for clustering on embedding
+      - attributes: (attributes are used to define parameters of the used algorithm)
+        - `embedding`: **string** 1 the embedding used for clustering
+        - `index`: **uint** the indices of the used embedding
+      - `kmeans-<k>`: label for clusters on the spectral embedding using k-means with k=`<k>`
         - attributes
           - `k`: **uint8** *1* k (number of clusters) for k-means
-    - `visualization`: **group** Additional embedding used for visualization with name `<name>`
-      - `<name>`: visualization method with name `<name>`
-        - attributes:
-          - `eigenvector`: **uint32** the indices of the used eigenvectors
-      - `tsne`: **float32** *samples x 2* t-SNE Embedding

@@ -51,12 +51,13 @@
   - `<integer>` for choosing a fixed label
   - `<else>` for something I did not think of
 - HDF5 structure
+  - `index`: **uint** *samples* indices of attributed input samples in the input file
   - `attribution`: **group** or **float32** attributions with full channel information
     - if **group**: `<data-id>` **float32** *channel x height x width*
     - if **float32**: *samples x channel x height x width*
   - `label` **group** or **float32**, attribution assigned for the model output, goverened by `<attribution-strategy>`
     - if **group**: `<data-id>` *samples x {1, <classes>}*
-    - if **uint16**: *samples x {1, <classes>}*
+    - if **uint**: *samples x {1, <classes>}*
   - `prediction`: **group** or **float32**
     - if **group**: `<data-id>` **float32** *classes*
     - if **float32**: *samples x classes*

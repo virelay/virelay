@@ -75,11 +75,11 @@
       - `tsne`: **float32** *samples x 2* t-SNE Embedding
         - attributes:
           - `embedding`: **string** 1 the embedding used for tsne, non-existent if T-SNE on data
-          - `index`: **uint** the indices of the used embedding, non-existent if T-SNE on data
+          - `index`: **uint** the feature indices (not sample dimension) of the used embedding, non-existent if T-SNE on data
     - `cluster`: **group** `<clustering>` **uint32** *samples* labels for clustering on embedding
       - attributes: (attributes are used to define parameters of the used algorithm)
         - `embedding`: **string** 1 the embedding used for clustering
-        - `index`: **uint** the indices of the used embedding
+        - `index`: **uint** the feature (not sample dimension) indices of the used embedding
       - `kmeans-<k>`: label for clusters on the spectral embedding using k-means with k=`<k>`
         - attributes
           - `k`: **uint8** *1* k (number of clusters) for k-means

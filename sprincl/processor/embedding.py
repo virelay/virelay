@@ -1,10 +1,15 @@
 import numpy as np
+from umap import UMAP
 from scipy.sparse.linalg import eigsh
+from sklearn.manifold import TSNE, LocallyLinearEmbedding
+from sklearn.decomposition import PCA
 
 from .base import Processor, Param
 
+
 class Embedding(Processor):
-    pass
+    kwargs = Param(dict, {})
+
 
 class EigenDecomposition(Embedding):
     """Eigenvalue Decomposition
@@ -35,10 +40,63 @@ class EigenDecomposition(Embedding):
         data and return one minus the eigenvalue.
 
         """
-        eigval, eigvec = eigsh(data, k=self.n_eigval, which=self.which)
+        eigval, eigvec = eigsh(data, k=self.n_eigval, which=self.which, **self.kwargs)
         eigval = 1. - eigval
 
         if self.normalize:
             eigvec /= np.linalg.norm(eigvec, axis=1, keepdims=True)
         return eigval, eigvec
 
+
+class TSNEEmbedding(Embedding):
+    """TSNE Embedding
+
+    """
+    n_components = Param(int, default=2)
+    metric = Param(str, default='euclidean')
+
+    def function(self, data):
+        tsne = TSNE(n_components=self.n_components, metric=self.metric, **self.kwargs)
+        emb = tsne.fit_transform(data)
+        return emb
+
+
+class PCAEmbedding(Embedding):
+    """PCA Embedding
+
+    """
+    n_components = Param(int, default=2)
+    whiten = Param(bool, default=False)
+
+    def function(self, data):
+        pca = PCA(n_components=self.n_components, whiten=self.whiten, **self.kwargs)
+        emb = pca.fit_transform(data)
+        return emb
+
+
+class LLEEmbedding(Embedding):
+    """LocallyLinearEmbedding
+
+    """
+    n_components = Param(int, default=2)
+    n_neighbors = Param(int, default=5)
+
+    def function(self, data):
+        lle = LocallyLinearEmbedding(n_neighbors=self.n_neighbors, n_components=self.n_components,
+                                     **self.kwargs)
+        emb = lle.fit_transform(data)
+        return emb
+
+
+class UMAPEmbedding(Embedding):
+    """UMAPEmbedding: https://umap-learn.readthedocs.io/en/latest/index.html
+
+    """
+    n_neighbors = Param(int, default=15)
+    min_dist = Param(float, default=0.1)
+    metric = Param(str, default='correlation')
+
+    def function(self, data):
+        umap = UMAP(n_neighbors=self.n_neighbors, min_dist=self.min_dist, metric=self.metric)
+        emb = umap.fit_transform(data)
+        return emb

@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name = "sprincl",
     version = "0.1",
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     install_requires=[
         'h5py>=2.9.0',
         'matplotlib>=3.0.3',

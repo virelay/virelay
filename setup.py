@@ -21,6 +21,7 @@ setup(
         ]
     },
     extras_require={
-        'umap': ['umap-learn>=0.3.9']
+        'umap': ['umap-learn>=0.3.9'],
+        'hdbscan': ['hdbscan>=0.8.22']
     }
 )

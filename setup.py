@@ -19,5 +19,8 @@ setup(
             'sprincl = sprincl.cli:main',
             'vispr = vispr.cli:main',
         ]
+    },
+    extras_require={
+        'umap': ['umap-learn>=0.3.9']
     }
 )

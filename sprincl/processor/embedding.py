@@ -1,8 +1,15 @@
 import numpy as np
-from umap import UMAP
 from scipy.sparse.linalg import eigsh
 from sklearn.manifold import TSNE, LocallyLinearEmbedding
 from sklearn.decomposition import PCA
+
+try:
+    from umap import UMAP
+except ImportError:
+    def UMAP(*args, **kwargs):
+        raise RuntimeError("Support for UMAP was not installed! Install with: pip install {}[{}]".format(
+            __name__.split('.')[0], "umap"
+        ))
 
 from .base import Processor, Param
 

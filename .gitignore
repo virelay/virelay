@@ -3,6 +3,7 @@
 .vscode
 .idea
 .venv
+.exrc
 
 # Python output
 .python
@@ -15,3 +16,6 @@ dist/
 
 # Results output
 result
+
+# Testing
+.tox

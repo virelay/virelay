@@ -1,3 +1,6 @@
+"""Data loading functionality
+
+"""
 import glob
 import os
 import logging

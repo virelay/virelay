@@ -1,3 +1,6 @@
+"""Affinity (similarity) processors.
+
+"""
 import logging
 
 import numpy as np
@@ -14,7 +17,6 @@ class Affinity(Processor):
     Each subclass implements a __call__ function to compute its corresponding affinity matrix of some data.
 
     """
-    pass
 
 
 class SparseKNN(Affinity):

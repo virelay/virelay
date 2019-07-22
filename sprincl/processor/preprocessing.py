@@ -1,3 +1,6 @@
+"""Preprocessing Processors
+
+"""
 import numpy as np
 
 from .base import Processor, Param
@@ -7,7 +10,6 @@ class PreProcessor(Processor):
     """Base-class for preprocessing.
 
     """
-    pass
 
 
 class Histogram(PreProcessor):

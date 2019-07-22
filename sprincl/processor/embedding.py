@@ -1,3 +1,6 @@
+"""Embedding Processors
+
+"""
 import numpy as np
 from scipy.sparse.linalg import eigsh
 from sklearn.manifold import TSNE, LocallyLinearEmbedding
@@ -15,10 +18,13 @@ from .base import Processor, Param
 
 
 class Embedding(Processor):
-    """Embedding base class
+    """Embedding Processor base class
 
     """
     kwargs = Param(dict, {})
+    """Embedding Processor base class
+
+    """
 
 
 class EigenDecomposition(Embedding):

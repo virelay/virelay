@@ -1,3 +1,6 @@
+"""Clustering Processors
+
+"""
 import logging
 
 from sklearn.cluster import KMeans as SK_KMeans
@@ -11,7 +14,6 @@ class Clustering(Processor):
     """Clustering Processor
 
     """
-    pass
 
 
 class KMeans(Clustering):

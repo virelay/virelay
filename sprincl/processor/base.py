@@ -1,7 +1,13 @@
+"""Base classes Param and Processor.
+
+"""
 from ..tracker import MetaTracker
 
 
 class Param(object):
+    """Parameters to be tracked in Processors
+
+    """
     def __init__(self, dtype, default=None):
         self.dtype = dtype
         self.default = default
@@ -53,13 +59,14 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
     #     return chained_proc
 
 
-class ChainedProcessor(Processor):
-    chain = Param(list, [])
-
-    def function(self, data):
-        for proc in self.chain:
-            data = proc(data)
-        return data
+# TODO: Chained Processors
+# class ChainedProcessor(Processor):
+#     chain = Param(list, [])
+#
+#     def function(self, data):
+#         for proc in self.chain:
+#             data = proc(data)
+#         return data
 
 
 class FunctionProcessor(Processor):
@@ -70,6 +77,9 @@ class FunctionProcessor(Processor):
 
 
 def ensure_processor(proc, **kwargs):
+    """Make sure argument is a Processor and, if it is not, but callable, make it a FunctionProcessor
+
+    """
     if not isinstance(proc, Processor):
         if callable(proc):
             proc = FunctionProcessor(function=proc)

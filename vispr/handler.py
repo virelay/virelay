@@ -1,3 +1,6 @@
+"""Bokeh plotting handler.
+
+"""
 import json
 import logging
 import random
@@ -18,6 +21,9 @@ logger = logging.getLogger(__name__)
 
 
 def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path, wnid_path):
+    """Handler for Bokeh server
+
+    """
     logger.info('Setting up document...')
 
     # load all analysis category names
@@ -45,6 +51,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     data.sel.vis = None
 
     # load data for a new category
+    # pylint: disable=unused-argument
     def update_cat(attr, old, new):
         data.sel.cat = new
 
@@ -153,7 +160,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
 
     def update_selection(attr, old, new):
         sample_table.view = CDSView(source=sample_src, filters=[IndexFilter(new)])
-        inds = sample_src.selected.indices[:num] if len(sample_src.selected.indices) else list(range(num))
+        inds = sample_src.selected.indices[:num] if sample_src.selected.indices else list(range(num))
         inds = sorted(inds)
         image_src.data.update({
             'attribution': attribution_loader[data.index[inds]],
@@ -162,10 +169,12 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
             'y': (np.arange(len(inds), dtype=int) * wid) // maxwid * hei,
         })
 
+    # pylint: disable=unused-argument
     def update_clusters(attr, old, new):
         data.sel.clu = new
         sample_src.data.update({'cluster': data.cluster[data.sel.clu]})
 
+    # pylint: disable=unused-argument
     def update_alpha(attr, old, new):
         original_rend.glyph.global_alpha = 1. - new
         attribution_rend.glyph.global_alpha = new

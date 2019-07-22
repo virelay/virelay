@@ -1,8 +1,14 @@
+"""__main__ module invocation of vispr
+
+"""
 from .cli import main as cli_main
 
 
 def main():
-    # pylint: disable=no-value-for-parameter
+    """Execute vispr command-line interface
+
+    """
+    # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
     cli_main(auto_envvar_prefix='VISPR')
 
 

@@ -1,3 +1,6 @@
+"""Vispr command-line interface to run the Bokeh server
+
+"""
 import logging
 from sys import stderr
 
@@ -23,6 +26,9 @@ logger = logging.getLogger(__name__)
 @click.option('-v', '--verbose', count=True)
 def main(input_path, attribution_path, analysis_path, wordmap, wnids, port, address, allow_websocket_origin, num_procs,
          log, verbose):
+    """Run vispr Bokeh server
+
+    """
     root_logger = logging.getLogger()
     log_handler = logging.StreamHandler(log)
     log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
@@ -36,7 +42,7 @@ def main(input_path, attribution_path, analysis_path, wordmap, wnids, port, addr
         'num_procs': num_procs,
     }
 
-    logger.info('Starting server at {address}:{port}'.format(**server_kwargs))
+    logger.info('Starting server at %s', '{address}:{port}'.format(**server_kwargs))
     server = Server({'/': (lambda doc: modify_doc(doc, input_path, attribution_path, analysis_path, wordmap, wnids))},
                     **server_kwargs)
 

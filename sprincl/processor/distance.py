@@ -1,3 +1,6 @@
+"""Pair-wise distance processors
+
+"""
 import logging
 
 from scipy.spatial.distance import pdist, squareform
@@ -11,7 +14,6 @@ class Distance(Processor):
     """Distance Processor
 
     """
-    pass
 
 
 class SciPyPDist(Distance):

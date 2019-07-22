@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+"""Sprincl command line interface.
+
+"""
 import logging
 import os
 from os import path
@@ -21,6 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 def csints(arg):
+    """List of integers from comma-separated numbers in string
+
+    """
     return [int(s) for s in arg.split(',')]
 
 
@@ -33,6 +38,9 @@ def csints(arg):
 @click.option('-v', '--verbose', count=True)
 @click.pass_context
 def main(ctx, data, exname, overwrite, modify, log, verbose):
+    """Root command of analysis chain.
+
+    """
     logger.addHandler(logging.StreamHandler(log))
     logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
 
@@ -60,7 +68,7 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
     fout = data
 
     if not path.exists(fout) or modify:
-        logger.info('Computing embedding: {}'.format(fout))
+        logger.info('Computing embedding: %s', fout)
         with h5py.File(attribution, 'r') as fd:
             raw_label = fd['label'][:]
             if label_filter is None:
@@ -68,8 +76,8 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
                 inds = np.arange(len(raw_label), dtype=np.uint32)
             else:
                 inds, = np.nonzero(np.in1d(raw_label, label_filter))
-                if not len(inds):
-                    logger.error('No matches found for filter: %s' % str(label_filter))
+                if not inds:
+                    logger.error('No matches found for filter: %s', str(label_filter))
                     return
 
             # label = raw_label[inds]
@@ -97,12 +105,12 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
                     if overwrite:
                         del subfd[key]
                     else:
-                        logger.error('Key already exists and overwrite is disabled: %s' % key)
+                        logger.error('Key already exists and overwrite is disabled: %s', key)
                         continue
                 subfd[key] = val
         ctx.obj.ev = eigvec
     else:
-        logger.info('File exists, not overwriting embedding: {}'.format(fout))
+        logger.info('File exists, not overwriting embedding: %s', fout)
 
 
 @main.command()
@@ -119,7 +127,7 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
     fout = data if output is None else output
 
     if not path.exists(fout) or modify:
-        logger.info('Computing clustering: {}'.format(fout))
+        logger.info('Computing clustering: %s', fout)
         if computed and ('ev' in ctx.obj):
             ev = ctx.obj.ev
         else:
@@ -146,7 +154,7 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
                     if overwrite:
                         del fdl[key]
                     else:
-                        logger.error('Key already exists and overwrite is disabled: %s' % key)
+                        logger.error('Key already exists and overwrite is disabled: %s', key)
                         continue
                 fdl[key] = lab
                 fdl[key].attrs.create('k', kval, dtype=np.uint8)

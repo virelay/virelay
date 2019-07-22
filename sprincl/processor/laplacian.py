@@ -1,3 +1,6 @@
+"""Graph Laplacian Processors (mainly for spectral embedding)
+
+"""
 import logging
 
 import numpy as np
@@ -8,7 +11,7 @@ from .base import Processor
 logger = logging.getLogger(__name__)
 
 
-def A1ifmat(x):
+def a1ifmat(x):
     """Return flat representation of x if x is a :obj:`numpy.matrix`
 
     Parameters
@@ -29,7 +32,6 @@ class Laplacian(Processor):
     """Graph Laplacian Processor
 
     """
-    pass
 
 
 class SymmetricNormalLaplacian(Laplacian):
@@ -50,7 +52,7 @@ class SymmetricNormalLaplacian(Laplacian):
             Sparse representation of a symmetric graph laplacian matrix
 
         """
-        deg = sp.diags(A1ifmat(affinity.sum(1))**-.5, 0)
+        deg = sp.diags(a1ifmat(affinity.sum(1))**-.5, 0)
         lap = deg @ affinity @ deg
         return lap
 
@@ -73,6 +75,6 @@ class RandomWalkNormalLaplacian(Laplacian):
             Sparse representation of a random walk graph laplacian matrix
 
         """
-        deg = sp.diags(A1ifmat(affinity.sum(1))**-1., 0)
+        deg = sp.diags(a1ifmat(affinity.sum(1))**-1., 0)
         lap = deg @ affinity
         return lap

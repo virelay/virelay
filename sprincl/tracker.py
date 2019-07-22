@@ -1,3 +1,6 @@
+"""Includes MetaTracker to track definition order of class attributes.
+
+"""
 from collections import OrderedDict
 
 

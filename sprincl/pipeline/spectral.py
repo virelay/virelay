@@ -1,3 +1,6 @@
+"""SprAy-specific spectral clustering pipelines.
+
+"""
 import logging
 
 from ..processor.distance import SciPyPDist

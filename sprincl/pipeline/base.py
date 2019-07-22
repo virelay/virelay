@@ -1,3 +1,6 @@
+"""Base classes Task and Pipeline.
+
+"""
 from collections import OrderedDict
 
 from ..tracker import MetaTracker

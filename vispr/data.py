@@ -1,16 +1,17 @@
 import glob
 import os
-import re
 import logging
 
 import numpy as np
 import h5py
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
+
 def crop(img, i, j, h, w):
     return img.crop((j, i, j + w, i + h))
+
 
 def center_crop(img, output_size):
     w, h = img.size
@@ -18,6 +19,7 @@ def center_crop(img, output_size):
     i = int(round((h - th) / 2.))
     j = int(round((w - tw) / 2.))
     return crop(img, i, j, th, tw)
+
 
 class AttrImage(object):
     def __init__(self, atpath):
@@ -28,7 +30,8 @@ class AttrImage(object):
             key = range(*key.indices(len(self)))
 
         with h5py.File(self._atpath, 'r') as fd:
-            load_index = lambda x: fd['attribution'][x].mean(0)[::-1]
+            def load_index(x):
+                return fd['attribution'][x].mean(0)[::-1]
             if isinstance(key, (range, list, tuple, np.ndarray)):
                 return [load_index(k) for k in key]
             else:
@@ -38,6 +41,7 @@ class AttrImage(object):
         with h5py.File(self._atpath, 'r') as fd:
             length = len(fd['attribution'])
         return length
+
 
 class OrigImage(object):
     def __init__(self, inpath):
@@ -78,4 +82,3 @@ class OrigImage(object):
             return [self._load_index(k) for k in key]
         else:
             return self._load_index(key)
-

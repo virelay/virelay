@@ -16,6 +16,7 @@ class Affinity(Processor):
     """
     pass
 
+
 class SparseKNN(Affinity):
     """Sparse K-Nearest-Neighbors affinity
 
@@ -49,10 +50,10 @@ class SparseKNN(Affinity):
         n = distance.shape[0]
 
         # silently use maximum number of neighbors if there are more samples than k
-        k = k if k < (n-1) else (n-1)
+        k = k if k < (n - 1) else (n - 1)
 
         # set up indices for sparse representation of nearest neighbors
-        cols = distance.argsort(1)[:, 1:k+1]
+        cols = distance.argsort(1)[:, 1:k + 1]
         rows = np.mgrid[:n, :k][0]
         # existing edges are denoted with ones
         vals = np.ones((n, k), dtype=distance.dtype)
@@ -62,6 +63,7 @@ class SparseKNN(Affinity):
         if self.symmetric:
             affinity = (affinity + affinity.T) / 2.
         return affinity
+
 
 class RadialBasisFunction(Affinity):
     """Radial Basis Function affinity
@@ -89,6 +91,5 @@ class RadialBasisFunction(Affinity):
 
         """
         sigma = self.sigma
-        affinity = np.exp(-distance/(2*sigma**2))
+        affinity = np.exp(-distance / (2 * sigma ** 2))
         return affinity
-

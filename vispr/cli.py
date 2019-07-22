@@ -1,5 +1,5 @@
 import logging
-from sys import stdout, stderr
+from sys import stderr
 
 import click
 from bokeh.server.server import Server
@@ -7,6 +7,7 @@ from bokeh.server.server import Server
 from .handler import modify_doc
 
 logger = logging.getLogger(__name__)
+
 
 @click.command()
 @click.argument('input_path', type=click.Path())
@@ -41,4 +42,3 @@ def main(input_path, attribution_path, analysis_path, wordmap, wnids, port, addr
 
     server.io_loop.add_callback(server.show, '/')
     server.run_until_shutdown()
-

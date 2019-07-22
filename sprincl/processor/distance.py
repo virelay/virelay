@@ -1,17 +1,18 @@
 import logging
 
-import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 from .base import Processor, Param
 
 logger = logging.getLogger(__name__)
 
+
 class Distance(Processor):
     """Distance Processor
 
     """
     pass
+
 
 class SciPyPDist(Distance):
     """Pairwise distances using scipy.spatial.distance.pdist

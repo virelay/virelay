@@ -1,7 +1,6 @@
-from collections import OrderedDict
-
 import h5py
 import numpy as np
+
 
 def make_group_example():
     # input file with groups with different sizes
@@ -116,7 +115,6 @@ def make_dataset_example():
         a_predictions = np.array([[0, 1], [.5, .5], [1, 0]])
         fd['prediction'] = a_predictions.astype(np.float32)
 
-
     # using datasets in the input/attribution does not change the analysis file structure
     with h5py.File('dataset-attr_method-ana_topic.analysis.h5') as fd:
         # one analysis group, we call this analysis 'my first analysis'
@@ -148,9 +146,11 @@ def make_dataset_example():
         # we use both feature dimensions for the spectral clustering
         g_cluster['my_clustering'].attrs['index'] = np.arange(g_embedding['spectral'].shape[1])
 
+
 def main():
     make_group_example()
     make_dataset_example()
+
 
 if __name__ == '__main__':
     main()

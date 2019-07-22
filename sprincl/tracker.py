@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+
 class InstanceTracker(dict):
     """Track items of instances of specified type(s) in a seperate OrderedDict
 
@@ -15,6 +16,7 @@ class InstanceTracker(dict):
             self.tracked[key] = value
         else:
             dict.__setitem__(self, key, value)
+
 
 class MetaTracker(type):
     """Meta class to track attributes of some type in order of declaration
@@ -48,4 +50,3 @@ class MetaTracker(type):
             # otherwise just use our new scheme
             setattr(result, class_dict.attr_name, class_dict.tracked)
         return result
-

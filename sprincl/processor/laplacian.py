@@ -31,6 +31,7 @@ class Laplacian(Processor):
     """
     pass
 
+
 class SymmetricNormalLaplacian(Laplacian):
     """ Normal Symmetric Graph Laplacian
 
@@ -53,6 +54,7 @@ class SymmetricNormalLaplacian(Laplacian):
         lap = deg @ affinity @ deg
         return lap
 
+
 class RandomWalkNormalLaplacian(Laplacian):
     """ Normal Random Walk Graph Laplacian
 
@@ -74,4 +76,3 @@ class RandomWalkNormalLaplacian(Laplacian):
         deg = sp.diags(A1ifmat(affinity.sum(1))**-1., 0)
         lap = deg @ affinity
         return lap
-

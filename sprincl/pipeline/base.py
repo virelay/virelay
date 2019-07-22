@@ -3,6 +3,7 @@ from collections import OrderedDict
 from ..tracker import MetaTracker
 from ..processor.base import ensure_processor
 
+
 class Task(object):
     """A single item in a Pipeline Task Scheme
 
@@ -15,6 +16,7 @@ class Task(object):
         self.default = default
         self.is_output = is_output
 
+
 class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
     """Abstract base class for all pipelines using MetaPipeline's tracked Task attributes
 
@@ -24,13 +26,13 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         for key, task in self.task_scheme.items():
             proc = ensure_processor(kwargs.get(key, task.default.copy()), is_output=task.is_output)
             if not isinstance(proc, task.proc_type):
-                raise TypeError('Task {} function {} is not of type {}!'.format(key, ftask.func, task.proc_type))
+                raise TypeError('Task {} function {} is not of type {}!'.format(key, proc.func, task.proc_type))
             self.processes[key] = proc
 
     def checkpoint_processes(self):
         checkpoint_process_list = []
         for key, proc in reversed(self.processes.items()):
-            checkpoint_process_list.append((key, task))
+            checkpoint_process_list.append((key, proc))
             if proc.is_checkpoint:
                 break
         if not proc.is_checkpoint:
@@ -54,4 +56,3 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         for proc in self.processes.values():
             data = proc(data)
         return data
-

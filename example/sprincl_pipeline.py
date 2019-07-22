@@ -3,10 +3,8 @@ import numpy as np
 from sprincl.pipeline.base import Pipeline, Task
 from sprincl.processor.base import Processor, Param, FunctionProcessor
 from sprincl.processor.affinity import Affinity, RadialBasisFunction
-from sprincl.processor.clustering import KMeans
 from sprincl.processor.distance import Distance, SciPyPDist
-from sprincl.processor.embedding import EigenDecomposition
-from sprincl.processor.laplacian import SymmetricNormalLaplacian
+
 
 # Processors
 class MyProcess(Processor):
@@ -20,6 +18,7 @@ class MyProcess(Processor):
     def function(self, data):
         return self.stuff * self.func(data) + 3
 
+
 # Pipelines
 class MyPipeline(Pipeline):
     # Task are registered in order by creating a class attribute of type Task() and, like params, are expected to
@@ -31,6 +30,7 @@ class MyPipeline(Pipeline):
     pdistance = Task(Distance, SciPyPDist(metric='sqeuclidean'))
     affinity = Task(Affinity, RadialBasisFunction(sigma=1.0))
     postprocess = Task()
+
 
 # Tasks are filled with Processes during initialization of the Pipeline class
 # keyword arguments do not have to be in order, and if not supplied, the default value will be used

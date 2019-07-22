@@ -1,7 +1,4 @@
 import logging
-from collections import OrderedDict
-
-import numpy as np
 
 from ..processor.distance import SciPyPDist
 from ..processor.affinity import SparseKNN
@@ -11,6 +8,7 @@ from ..processor.clustering import KMeans
 from .base import Pipeline, Task
 
 logger = logging.getLogger(__name__)
+
 
 class SpectralEmbedding(Pipeline):
     """Spectral Embedding with custom pipeline
@@ -33,11 +31,12 @@ class SpectralEmbedding(Pipeline):
     Pre-computed graph laplacian matrices can be supplied by further passing `laplacian`=(lambda x: x).
 
     """
-    preprocessing=Task(default=(lambda x: x))
-    pairwise_distance=Task(default=SciPyPDist(metric='euclidean'))
-    affinity=Task(default=SparseKNN(k_neighbours=10, symmetric=True))
-    laplacian=Task(default=SymmetricNormalLaplacian())
-    embedding=Task(default=EigenDecomposition(n_eigval=32), is_output=True)
+    preprocessing = Task(default=(lambda x: x))
+    pairwise_distance = Task(default=SciPyPDist(metric='euclidean'))
+    affinity = Task(default=SparseKNN(k_neighbours=10, symmetric=True))
+    laplacian = Task(default=SymmetricNormalLaplacian())
+    embedding = Task(default=EigenDecomposition(n_eigval=32), is_output=True)
+
 
 class SpectralClustering(SpectralEmbedding):
     """Clustering on a spectral embedding
@@ -60,5 +59,4 @@ class SpectralClustering(SpectralEmbedding):
         Labels of clustering on spectral embedding
 
     """
-    clustering=Task(default=KMeans(n_cluster=2), is_output=True)
-
+    clustering = Task(default=KMeans(n_cluster=2), is_output=True)

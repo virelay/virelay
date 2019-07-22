@@ -15,6 +15,9 @@ from .base import Processor, Param
 
 
 class Embedding(Processor):
+    """Embedding base class
+
+    """
     kwargs = Param(dict, {})
 
 

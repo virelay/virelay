@@ -1,9 +1,11 @@
 from ..tracker import MetaTracker
 
+
 class Param(object):
     def __init__(self, dtype, default=None):
         self.dtype = dtype
         self.default = default
+
 
 class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
     """Base class of processors of tasks in a pipeline instance
@@ -39,27 +41,33 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
     # def __add__(self, other):
     #     common_base = type(self)
     #     if not isinstance(other, common_base)
-    #         raise TypeError("Processor-chaining: expected instance of type '{}', got '{}'.".format(common_base, type(other)))
+    #         raise TypeError("Processor-chaining: expected instance of type '{}', got '{}'."
+    #                         .format(common_base, type(other))
+    #                     )
     #     if not isinstance(self, ChainedProcessor):
-    #         chained_proc = type("Chained{}".format(common_base), [common_base, ChainedProcessor], {})(chain=[self, other], **self.param_values())
+    #         chained_proc = type("Chained{}".format(common_base),
+    #                            [common_base, ChainedProcessor], {})(chain=[self, other], **self.param_values())
     #     else:
     #         chain = self.chain + [other]
     #         chained_proc = type(self)(**self.param_values())
     #     return chained_proc
 
+
 class ChainedProcessor(Processor):
     chain = Param(list, [])
 
     def function(self, data):
-        for proc in chain:
+        for proc in self.chain:
             data = proc(data)
         return data
+
 
 class FunctionProcessor(Processor):
     """Processor instance initialized with a supplied function
 
     """
     function = Param(callable, (lambda self, data: data))
+
 
 def ensure_processor(proc, **kwargs):
     if not isinstance(proc, Processor):
@@ -71,4 +79,3 @@ def ensure_processor(proc, **kwargs):
         if getattr(proc, key, None) is None:
             setattr(proc, key, val)
     return proc
-

@@ -1,17 +1,18 @@
 import logging
 
-import numpy as np
 from sklearn.cluster import KMeans as SK_KMeans
 
 from .base import Processor, Param
 
 logger = logging.getLogger(__name__)
 
+
 class Clustering(Processor):
     """Clustering Processor
 
     """
     pass
+
 
 class KMeans(Clustering):
     """KMeans Clustering
@@ -22,4 +23,3 @@ class KMeans(Clustering):
 
     def function(self, data):
         return SK_KMeans(n_clusters=self.n_cluster).fit_predict(data[self.index])
-

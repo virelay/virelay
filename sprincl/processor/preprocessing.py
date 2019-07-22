@@ -1,12 +1,14 @@
 import numpy as np
 
-from .base import Processor
+from .base import Processor, Param
+
 
 class PreProcessor(Processor):
     """Base-class for preprocessing.
 
     """
     pass
+
 
 class Histogram(PreProcessor):
     """Channel-wise histograms of data
@@ -39,4 +41,3 @@ class Histogram(PreProcessor):
         hist = np.histogramdd(data.reshape(n * c, h * w),
                               bins=self.bins, range=trange, density=True).reshape(n, c, self._bins)
         return hist
-

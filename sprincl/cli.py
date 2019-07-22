@@ -9,7 +9,6 @@ import h5py
 import numpy as np
 import click
 from sklearn.manifold import TSNE
-from sklearn.cluster import k_means
 
 from .pipeline.spectral import SpectralEmbedding
 from .processor.affinity import SparseKNN
@@ -23,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 def csints(arg):
     return [int(s) for s in arg.split(',')]
+
 
 @click.group(chain=True)
 @click.argument('data', type=click.Path())
@@ -42,8 +42,9 @@ def main(ctx, data, exname, overwrite, modify, log, verbose):
         'modify': modify,
         'overwrite': overwrite,
     }
-    ctx.default_map = dict(zip(('embed', 'cluster', 'tsne'), (defaults,)*3))
+    ctx.default_map = dict(zip(('embed', 'cluster', 'tsne'), (defaults,) * 3))
     ctx.ensure_object(Namespace)
+
 
 @main.command()
 @click.argument('attribution', type=click.Path())
@@ -63,23 +64,22 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
         with h5py.File(attribution, 'r') as fd:
             raw_label = fd['label'][:]
             if label_filter is None:
-                #inds = slice(None)
+                # inds = slice(None)
                 inds = np.arange(len(raw_label), dtype=np.uint32)
             else:
                 inds, = np.nonzero(np.in1d(raw_label, label_filter))
                 if not len(inds):
-                    logger.error('No matches found for filter: %s'%str(label_filter))
+                    logger.error('No matches found for filter: %s' % str(label_filter))
                     return
 
-            label = raw_label[inds]
-            attr  = fd['attribution'][inds, :]
+            # label = raw_label[inds]
+            attr = fd['attribution'][inds, :]
 
-        #attr  = attr.mean(1)
+        # attr = attr.mean(1)
         shape = attr.shape
         attr = attr.reshape(shape[0], np.prod(shape[1:]))
 
         os.makedirs(path.dirname(fout), exist_ok=True)
-
 
         eigval, eigvec = SpectralEmbedding(
             distance=SciPyPDist(metric='euclidean'),
@@ -97,12 +97,13 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
                     if overwrite:
                         del subfd[key]
                     else:
-                        logger.error('Key already exists and overwrite is disabled: %s'%key)
+                        logger.error('Key already exists and overwrite is disabled: %s' % key)
                         continue
                 subfd[key] = val
         ctx.obj.ev = eigvec
     else:
         logger.info('File exists, not overwriting embedding: {}'.format(fout))
+
 
 @main.command()
 @click.option('--data', type=click.Path())
@@ -134,24 +135,25 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
         for k in clusters:
             k_means = KMeans(n_cluster=k, index=(slice(None), slice(-eigvals, None)))
             lab = k_means(ev)
-            #_, lab, _ = k_means(ev[:, -eigvals:], k)
+            # _, lab, _ = k_means(ev[:, -eigvals:], k)
             llabels.append(lab.astype('uint8'))
 
         with h5py.File(fout, 'a') as fd:
             fdl = fd.require_group(exname + '/cluster')
             for kval, lab in zip(clusters, llabels):
-                key = 'kmeans-%d'%kval
+                key = 'kmeans-%d' % kval
                 if key in fdl:
                     if overwrite:
                         del fdl[key]
                     else:
-                        logger.error('Key already exists and overwrite is disabled: %s'%key)
+                        logger.error('Key already exists and overwrite is disabled: %s' % key)
                         continue
                 fdl[key] = lab
                 fdl[key].attrs.create('k', kval, dtype=np.uint8)
                 fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
     else:
         logger.info('File exists, not overwriting clustering: {}'.format(fout))
+
 
 @main.command()
 @click.option('--data', type=click.Path())
@@ -187,12 +189,14 @@ def tsne(ctx, data, exname, output, overwrite, modify, computed, eigvals):
                 if overwrite:
                     del fdl[key]
                 else:
-                    logger.error('Key already exists and overwrite is disabled: %s'%key)
+                    logger.error('Key already exists and overwrite is disabled: %s' % key)
                     return
             fdl[key] = tsne.astype(np.float32)
             fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
     else:
         logger.info('File exists, not overwriting TSNE: {}'.format(fout))
 
+
 if __name__ == '__main__':
+    # pylint: disable=no-value-for-parameter
     main()

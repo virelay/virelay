@@ -2,7 +2,7 @@ import os
 import logging
 
 import numpy as np
-from sklearn import cluster
+import sklearn.cluster
 from matplotlib import pyplot as plt
 import scipy.cluster.hierarchy as shc
 
@@ -14,7 +14,8 @@ try:
 except ImportError:
     class hdbscan(object):
         def __getattr__(self, item):
-            raise RuntimeError("Support for hdbscan was not installed!")
+            raise RuntimeError("Support for hdbscan was not installed! Install with: pip install {}[{}]".format(
+                __name__.split('.')[0], "hdbscan"))
     hdbscan = hdbscan()
 
 
@@ -31,19 +32,48 @@ class Clustering(Processor):
 class KMeans(Clustering):
     """KMeans Clustering
 
+    Parameters
+    ----------
+    n_clusters: int
+        Default: 2
+    index: tuple
+        Default: empty slice
+    kwargs: dict
+        See also: :obj:`sklearn.cluster.KMeans`
+
+    See Also
+    --------
+    :obj:`sklearn.cluster.KMeans`
+
     """
     n_clusters = Param(int, 2)
     index = Param(tuple, (slice(None),))
 
     def function(self, data):
-        return cluster.KMeans(n_clusters=self.n_clusters, **self.kwargs).fit_predict(data[self.index])
+        return sklearn.cluster.KMeans(n_clusters=self.n_clusters, **self.kwargs).fit_predict(data[self.index])
 
 
 class HDBSCAN(Clustering):
-    """HDBSCAN clustering:  https://github.com/scikit-learn-contrib/hdbscan
+    """HDBSCAN clustering
+
+    Parameters
+    ----------
+    n_clusters: int
+        Default: 2
+    metric: str
+        Default: euclidean
+    kwargs: dict
+        See also: :obj:`hdbscan.HDBSCAN`
+
+    See Also
+    --------
+    :obj:`hdbscan.HDBSCAN`
+
+    Notes
+    -----
+    https://github.com/scikit-learn-contrib/hdbscan
 
     """
-    __doc__ = hdbscan.HDBSCAN.__doc__
     n_clusters = Param(int, 5)
     metric = Param(str, 'euclidean')
 
@@ -53,33 +83,77 @@ class HDBSCAN(Clustering):
 
 
 class DBSCAN(Clustering):
-    __doc__ = cluster.DBSCAN.__doc__
+    """DBSCAN clustering
+
+    Parameters
+    ----------
+    metric: str
+        Default: euclidean
+    eps: float
+        Default: 0.5
+    min_samples: int
+        Default: 5
+    kwargs: dict
+        See also: :obj:`sklearn.cluster.DBSCAN`
+
+    See Also
+    --------
+    :obj:`sklearn.cluster.DBSCAN`
+
+    """
     metric = Param(str, 'euclidean')
     eps = Param(float, 0.5)
     min_samples = Param(int, 5)
 
     def function(self, data):
-        clustering = cluster.DBSCAN(eps=self.eps, min_samples=self.min_samples, metric=self.metric, **self.kwargs)
+        clustering = sklearn.cluster.DBSCAN(eps=self.eps, min_samples=self.min_samples, metric=self.metric,
+                                            **self.kwargs)
         return clustering.fit_predict(data)
 
 
 class AgglomerativeClustering(Clustering):
-    __doc__ = cluster.AgglomerativeClustering.__doc__
+    """Agglomerative clustering
+
+    Parameters
+    ----------
+    n_clusters: int
+        Default: 5
+    metric: str
+        Options: "euclidean", "l1", "l2", "manhattan", "cosine", or 'precomputed'. Default: "euclidean"
+    linkage: str
+        Options: "ward", "complete", "average", "single". Default: "ward"
+    kwargs: dict
+        See also: :obj:`sklearn.cluster.AgglomerativeClustering`
+
+    See Also
+    --------
+    :obj:`sklearn.cluster.AgglomerativeClustering`
+
+    """
     n_clusters = Param(int, 5)
     metric = Param(str, 'euclidean')
     linkage = Param(str, 'ward')
 
     def function(self, data):
-        clustering = cluster.AgglomerativeClustering(n_clusters=self.n_clusters, affinity=self.metric,
-                                                     linkage=self.linkage, **self.kwargs)
+        clustering = sklearn.cluster.AgglomerativeClustering(n_clusters=self.n_clusters, affinity=self.metric,
+                                                             linkage=self.linkage, **self.kwargs)
         return clustering.fit_predict(data)
 
 
 class Dendrogram(Clustering):
     """Dendrogram
 
+    Parameters
+    ----------
+    output_path: str
+        Path to where the dendrogram is saved,
+    metric: str
+        Options: "euclidean", "l1", "l2", "manhattan", "cosine", or 'precomputed'. Default: "euclidean"
+    linkage: str
+        Options: "ward", "complete", "average", "single". Default: "ward"
+
     """
-    output_path = Param(str, '/tmp/dendrogram.png')
+    output_path = Param(str)
     metric = Param(str, 'euclidean')
     linkage = Param(str, 'ward')
 

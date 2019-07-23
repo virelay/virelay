@@ -7,6 +7,14 @@ from ..tracker import MetaTracker
 class Param(object):
     """A single parameter, which instances are to be tracked by an `MetaTracker`.
 
+
+    Attributes
+    ----------
+    dtype : type
+        Type of the parameter.
+    default : :obj:`dtype`
+        Default parameter value, should be an instance of :obj:`dtype`.
+
     """
     def __init__(self, dtype, default=None):
         """Configure type and default value of parameter.

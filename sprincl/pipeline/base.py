@@ -15,8 +15,8 @@ class Task(object):
     proc_type : type
         Class of the :obj:`Processor`s allowed for this :obj:`Task`.
     default : :obj:`Processor` or callable
-        Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate :obj:`FunctionProcessor`
-        will be created.
+        Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate
+        :obj:`FunctionProcessor` will be created.
     is_output : bool
         Whether :obj:`Processor`s assigned to this Task should yield an output for the :obj:`Pipeline`.
 
@@ -29,8 +29,8 @@ class Task(object):
         proc_type : type
             Class of the :obj:`Processor`s allowed for this :obj:`Task`.
         default : :obj:`Processor` or callable
-            Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate :obj:`FunctionProcessor`
-            will be created.
+            Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate
+            :obj:`FunctionProcessor` will be created.
         is_output : bool
             Whether :obj:`Processor`s assigned to this Task should yield an output for the :obj:`Pipeline`.
 

@@ -179,7 +179,8 @@ def ensure_processor(proc, **kwargs):
     Returns
     -------
     :obj:`Processor`
-        Original object `proc` with updated attributes if it was a Processor, else a :obj:`FunctionProcessor` with function
+        Original object `proc` with updated attributes if it was a Processor, else a :obj:`FunctionProcessor` with
+        supplied function.
         `proc` and attributes as given in `**kwargs`.
 
     """

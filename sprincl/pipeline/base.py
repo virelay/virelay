@@ -82,13 +82,13 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
             self.processes[key] = proc
 
     def checkpoint_processes(self):
-        """Find the checkpoint :obj:`Processor` furthest back in `self.processes`, and return an
+        """Find the checkpoint :obj:`Processor` closest to output in `self.processes` and return an
         :obj:`collections.OrderedDict` of that and all following :obj:`Processor`s in `self.processes`.
 
         Returns
         -------
         :obj:`collections.OrderedDict`
-            The :obj:`Processor` that is the checkpoint furthest back in `self.processes` and all its following
+            The :obj:`Processor` that is the checkpoint closest to output in `self.processes` and all its following
             :obj:`Processor`s in an :obj:`OrderedDict`.
 
         Raises
@@ -113,13 +113,14 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         Returns
         -------
         object
-            Output of the whole pipeline, starting from checkpointed :obj:`Processor` furthest back in `self.processes`.
+            Output of the whole pipeline, starting from checkpointed :obj:`Processor` closest to output in
+            `self.processes`.
 
         Raises
         ------
         RuntimeError
-            If the checkpointed :obj:`Processor` furthest back in `self.processes` does not have any `checkpoint_data`
-            store, i.e. the :obj:`Processor` was never called once after being declared a checkpoint.
+            If the checkpointed :obj:`Processor` closest to output in `self.processes` does not have any
+            `checkpoint_data` store, i.e. the :obj:`Processor` was never called once after being declared a checkpoint.
 
         """
         checkpoint_processes = self.checkpoint_processes()

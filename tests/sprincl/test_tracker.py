@@ -1,39 +1,40 @@
-from collections import OrderedDict
-
 import pytest
 
-@pytest.fixture
+from sprincl.tracker import InstanceTracker, MetaTracker
+
+
+@pytest.fixture(scope='module')
 def items():
     return [42, 'apple', object, 15, 'pear', str]
 
-@pytest.fixture(params=[int, str, type])
+
+@pytest.fixture(scope='module', params=[int, str, type])
 def attr_class(request):
     return request.param
 
-@pytest.fixture(params=['something'])
+
+@pytest.fixture(scope='module', params=['something'])
 def attr_name(request):
     return request.param
 
-def test_instance_tracker(items, attr_class, attr_name):
-    from sprincl.tracker import InstanceTracker
 
+@pytest.fixture(scope='module')
+def instance_tracker(items, attr_class, attr_name):
     tracker = InstanceTracker(attr_class, attr_name)
-    assert tracker.attr_name == attr_name
-    assert tracker.attr_class == attr_class
-
     for n, item in enumerate(items):
         tracker['%02d' % n] = item
-    # all target items were tracked
-    assert list(tracker.tracked.values()) == [obj for obj in items if isinstance(obj, attr_class)]
-    # all non-target items were stored in __dict__
-    assert all(obj in tracker.values() for obj in items if not isinstance(obj, attr_class))
-    # no target item was stored in __dict__
-    assert all(obj not in tracker.values() for obj in items if isinstance(obj, attr_class))
+    return tracker
 
-def test_meta_tracker(items, attr_class, attr_name):
-    from sprincl.tracker import MetaTracker
 
+@pytest.fixture(scope='module')
+def meta_tracker(attr_class, attr_name):
     MyMetaTracker = MetaTracker.sub('MyMetaTracker', attr_class, attr_name)
+    return MyMetaTracker
+
+
+@pytest.fixture(scope='module')
+def tracker(meta_tracker, items):
+    MyMetaTracker = meta_tracker
 
     class_args = ('MyTracker', (object,))
     # emulate the class body being executed
@@ -42,11 +43,41 @@ def test_meta_tracker(items, attr_class, attr_name):
         class_dict['%02d' % n] = item
     MyTracker = MyMetaTracker(*class_args, class_dict)
 
-    assert hasattr(MyTracker, attr_name)
+    return MyTracker
 
-    # all target items were tracked
-    assert list(getattr(MyTracker, attr_name).values()) == [obj for obj in items if isinstance(obj, attr_class)]
-    # all non-target items were stored in __dict__
-    assert all(obj in MyTracker.__dict__.values() for obj in items if not isinstance(obj, attr_class))
-    # no target item was stored in __dict__
-    assert all(obj not in MyTracker.__dict__.values() for obj in items if isinstance(obj, attr_class))
+
+class TestInstanceTracker(object):
+    def test_attributes(self, tracker, attr_name, attr_class):
+        """Crucial attributes set"""
+        assert tracker.attr_name == attr_name
+        assert tracker.attr_class == attr_class
+
+    def test_target_tracked(self, instance_tracker, items, attr_name, attr_class):
+        """All target items tracked"""
+        assert list(instance_tracker.tracked.values()) == [obj for obj in items if isinstance(obj, attr_class)]
+
+    def test_non_target_dict(self, instance_tracker, items, attr_name, attr_class):
+        """All non-target items stored in __dict__"""
+        assert all(obj in instance_tracker.values() for obj in items if not isinstance(obj, attr_class))
+
+    def test_target_not_dict(self, instance_tracker, items, attr_name, attr_class):
+        """no target item stored in __dict__"""
+        assert all(obj not in instance_tracker.values() for obj in items if isinstance(obj, attr_class))
+
+
+class TestMetaTracker(object):
+    def test_attributes(self, tracker, attr_name):
+        """Crucial attributes set"""
+        assert hasattr(tracker, attr_name)
+
+    def test_target_tracked(self, tracker, items, attr_name, attr_class):
+        """All target items tracked"""
+        assert list(getattr(tracker, attr_name).values()) == [obj for obj in items if isinstance(obj, attr_class)]
+
+    def test_non_target_dict(self, tracker, items, attr_name, attr_class):
+        """All non-target items stored in __dict__"""
+        assert all(obj in tracker.__dict__.values() for obj in items if not isinstance(obj, attr_class))
+
+    def test_target_not_dict(self, tracker, items, attr_name, attr_class):
+        """no target item stored in __dict__"""
+        assert all(obj not in tracker.__dict__.values() for obj in items if isinstance(obj, attr_class))

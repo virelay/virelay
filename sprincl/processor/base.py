@@ -15,7 +15,7 @@ class Param(object):
         Default parameter value, should be an instance of (one of) :obj:`dtype`.
 
     """
-    def __init__(self, dtype, default=None):
+    def __init__(self, dtype, default=None, mandatory=False):
         """Configure type and default value of parameter.
 
         Parameters
@@ -28,6 +28,7 @@ class Param(object):
         """
         self.dtype = dtype if isinstance(dtype, tuple) else (dtype,)
         self.default = default
+        self.mandatory = mandatory
 
 
 class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
@@ -71,7 +72,13 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
 
         """
         for key, param in self.params.items():
-            setattr(self, key, kwargs.get(key, param.default))
+            if param.mandatory and key not in kwargs:
+                raise ValueError('{} parameter {} is mandatory.'.format(key, param.dtype))
+            attr = kwargs.get(key, param.default)
+            if isinstance(attr, (param.dtype, type(None))):
+                setattr(self, key, attr)
+            else:
+                raise TypeError('{} parameter is {}, whereas it should be {}.'.format(key, type(attr), param.dtype))
         self.checkpoint_data = None
 
     def function(self, data):

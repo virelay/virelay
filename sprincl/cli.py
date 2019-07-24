@@ -141,7 +141,7 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
 
         llabels = []
         for k in clusters:
-            k_means = KMeans(n_cluster=k, index=(slice(None), slice(-eigvals, None)))
+            k_means = KMeans(n_clusters=k, index=(slice(None), slice(-eigvals, None)))
             lab = k_means(ev)
             # _, lab, _ = k_means(ev[:, -eigvals:], k)
             llabels.append(lab.astype('uint8'))

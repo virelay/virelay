@@ -62,4 +62,4 @@ class SpectralClustering(SpectralEmbedding):
         Labels of clustering on spectral embedding
 
     """
-    clustering = Task(default=KMeans(n_cluster=2), is_output=True)
+    clustering = Task(default=KMeans(n_clusters=2), is_output=True)

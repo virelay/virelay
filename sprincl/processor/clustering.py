@@ -1,3 +1,7 @@
+"""Clustering Processors
+
+"""
+
 import os
 import logging
 
@@ -153,7 +157,7 @@ class Dendrogram(Clustering):
         Options: "ward", "complete", "average", "single". Default: "ward"
 
     """
-    output_path = Param(str)
+    output_path = Param(str, mandatory=True)
     metric = Param(str, 'euclidean')
     linkage = Param(str, 'ward')
 

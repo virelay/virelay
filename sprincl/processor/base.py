@@ -1,6 +1,8 @@
 """Base classes Param and Processor.
 
 """
+import types
+
 from ..tracker import MetaTracker
 
 
@@ -29,6 +31,10 @@ class Param(object):
         self.dtype = dtype if isinstance(dtype, tuple) else (dtype,)
         self.default = default
         self.mandatory = mandatory
+
+        allowed_dtypes = (type, types.FunctionType, types.BuiltinFunctionType)
+        if not all(isinstance(x, allowed_dtypes) for x in self.dtype):
+            raise ValueError("Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes))
 
 
 class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
@@ -75,7 +81,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             if param.mandatory and key not in kwargs:
                 raise ValueError('{} parameter {} is mandatory.'.format(key, param.dtype))
             attr = kwargs.get(key, param.default)
-            if isinstance(attr, (param.dtype, type(None))):
+            if isinstance(attr, param.dtype + (type(None), )):
                 setattr(self, key, attr)
             else:
                 raise TypeError('{} parameter is {}, whereas it should be {}.'.format(key, type(attr), param.dtype))

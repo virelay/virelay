@@ -20,3 +20,9 @@ def test_processor_wrong_type_param():
 
 def test_processor_creation():
     TestProcessor(param="neki")
+
+
+def test_processor_bad_dtype():
+    with pytest.raises(ValueError):
+        class TestProcessor1(Processor):
+            param = Param(2)

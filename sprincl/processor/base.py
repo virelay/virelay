@@ -7,13 +7,12 @@ from ..tracker import MetaTracker
 class Param(object):
     """A single parameter, which instances are to be tracked by an `MetaTracker`.
 
-
     Attributes
     ----------
-    dtype : type
-        Type of the parameter.
+    dtype : type or tuple of type
+        Allowed type(s) of the parameter.
     default : :obj:`dtype`
-        Default parameter value, should be an instance of :obj:`dtype`.
+        Default parameter value, should be an instance of (one of) :obj:`dtype`.
 
     """
     def __init__(self, dtype, default=None):
@@ -21,13 +20,13 @@ class Param(object):
 
         Parameters
         ----------
-        dtype : type
-            Type of the parameter.
+        dtype : type or tuple of type
+            Allowed type(s) of the parameter.
         default : :obj:`dtype`
-            Default parameter value, should be an instance of :obj:`dtype`.
+            Default parameter value, should be an instance of (one of) :obj:`dtype`.
 
         """
-        self.dtype = dtype
+        self.dtype = dtype if isinstance(dtype, tuple) else (dtype,)
         self.default = default
 
 

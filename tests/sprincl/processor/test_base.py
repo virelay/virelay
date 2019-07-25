@@ -36,6 +36,7 @@ def function():
         return 42
     return some_function
 
+
 class TestParam(object):
     def test_instatiation(self):
         Param(object)
@@ -55,6 +56,7 @@ class TestParam(object):
     def test_dtype_single_to_tuple(self):
         param = Param(object)
         assert param.dtype == (object,)
+
 
 class TestProcessor(object):
     def test_params_tracked(self, processor_type):

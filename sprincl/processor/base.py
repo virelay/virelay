@@ -34,7 +34,7 @@ class Param(object):
 
         allowed_dtypes = (type, FunctionType, BuiltinFunctionType)
         if not all(isinstance(x, allowed_dtypes) for x in self.dtype):
-            raise ValueError("Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes))
+            raise TypeError("Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes))
 
 
 class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
@@ -79,7 +79,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         """
         for key, param in self.params.items():
             if param.mandatory and key not in kwargs:
-                raise ValueError('{} parameter {} is mandatory.'.format(key, param.dtype))
+                raise TypeError('{} parameter {} is mandatory.'.format(key, param.dtype))
             attr = kwargs.get(key, param.default)
             if isinstance(attr, param.dtype + (type(None), )):
                 setattr(self, key, attr)

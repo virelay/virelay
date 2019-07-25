@@ -1,6 +1,6 @@
 import pytest
 
-from sprincl.processor.base import Processor, Param
+from sprincl.processor.base import Processor, Param, FunctionProcessor, ensure_processor
 
 
 @pytest.fixture(scope='module')
@@ -28,6 +28,13 @@ def kwargs(processor_type):
         'param_3': 6,
     }
     return kwargs
+
+
+@pytest.fixture(scope='module')
+def function():
+    def some_function(self, data):
+        return 42
+    return some_function
 
 
 class TestProcessor(object):
@@ -87,3 +94,41 @@ class TestProcessor(object):
         with pytest.raises(ValueError):
             class TestProcessor1(Processor):
                 param = Param(2)
+
+
+class TestFunctionProcessor(object):
+    def test_instantiation(self, function):
+        FunctionProcessor(function=function)
+
+    def test_instance_call(self, function):
+        processor = FunctionProcessor(function=function)
+        assert processor(0) == function(processor, 0)
+
+    def test_non_callable(self):
+        with pytest.raises(TypeError):
+            FunctionProcessor(function='monkey')
+
+
+class TestEnsureProcessor(object):
+    def test_processor(self, processor_type):
+        processor = processor_type(param_1='giraffe')
+        ensured = ensure_processor(processor)
+        assert processor is ensured
+
+    def test_function(self, function):
+        ensured = ensure_processor(function)
+        assert isinstance(ensured, FunctionProcessor)
+
+    def test_invalid(self):
+        with pytest.raises(TypeError):
+            ensure_processor('mummy')
+
+    def test_default_param_none(self, processor_type):
+        processor = processor_type(param_1='giraffe', is_output=None)
+        ensured = ensure_processor(processor, is_output=True)
+        assert ensured.is_output
+
+    def test_default_param_assigned(self, processor_type):
+        processor = processor_type(param_1='giraffe', is_output=False)
+        ensured = ensure_processor(processor, is_output=True)
+        assert not ensured.is_output

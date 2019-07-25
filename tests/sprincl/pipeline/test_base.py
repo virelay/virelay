@@ -22,7 +22,7 @@ def processor_type():
 @pytest.fixture(scope='module')
 def pipeline_type(processor_type):
     class MyPipeline(Pipeline):
-        task_1 = Task(FunctionProcessor, lambda x: x + 3, is_output=False)
+        task_1 = Task(FunctionProcessor, lambda self, x: x + 3, is_output=False)
         task_2 = Task(processor_type, processor_type(), is_output=True)
 
     return MyPipeline
@@ -31,8 +31,8 @@ def pipeline_type(processor_type):
 @pytest.fixture(scope='module')
 def pipeline_type_multi(processor_type):
     class MyPipeline(Pipeline):
-        task_1 = Task(FunctionProcessor, lambda x: x + 2, is_output=True)
-        task_2 = Task(FunctionProcessor, lambda x: x * 2, is_output=True)
+        task_1 = Task(FunctionProcessor, lambda self, x: x + 2, is_output=True)
+        task_2 = Task(FunctionProcessor, lambda self, x: x * 2, is_output=True)
 
     return MyPipeline
 
@@ -95,20 +95,20 @@ class TestPipeline(object):
         assert out == (2, 4)
 
     def test_checkpoint_processes(self, pipeline_type, processor_type):
-        proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=False)
+        proc_1 = FunctionProcessor(function=lambda self, x: x + 5, is_checkpoint=False)
         proc_2 = processor_type(is_checkpoint=True)
         pipeline = pipeline_type(task_1=proc_1, task_2=proc_2)
         assert pipeline.checkpoint_processes() == OrderedDict(task_2=proc_2)
 
     def test_checkpoint_data(self, pipeline_type, processor_type):
-        proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=True)
+        proc_1 = FunctionProcessor(function=lambda self, x: x + 5, is_checkpoint=True)
         proc_2 = processor_type(is_checkpoint=False)
         pipeline = pipeline_type(task_1=proc_1, task_2=proc_2)
         pipeline(0)
         assert proc_1.checkpoint_data == 5
 
     def test_from_checkpoint(self, pipeline_type, processor_type):
-        proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=True)
+        proc_1 = FunctionProcessor(function=lambda self, x: x + 5, is_checkpoint=True)
         proc_2 = processor_type(is_checkpoint=False)
         pipeline = pipeline_type(task_1=proc_1, task_2=proc_2)
         proc_1.checkpoint_data = 1

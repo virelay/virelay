@@ -1,7 +1,7 @@
 """Base classes Param and Processor.
 
 """
-from types import FunctionType, BuiltinFunctionType
+from types import FunctionType, BuiltinFunctionType, MethodType
 
 from ..tracker import MetaTracker
 
@@ -181,11 +181,26 @@ class FunctionProcessor(Processor):
 
     Attributes
     ----------
-    function : callable
-        The function around which to create the :obj:`FunctionProcessor`.
+    function : function
+        The function around which to create the :obj:`FunctionProcessor`. It wil be bound as a method if bind_method.
+    bind_method : bool
+        Will bind `function` to this class, enabling it to access `self`.
 
     """
-    function = Param(FunctionType, (lambda self, data: data))
+    function = Param((MethodType, FunctionType), (lambda self, data: data))
+    bind_method = Param(bool, True)
+
+    def __init__(self, **kwargs):
+        """Bind function as attribute of instance.
+
+        See also
+        --------
+        :obj:`Processor`
+
+        """
+        super().__init__(**kwargs)
+        if self.bind_method:
+            self.function = self.function.__get__(self, type(self))
 
 
 def ensure_processor(proc, **kwargs):

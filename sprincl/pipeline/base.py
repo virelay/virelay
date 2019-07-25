@@ -4,7 +4,7 @@
 from collections import OrderedDict
 
 from ..tracker import MetaTracker
-from ..processor.base import ensure_processor
+from ..processor.base import ensure_processor, Processor
 
 
 class Task(object):
@@ -21,7 +21,7 @@ class Task(object):
         Whether :obj:`Processor`s assigned to this Task should yield an output for the :obj:`Pipeline`.
 
     """
-    def __init__(self, proc_type=object, default=(lambda x: x), is_output=False):
+    def __init__(self, proc_type=Processor, default=(lambda self, data: data), is_output=False):
         """Configure :obj:`Task` instance.
 
         Parameters

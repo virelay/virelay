@@ -37,6 +37,13 @@ def function():
     return some_function
 
 
+@pytest.fixture(scope='module')
+def unbound_function():
+    def some_function(data):
+        return 42
+    return some_function
+
+
 class TestParam(object):
     def test_instatiation(self):
         Param(object)
@@ -100,8 +107,8 @@ class TestProcessor(object):
         assert processor.param_values() == copy.param_values()
 
     def test_multiple_dtype(self, processor_type):
-        processor_type(param_1='soup', param3=21)
-        processor_type(param_1='soup', param3='spoon')
+        processor_type(param_1='soup', param_3=21)
+        processor_type(param_1='soup', param_3='spoon')
 
     def test_mandatory_param(self, processor_type):
         with pytest.raises(TypeError):
@@ -124,6 +131,10 @@ class TestFunctionProcessor(object):
     def test_instance_call(self, function):
         processor = FunctionProcessor(function=function)
         assert processor(0) == function(processor, 0)
+
+    def test_instance_call_unbound(self, unbound_function):
+        processor = FunctionProcessor(function=unbound_function, bind_method=False)
+        assert processor(0) == unbound_function(0)
 
     def test_non_callable(self):
         with pytest.raises(TypeError):

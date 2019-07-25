@@ -5,7 +5,6 @@ import io
 import os
 import logging
 
-import numpy as np
 import sklearn.cluster
 from matplotlib import pyplot as plt
 import scipy.cluster.hierarchy as shc

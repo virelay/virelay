@@ -17,14 +17,14 @@ from bokeh.palettes import d3
 
 from .data import OrigImage, AttrImage
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path, wnid_path):
     """Handler for Bokeh server
 
     """
-    logger.info('Setting up document...')
+    LOGGER.info('Setting up document...')
 
     # load all analysis category names
     with h5py.File(analysis_path, 'r') as fd:
@@ -185,4 +185,4 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     alpha_slider.on_change('value', update_alpha)
     sample_src.selected.on_change('indices', update_selection)
 
-    logger.info('Ready for service.')
+    LOGGER.info('Ready for service.')

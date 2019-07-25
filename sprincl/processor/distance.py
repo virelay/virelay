@@ -7,7 +7,7 @@ from scipy.spatial.distance import pdist, squareform
 
 from .base import Processor, Param
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class Distance(Processor):

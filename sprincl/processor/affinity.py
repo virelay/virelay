@@ -8,7 +8,7 @@ from scipy import sparse as sp
 
 from .base import Processor, Param
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class Affinity(Processor):

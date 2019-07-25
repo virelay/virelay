@@ -8,7 +8,7 @@ from scipy import sparse as sp
 
 from .base import Processor
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def a1ifmat(x):

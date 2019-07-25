@@ -19,7 +19,7 @@ from .processor.distance import SciPyPDist
 from .processor.embedding import EigenDecomposition
 from .processor.laplacian import SymmetricNormalLaplacian
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def csints(arg):
@@ -41,8 +41,8 @@ def main(ctx, data, exname, overwrite, modify, log, verbose):
     """Root command of analysis chain.
 
     """
-    logger.addHandler(logging.StreamHandler(log))
-    logger.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
+    LOGGER.addHandler(logging.StreamHandler(log))
+    LOGGER.setLevel(logging.DEBUG if verbose > 0 else logging.INFO)
 
     defaults = {
         'data': data,
@@ -68,7 +68,7 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
     fout = data
 
     if not path.exists(fout) or modify:
-        logger.info('Computing embedding: %s', fout)
+        LOGGER.info('Computing embedding: %s', fout)
         with h5py.File(attribution, 'r') as fd:
             raw_label = fd['label'][:]
             if label_filter is None:
@@ -77,7 +77,7 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
             else:
                 inds, = np.nonzero(np.in1d(raw_label, label_filter))
                 if not inds:
-                    logger.error('No matches found for filter: %s', str(label_filter))
+                    LOGGER.error('No matches found for filter: %s', str(label_filter))
                     return
 
             # label = raw_label[inds]
@@ -105,12 +105,12 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
                     if overwrite:
                         del subfd[key]
                     else:
-                        logger.error('Key already exists and overwrite is disabled: %s', key)
+                        LOGGER.error('Key already exists and overwrite is disabled: %s', key)
                         continue
                 subfd[key] = val
         ctx.obj.ev = eigvec
     else:
-        logger.info('File exists, not overwriting embedding: %s', fout)
+        LOGGER.info('File exists, not overwriting embedding: %s', fout)
 
 
 @main.command()
@@ -127,7 +127,7 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
     fout = data if output is None else output
 
     if not path.exists(fout) or modify:
-        logger.info('Computing clustering: %s', fout)
+        LOGGER.info('Computing clustering: %s', fout)
         if computed and ('ev' in ctx.obj):
             ev = ctx.obj.ev
         else:
@@ -136,7 +136,7 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
                     subfd = fd.require_group(exname)
                     ev = subfd['eigenvector'][:]
             except KeyError:
-                logger.error('Embedding must be either computed or already exist in data.')
+                LOGGER.error('Embedding must be either computed or already exist in data.')
                 return
 
         llabels = []
@@ -154,13 +154,13 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
                     if overwrite:
                         del fdl[key]
                     else:
-                        logger.error('Key already exists and overwrite is disabled: %s', key)
+                        LOGGER.error('Key already exists and overwrite is disabled: %s', key)
                         continue
                 fdl[key] = lab
                 fdl[key].attrs.create('k', kval, dtype=np.uint8)
                 fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
     else:
-        logger.info('File exists, not overwriting clustering: {}'.format(fout))
+        LOGGER.info('File exists, not overwriting clustering: {}'.format(fout))
 
 
 @main.command()
@@ -176,7 +176,7 @@ def tsne(ctx, data, exname, output, overwrite, modify, computed, eigvals):
     fout = data if output is None else output
 
     if not path.exists(fout) or modify:
-        logger.info('Computing TSNE: {}'.format(fout))
+        LOGGER.info('Computing TSNE: {}'.format(fout))
         if computed and ('ev' in ctx.obj):
             ev = ctx.obj.ev
         else:
@@ -185,7 +185,7 @@ def tsne(ctx, data, exname, output, overwrite, modify, computed, eigvals):
                     subfd = fd.require_group(exname)
                     ev = subfd['eigenvector'][:]
             except KeyError:
-                logger.error('Embedding must be either computed or already exist in data.')
+                LOGGER.error('Embedding must be either computed or already exist in data.')
                 return
 
         tsne = TSNE().fit_transform(ev[:, -eigvals:])
@@ -197,12 +197,12 @@ def tsne(ctx, data, exname, output, overwrite, modify, computed, eigvals):
                 if overwrite:
                     del fdl[key]
                 else:
-                    logger.error('Key already exists and overwrite is disabled: %s' % key)
+                    LOGGER.error('Key already exists and overwrite is disabled: %s' % key)
                     return
             fdl[key] = tsne.astype(np.float32)
             fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
     else:
-        logger.info('File exists, not overwriting TSNE: {}'.format(fout))
+        LOGGER.info('File exists, not overwriting TSNE: {}'.format(fout))
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 from PIL import Image
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def crop(img, i, j, h, w):
@@ -72,7 +72,7 @@ class OrigImage(object):
             img.putalpha(255)
         except FileNotFoundError:
             img = self._dummy
-            logger.warning('File not found, using dummy: {}'.format(self._index[key]))
+            LOGGER.warning('File not found, using dummy: {}'.format(self._index[key]))
         return np.array(img)[::-1]
 
     def __len__(self):

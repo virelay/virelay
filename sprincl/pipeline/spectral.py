@@ -10,7 +10,7 @@ from ..processor.embedding import EigenDecomposition
 from ..processor.clustering import KMeans
 from .base import Pipeline, Task
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class SpectralEmbedding(Pipeline):

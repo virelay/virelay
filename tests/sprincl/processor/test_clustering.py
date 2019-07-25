@@ -55,5 +55,3 @@ def test_denrogram_creation_with_file_object(data):
         np.testing.assert_equal(data, data2)
         assert os.path.exists(output_path)
     os.remove(output_path)
-
-

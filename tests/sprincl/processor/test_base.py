@@ -56,7 +56,7 @@ class TestProcessor(object):
         assert processor.param_2 == -25
 
     def test_unknown_param(self, processor_type):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             processor_type(param_1="bacon", parma_0='monkey')
 
     def test_abstract_func(self):
@@ -83,7 +83,7 @@ class TestProcessor(object):
         processor_type(param_1='soup', param3='spoon')
 
     def test_mandatory_param(self, processor_type):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             processor_type()
 
     def test_wrong_type_param(self, processor_type):
@@ -91,7 +91,7 @@ class TestProcessor(object):
             processor_type(param_1=2)
 
     def test_bad_dtype(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             class TestProcessor1(Processor):
                 param = Param(2)
 

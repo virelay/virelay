@@ -80,11 +80,14 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         for key, param in self.params.items():
             if param.mandatory and key not in kwargs:
                 raise TypeError('{} parameter {} is mandatory.'.format(key, param.dtype))
-            attr = kwargs.get(key, param.default)
+            attr = kwargs.pop(key, param.default)
             if isinstance(attr, param.dtype + (type(None), )):
                 setattr(self, key, attr)
             else:
                 raise TypeError('{} parameter is {}, whereas it should be {}.'.format(key, type(attr), param.dtype))
+        if kwargs:
+            key, _ = kwargs.popitem()
+            raise TypeError('\'{}\' is an invalid keyword argument'.format(key))
         self.checkpoint_data = None
 
     def function(self, data):

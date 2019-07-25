@@ -1,7 +1,7 @@
 """Clustering Processors
 
 """
-
+import io
 import os
 import logging
 
@@ -157,7 +157,7 @@ class Dendrogram(Clustering):
         Options: "ward", "complete", "average", "single". Default: "ward"
 
     """
-    output_path = Param(str, mandatory=True)
+    output_file = Param((str, io.IOBase), mandatory=True)
     metric = Param(str, 'euclidean')
     linkage = Param(str, 'ward')
 
@@ -165,8 +165,9 @@ class Dendrogram(Clustering):
         """Saves Dendrogram by default to /tmp/dendrogram.png and returns the input data.
 
         """
-        os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
+        if isinstance(self.output_file, (str, bytes, os.PathLike)):
+            os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
         plt.figure(figsize=(10, 7))
         shc.dendrogram(shc.linkage(data, method=self.linkage))
-        plt.savefig(self.output_path)
+        plt.savefig(self.output_file)
         return data

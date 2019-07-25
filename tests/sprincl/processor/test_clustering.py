@@ -42,6 +42,18 @@ def test_embedding_on_distances_agg_clustering(distances):
 
 def test_denrogram_creation(data):
     output_path = '/tmp/dendrogram.png'
-    data2 = clustering.Dendrogram(output_path=output_path)(data)
+    data2 = clustering.Dendrogram(output_file=output_path)(data)
     np.testing.assert_equal(data, data2)
     assert os.path.exists(output_path)
+    os.remove(output_path)
+
+
+def test_denrogram_creation_with_file_object(data):
+    output_path = '/tmp/dendrogram.png'
+    with open(output_path, 'wb') as f:
+        data2 = clustering.Dendrogram(output_file=f)(data)
+        np.testing.assert_equal(data, data2)
+        assert os.path.exists(output_path)
+    os.remove(output_path)
+
+

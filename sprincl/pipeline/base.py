@@ -144,9 +144,17 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         Returns
         -------
         object
-            Output of all :obj:`Processor`s in `self.processes` that are flagged as pipelin outputs.
+            Output of all :obj:`Processor`s in `self.processes` that are flagged as pipeline outputs. If no processors
+            are flagged as outputs, return the output of the last processor.
 
         """
+        outputs = []
         for proc in self.processes.values():
             data = proc(data)
-        return data
+            if proc.is_output:
+                outputs.append(data)
+        if not outputs:
+            return data
+        if len(outputs) == 1:
+            return outputs[0]
+        return tuple(outputs)

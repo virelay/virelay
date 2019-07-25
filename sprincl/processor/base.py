@@ -1,7 +1,7 @@
 """Base classes Param and Processor.
 
 """
-import types
+from types import FunctionType, BuiltinFunctionType
 
 from ..tracker import MetaTracker
 
@@ -32,7 +32,7 @@ class Param(object):
         self.default = default
         self.mandatory = mandatory
 
-        allowed_dtypes = (type, types.FunctionType, types.BuiltinFunctionType)
+        allowed_dtypes = (type, FunctionType, BuiltinFunctionType)
         if not all(isinstance(x, allowed_dtypes) for x in self.dtype):
             raise ValueError("Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes))
 
@@ -182,7 +182,7 @@ class FunctionProcessor(Processor):
         The function around which to create the :obj:`FunctionProcessor`.
 
     """
-    function = Param(callable, (lambda self, data: data))
+    function = Param(FunctionType, (lambda self, data: data))
 
 
 def ensure_processor(proc, **kwargs):

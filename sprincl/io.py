@@ -135,10 +135,11 @@ class HDF5Storage(DataStorageBase):
         data for a given key
 
         """
-        data = self.io[key][()]
-        if isinstance(data, str):
-            data = pickle.loads(data.encode())
-        return data
+        data = self.io[key]
+        if isinstance(data, h5py.Group):
+            return dict(((k, v[()]) for k, v in data.items()))
+        else:
+            return data[()]
 
     def write(self, key, data):
         """
@@ -151,8 +152,10 @@ class HDF5Storage(DataStorageBase):
 
         """
         if isinstance(data, dict):
-            data = pickle.dumps(data, 0).decode()
-        self.io.create_dataset(data=data, name=key)
+            for k, v in data.items():
+                self.io.create_dataset(data=v, name='{}/{}'.format(key, k))
+        else:
+            self.io.create_dataset(data=data, name=key)
 
     def exists(self, key):
         """Returns True if key exists in self.io.

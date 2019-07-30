@@ -17,11 +17,11 @@ class Task(object):
     default : :obj:`Processor` or callable
         Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate
         :obj:`FunctionProcessor` will be created.
-    is_output : bool
-        Whether :obj:`Processor`s assigned to this Task should yield an output for the :obj:`Pipeline`.
+    proc_kwargs : dict
+        Keyword arguments to overwrite on the supplied Processor.
 
     """
-    def __init__(self, proc_type=Processor, default=(lambda self, data: data), is_output=False):
+    def __init__(self, proc_type=Processor, default=(lambda self, data: data), **kwargs):
         """Configure :obj:`Task` instance.
 
         Parameters
@@ -33,6 +33,8 @@ class Task(object):
             :obj:`FunctionProcessor` will be created.
         is_output : bool
             Whether :obj:`Processor`s assigned to this Task should yield an output for the :obj:`Pipeline`.
+        **kwargs :
+            Keyword arguments to overwrite on the supplied Processor.
 
         Raises
         ------
@@ -40,12 +42,12 @@ class Task(object):
             If the default :obj:`Processor` is not of type `proc_type`.
 
         """
-        default = ensure_processor(default)
+        default = ensure_processor(default, **kwargs)
         if not isinstance(default, proc_type):
             raise TypeError('Task default processor {} is not of type {}!'.format(default, proc_type))
         self.proc_type = proc_type
         self.default = default
-        self.is_output = is_output
+        self.proc_kwargs = kwargs
 
 
 class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
@@ -76,7 +78,7 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         """
         self.processes = OrderedDict()
         for key, task in self.task_scheme.items():
-            proc = ensure_processor(kwargs.get(key, task.default.copy()), is_output=task.is_output)
+            proc = ensure_processor(kwargs.get(key, task.default.copy()), **task.proc_kwargs)
             if not isinstance(proc, task.proc_type):
                 raise TypeError('Task {} function {} is not of type {}!'.format(key, proc.func, task.proc_type))
             self.processes[key] = proc

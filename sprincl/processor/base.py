@@ -224,10 +224,11 @@ def ensure_processor(proc, **kwargs):
     """
     if not isinstance(proc, Processor):
         if callable(proc):
-            proc = FunctionProcessor(function=proc)
+            proc = FunctionProcessor(function=proc, **kwargs)
         else:
             raise TypeError('Supplied processor {} is neither a Processor, nor callable!')
-    for key, val in kwargs.items():
-        if getattr(proc, key, None) is None:
-            setattr(proc, key, val)
+    else:
+        for key, val in kwargs.items():
+            if getattr(proc, key, None) is None:
+                setattr(proc, key, val)
     return proc

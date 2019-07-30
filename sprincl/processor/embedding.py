@@ -66,6 +66,11 @@ class EigenDecomposition(Embedding):
             eigvec /= np.linalg.norm(eigvec, axis=1, keepdims=True)
         return eigval, eigvec
 
+    def write(self, key, data):
+        eigval, eigvec = data
+        self.io[key] = eigvec
+        self.io.io[key].attrs['eigenvalue'] = eigval
+
 
 class TSNEEmbedding(Embedding):
     """TSNE Embedding

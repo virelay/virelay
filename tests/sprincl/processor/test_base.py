@@ -125,16 +125,16 @@ class TestProcessor(object):
 
 
 class TestFunctionProcessor(object):
-    def test_instantiation(self, function):
-        FunctionProcessor(function=function)
+    def test_instantiation(self, unbound_function):
+        FunctionProcessor(function=unbound_function)
 
-    def test_instance_call(self, function):
-        processor = FunctionProcessor(function=function)
-        assert processor(0) == function(processor, 0)
-
-    def test_instance_call_unbound(self, unbound_function):
-        processor = FunctionProcessor(function=unbound_function, bind_method=False)
+    def test_instance_call(self, unbound_function):
+        processor = FunctionProcessor(function=unbound_function)
         assert processor(0) == unbound_function(0)
+
+    def test_instance_call_bound(self, function):
+        processor = FunctionProcessor(function=function, bind_method=True)
+        assert processor(0) == function(processor, 0)
 
     def test_non_callable(self):
         with pytest.raises(TypeError):
@@ -147,8 +147,8 @@ class TestEnsureProcessor(object):
         ensured = ensure_processor(processor)
         assert processor is ensured
 
-    def test_function(self, function):
-        ensured = ensure_processor(function)
+    def test_function(self, unbound_function):
+        ensured = ensure_processor(unbound_function)
         assert isinstance(ensured, FunctionProcessor)
 
     def test_invalid(self):

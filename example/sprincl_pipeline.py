@@ -28,16 +28,11 @@ class MyPipeline(Pipeline):
     # supplied with the same name in __init__ as a keyword argument. The first value is an optional expected Process
     # type, second is a default value, which has to be an instance of that type. If the default argument is not a
     # Process, it will be converted to a FunctionProcessor by default, functions fed to FunctionProcessors are by
-    # default bound to the class, so we need to supply `self`:
-    prepreprocess = Task(proc_type=FunctionProcessor, default=(lambda self, x: x * 2))
-    # We can make the FunctionProcessor not bind the function to itself by supplying either a function with extra Task
-    # kwarg:
-    preprocess = Task(proc_type=FunctionProcessor, default=(lambda x: x**2), bind_method=False)
-    # Or we could supply a FunctionProcessor with parameter `bind_method=False`, but note that this way when we supply
-    # a function in the pipeline processor, it will default to being bound.
-    # >>> preprocess = Task(proc_type=FunctionProcessor, default=FunctionProcessor(function=lambda x: x**2,
-    #                                                                              bind_method=False))
-    # The code for this check can be found in `sprincl.processor.base.ensure_processor`
+    # default not bound to the class. To bind them, we can suppy `bind_method=True` to the FunctionProcessor. Supplying
+    # it to the task changes the default value of the Processor before creation:
+    prepreprocess = Task(proc_type=FunctionProcessor, default=(lambda self, x: x * 2), bind_method=True)
+    # Otherwise, we do not need to supply `self` for the default function:
+    preprocess = Task(proc_type=FunctionProcessor, default=(lambda x: x**2))
     pdistance = Task(Distance, SciPyPDist(metric='sqeuclidean'))
     affinity = Task(Affinity, RadialBasisFunction(sigma=1.0))
     # empty task, does nothing (except return input) by default
@@ -52,11 +47,9 @@ print('Pipeline output:', output1)
 # Tasks are filled with Processes during initialization of the Pipeline class
 # keyword arguments do not have to be in order, and if not supplied, the default value will be used
 custom_pipeline = MyPipeline(
-    # prepreprocess defaults to binding the function to the processor, hence we need to supply `self`
-    # >>> prepreprocess=(lambda self, x: x + 1),
-    # if we do not need `self`, we can supply our own FunctionProcessor object instead of a function:
+    # The pipeline's Task sets the `bind_method` Parameter's default to True. Supplying a value here avoids falling back
+    # to the default value, and thus we do not need a `self` argument for our function:
     prepreprocess=FunctionProcessor(function=(lambda x: x + 1), bind_method=False),
-    # preprocess here cannot be changed to use `bind_method=True`, since we enforced in the pipeline `bind_method=False`
     preprocess=(lambda x: x.mean(1)),
     affinity=RadialBasisFunction(sigma=.1),
     postprocess=MyProcess(stuff=3)

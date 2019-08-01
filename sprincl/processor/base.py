@@ -181,14 +181,14 @@ class FunctionProcessor(Processor):
 
     Attributes
     ----------
-    function : function
+    function : :obj:`types.FunctionType` or :obj:`types.MethodType`
         The function around which to create the :obj:`FunctionProcessor`. It wil be bound as a method if bind_method.
     bind_method : bool
         Will bind `function` to this class, enabling it to access `self`.
 
     """
     function = Param((MethodType, FunctionType), (lambda self, data: data))
-    bind_method = Param(bool, True)
+    bind_method = Param(bool, False)
 
     def __init__(self, **kwargs):
         """Bind function as attribute of instance.
@@ -212,7 +212,7 @@ def ensure_processor(proc, **kwargs):
     proc : Processor or callable
         Object to ensure to be a :obj:`Processor`.
     **kwargs :
-        Keyword arguments stating attributes of `proc` to change.
+        Keyword arguments stating new default values for Parameters of `proc`.
 
     Returns
     -------

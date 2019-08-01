@@ -14,25 +14,23 @@ class Task(object):
     ----------
     proc_type : type
         Class of the :obj:`Processor`s allowed for this :obj:`Task`.
-    default : :obj:`Processor` or callable
-        Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate
+    default : :obj:`Processor` or :obj:`types.FunctionType` or :obj:`types.MethodType` Default :obj:`Processor` to use
+        if no Processor is assigned. If a :obj:`types.FunctionType` or :obj:`types.MethodType`, an appropriate
         :obj:`FunctionProcessor` will be created.
     proc_kwargs : dict
         Keyword arguments to overwrite on the supplied Processor.
 
     """
-    def __init__(self, proc_type=Processor, default=(lambda self, data: data), **kwargs):
+    def __init__(self, proc_type=Processor, default=(lambda data: data), **kwargs):
         """Configure :obj:`Task` instance.
 
         Parameters
         ----------
         proc_type : type
             Class of the :obj:`Processor`s allowed for this :obj:`Task`.
-        default : :obj:`Processor` or callable
-            Default :obj:`Processor` to use if no Processor is assigned. If callable, an appropriate
+        default : :obj:`Processor` or :obj:`types.FunctionType` or :obj:`types.MethodType` Default :obj:`Processor` to
+            use if no Processor is assigned. If a :obj:`types.FunctionType` or :obj:`types.MethodType`, an appropriate
             :obj:`FunctionProcessor` will be created.
-        is_output : bool
-            Whether :obj:`Processor`s assigned to this Task should yield an output for the :obj:`Pipeline`.
         **kwargs :
             Keyword arguments to overwrite on the supplied Processor.
 

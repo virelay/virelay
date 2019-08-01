@@ -91,7 +91,7 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
 
         eigval, eigvec = SpectralEmbedding(
             distance=SciPyPDist(metric='euclidean'),
-            affinity=SparseKNN(k_neighbors=knn),
+            affinity=SparseKNN(n_neighbors=knn),
             laplacian=SymmetricNormalLaplacian(),
             embedding=EigenDecomposition(n_eigval=eigvals),
         )(attr)

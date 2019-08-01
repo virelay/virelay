@@ -36,7 +36,7 @@ class SpectralEmbedding(Pipeline):
     """
     preprocessing = Task(default=(lambda x: x))
     pairwise_distance = Task(default=SciPyPDist(metric='euclidean'))
-    affinity = Task(default=SparseKNN(n_neighbours=10, symmetric=True))
+    affinity = Task(default=SparseKNN(n_neighbors=10, symmetric=True))
     laplacian = Task(default=SymmetricNormalLaplacian())
     embedding = Task(default=EigenDecomposition(n_eigval=32), is_output=True)
 
@@ -62,4 +62,5 @@ class SpectralClustering(SpectralEmbedding):
         Labels of clustering on spectral embedding
 
     """
+    select_eigenvector = Task(default=lambda x: x[1])
     clustering = Task(default=KMeans(n_clusters=2), is_output=True)

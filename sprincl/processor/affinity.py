@@ -24,13 +24,13 @@ class SparseKNN(Affinity):
 
     Parameters
     ----------
-    k_neighbors : int
+    n_neighbors : int
         Number of neighbors to consider.
     symmetrix : bool
         If `True`, Affinity matrix is set to the mean of itself and itself transposed.
 
     """
-    k_neighbors = Param(int, 10)
+    n_neighbors = Param(int, 10)
     symmetric = Param(bool, True)
 
     def function(self, distance):
@@ -47,7 +47,7 @@ class SparseKNN(Affinity):
             Sparse CSR representation of KNN affinity matrix
 
         """
-        k = self.k_neighbors
+        k = self.n_neighbors
         # number of samples
         n = distance.shape[0]
 

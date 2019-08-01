@@ -1,6 +1,8 @@
+import copy
 import pickle
 from abc import ABCMeta, abstractmethod
 
+import numpy as np
 import h5py
 
 
@@ -9,16 +11,19 @@ class DataStorageBase(metaclass=ABCMeta):
 
     """
 
+    def __init__(self):
+        self.key = 'data'
+
     @abstractmethod
     def read(self, key): pass
 
     @abstractmethod
-    def write(self, key, data): pass
+    def write(self, data): pass
 
     def close(self):
         self.io.close()
 
-    def exists(self, key):
+    def exists(self, key=None):
         raise NotImplementedError
 
     def keys(self):
@@ -37,7 +42,22 @@ class DataStorageBase(metaclass=ABCMeta):
         return self.read(key)
 
     def __setitem__(self, key, value):
-        return self.write(key, value)
+        self.key = key
+        return self.write(value)
+
+    def at(self, key):
+        """Return a copy of the instance with a self.key=key
+        In this way self.write(data) automatically writes the data to self.key
+
+        Parameters
+        ----------
+        key: str
+            At which key the data will be stored.
+
+        """
+        c = copy.copy(self)
+        c.key = key
+        return c
 
 
 class PickleStorage(DataStorageBase):
@@ -51,6 +71,7 @@ class PickleStorage(DataStorageBase):
             Write, Read or Append mode ['w', 'r', 'a'].
 
         """
+        super().__init__()
         if mode not in ['w', 'r', 'a']:
             raise ValueError("Mode should be set to 'w', 'r' or 'a'.")
         self.io = open(path, mode + 'b')
@@ -82,7 +103,7 @@ class PickleStorage(DataStorageBase):
             self._load_data()
         return self.data[key]
 
-    def write(self, key, data):
+    def write(self, data):
         """Write and pickle the data as: {"data": data, "key": key}
 
         Parameters
@@ -93,7 +114,7 @@ class PickleStorage(DataStorageBase):
             Data being stored.
 
         """
-        pickle.dump({"data": data, "key": key}, self.io)
+        pickle.dump({"data": data, "key": self.key}, self.io)
 
     def keys(self):
         """Return keys from self.data. Need to load the complete pickle at first read.
@@ -103,10 +124,11 @@ class PickleStorage(DataStorageBase):
             self._load_data()
         return self.data.keys()
 
-    def exists(self, key):
+    def exists(self, key=None):
         """Return True if key exists in self.keys().
 
         """
+        key = key or self.key
         return key in self.keys()
 
 
@@ -121,6 +143,7 @@ class HDF5Storage(DataStorageBase):
             Write, Read or Append mode ['w', 'r', 'a'].
 
         """
+        super().__init__()
         self.io = h5py.File(path, mode=mode, **kwargs)
 
     def read(self, key):
@@ -141,26 +164,31 @@ class HDF5Storage(DataStorageBase):
         else:
             return data[()]
 
-    def write(self, key, data):
+    def write(self, data):
         """
         Parameters
         ----------
-        key: str
-            At which key value the data is being stored.
         data: np.ndarray, dict
             Data being stored. Dictionaries are pickled and stored as strings.
 
         """
         if isinstance(data, dict):
             for k, v in data.items():
-                self.io.create_dataset(data=v, name='{}/{}'.format(key, k))
+                shape, dtype = self._get_shape_dtype(v)
+                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.key, k))
+        elif isinstance(data, tuple):
+            for k, v in enumerate(data):
+                shape, dtype = self._get_shape_dtype(v)
+                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.key, k))
         else:
-            self.io.create_dataset(data=data, name=key)
+            shape, dtype = self._get_shape_dtype(data)
+            self.io.require_dataset(data=data, shape=shape, dtype=dtype, name=self.key)
 
-    def exists(self, key):
+    def exists(self, key=None):
         """Returns True if key exists in self.io.
 
         """
+        key = key or self.key
         return key in self.io
 
     def keys(self):
@@ -168,3 +196,25 @@ class HDF5Storage(DataStorageBase):
 
         """
         return self.io.keys()
+
+    @staticmethod
+    def _get_shape_dtype(v):
+        """Infer shape and dtype of given element v.
+
+        Parameters
+        ----------
+        v: np.ndarray, str, int, float
+            Element for which we want to infer the shape and dtype.
+
+        Returns
+        -------
+        shape, dtype: tuple, type
+            Return the shape and dtype of v that works with h5py.require_dataset
+        """
+        if not isinstance(v, np.ndarray):
+            shape = ()
+            dtype = h5py.special_dtype(vlen=str) if isinstance(v, str) else np.dtype(type(v))
+        else:
+            shape = v.shape
+            dtype = v.dtype
+        return shape, dtype

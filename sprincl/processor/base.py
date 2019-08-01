@@ -65,7 +65,6 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
     is_output = Param(bool, False)
     is_checkpoint = Param(bool, False)
     io = Param(DataStorageBase, None)
-    storage_key = Param(str, 'data')
 
     def __init__(self, **kwargs):
         """Initialize all :obj:`Param` defined parameters to either there default value or, if supplied as keyword
@@ -171,7 +170,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         if self.is_checkpoint:
             self.checkpoint_data = out
         if self.io is not None:
-            self.write(self.storage_key, out)
+            self.io.write(out)
         return out
 
     def param_values(self):
@@ -198,12 +197,6 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         new = type(self)(**self.param_values())
         new.checkpoint_data = self.checkpoint_data
         return new
-
-    def write(self, key, data):
-        if self.io is None:
-            raise AttributeError('io not defined.')
-        #self.io['param_values'] = self.param_values()
-        self.io[key] = data
 
     def _output_repr(self):
         return 'output:np.ndarray'

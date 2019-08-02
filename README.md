@@ -2,7 +2,8 @@
 
 There are two command-line interfaces:
 
-#### sprincl for analysis
+## Sprincl for Analysis
+
 ```sh
 sprincl \
         --modify \
@@ -22,7 +23,8 @@ sprincl \
         --eigvals 8
 ```
 
-#### vispr for visualization
+## Vispr for Visualization
+
 ```sh
 vispr \
     --address 0.0.0.0 \
@@ -33,4 +35,3 @@ vispr \
     "/path/to/wordmap.json" \
     "/path/to/label_wnids.txt"
 ```
-

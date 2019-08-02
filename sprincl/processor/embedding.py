@@ -34,6 +34,7 @@ class EigenDecomposition(Embedding):
     n_eigval = Param(int, 32)
     which = Param(str, 'LM')
     normalize = Param(bool, True)
+    _output_repr = '(eigval:np.ndarray, eigvec:np.ndarray)'
 
     def function(self, data):
         """Compute spectral embedding of `data`

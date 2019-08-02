@@ -158,3 +158,15 @@ class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_sch
         if len(outputs) == 1:
             return outputs[0]
         return tuple(outputs)
+
+    def __repr__(self):
+        """Example of the pipeline representation:
+        MyPipeline(
+            FunctionProcessor(function=(lambda x: x.mean(1)),) -> output:np.ndarray
+            SciPyPDist(metric=sqeuclidean) -> output:np.ndarray
+            RadialBasisFunction(sigma=0.1) -> output:np.ndarray
+            MyProcess(stuff=3, func=Param(FunctionType, lambda x: x**2)) -> output:np.ndarray
+        )
+        """
+        pipeline = '\n    '.join([proc.__repr__() for proc in self.processes.values()])
+        return '{}(\n    {}\n)'.format(self.__class__.__name__, pipeline)

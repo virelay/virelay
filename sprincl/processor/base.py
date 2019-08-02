@@ -1,7 +1,8 @@
 """Base classes Param and Processor.
 
 """
-from types import FunctionType, MethodType
+import inspect
+from types import FunctionType, MethodType, LambdaType
 
 from ..tracker import MetaTracker
 
@@ -62,6 +63,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
     """
     is_output = Param(bool, False)
     is_checkpoint = Param(bool, False)
+    _output_repr = 'output:np.ndarray'
 
     def __init__(self, **kwargs):
         """Initialize all :obj:`Param` defined parameters to either there default value or, if supplied as keyword
@@ -192,6 +194,26 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         new = type(self)(**self.param_values())
         new.checkpoint_data = self.checkpoint_data
         return new
+
+    def __repr__(self):
+        """Return Processor's representation.
+        I.e.: ProcessorName(metric=sqeuclidean, function=lambda x: x.mean(1)) -> output: np.ndarray
+        Replace self._output_repr for output representation. Default: output:np.ndarray.
+
+        """
+
+        def transform(x):
+            """If x is a lambda function, return the source.
+
+            """
+            if isinstance(x, LambdaType):
+                return inspect.getsource(x).split('=', 1)[1].strip()
+            else:
+                return x
+
+        name = self.__class__.__name__
+        params = ', '.join(['{}={}'.format(k, transform(v)) for k, v in self.param_values().items() if v])
+        return '{}({}) -> {}'.format(name, params, self._output_repr)
 
     # TODO: this is not yet clean chaining, we have to find the common base, which is something like the second-to-top
     # class

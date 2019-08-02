@@ -1,0 +1,4 @@
+
+tests:
+  script:
+    - tox

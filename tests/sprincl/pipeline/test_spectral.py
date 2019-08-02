@@ -116,33 +116,12 @@ class TestSpectral(object):
         #   1) parameters, as passed to the test function
         #   2) all processors (affected by changed parameters) produce outputs this time for later comparison
 
-        # let's first create a deterministic eigendecomposer and kmeans processor
-        class DeterminsticEigenDecomposition(EigenDecomposition):
-            # require a starting vector for the iterative eigendecomposition
-            v0 = Param(dtype=np.ndarray, default=None, mandatory=True)
-
-            def function(self, data):
-                eigval, eigvec = eigsh(data, k=self.n_eigval, which=self.which, v0=self.v0)
-                eigval = 1. - eigval
-
-                if self.normalize:
-                    eigvec /= np.linalg.norm(eigvec, axis=1, keepdims=True)
-                return eigval, eigvec
-
-        class DeterministicKMeans(KMeans):
-            # require a starting random state for deterministic results
-            random_state = Param(dtype=int, default=0, mandatory=False)
-
-            def function(self, data):
-                return sklearn.cluster.KMeans(n_clusters=self.n_clusters,
-                                              random_state=self.random_state).fit_predict(data[self.index])
-
         knn = SparseKNN(n_neighbors=k_knn, symmetric=True, is_output=True)
         lap = SymmetricNormalLaplacian(is_output=True)
-        eig = DeterminsticEigenDecomposition(n_eigval=k_eig, is_output=True,
-                                             v0=np.random.randn(spiral_data.shape[0])
-                                             )
-        kmn = DeterministicKMeans(n_clusters=k_clusters, is_output=True, random_state=0)
+        eig = EigenDecomposition(n_eigval=k_eig, is_output=True,
+                                 kwargs={'v0':np.random.randn(spiral_data.shape[0])})
+        kmn = KMeans(n_clusters=k_clusters, is_output=True,
+                     kwargs={'random_state':0})
 
         pipeline = SpectralClustering(
             affinity=knn,

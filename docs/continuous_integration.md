@@ -55,10 +55,10 @@ The `gitlab-runner register command is an interactive tool, which expects all ne
 
 The shell executor was chosen, because it is the most simple one, and the other executors are either not recommended (SSH) or need a Docker, Kubernetes, VirtualBox/Parallels, etc. The shell executor is usually not a good choice as all software needed for the build has to be installed and the build environment is not cleaned after a build. But in our case it is acceptable, because tox automation is used, which creates its own virtual environment.
 
-Since the continuous integration uses tox (a framework for standardized Python testing), it needs to be installed as well.
+Since the continuous integration uses tox (a framework for standardized Python testing), it needs to be installed as well. The GitLab runner is running its tasks using the `gitlab-runner` user, so the Python modules have to be installed for that user (`pip` installs the modules into the home directory of the current user).
 
 ```sh
 sudo apt install python-pip python3-pip
-pip install tox
-pip3 install tox
+sudo runuser -l gitlab-runner -c 'pip install tox'
+sudo runuser -l gitlab-runner -c 'pip3 install tox'
 ```

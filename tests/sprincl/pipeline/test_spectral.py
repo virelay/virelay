@@ -1,10 +1,7 @@
 import pytest
 import numpy as np
 from numpy import pi
-from scipy.sparse.linalg import eigsh
-import sklearn.cluster
 
-from sprincl.processor.base import Param
 from sprincl.pipeline.spectral import SpectralEmbedding, SpectralClustering
 from sprincl.processor.affinity import SparseKNN
 from sprincl.processor.laplacian import SymmetricNormalLaplacian
@@ -119,9 +116,9 @@ class TestSpectral(object):
         knn = SparseKNN(n_neighbors=k_knn, symmetric=True, is_output=True)
         lap = SymmetricNormalLaplacian(is_output=True)
         eig = EigenDecomposition(n_eigval=k_eig, is_output=True,
-                                 kwargs={'v0':np.random.randn(spiral_data.shape[0])})
+                                 kwargs={'v0': np.random.randn(spiral_data.shape[0])})
         kmn = KMeans(n_clusters=k_clusters, is_output=True,
-                     kwargs={'random_state':0})
+                     kwargs={'random_state': 0})
 
         pipeline = SpectralClustering(
             affinity=knn,

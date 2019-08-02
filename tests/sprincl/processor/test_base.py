@@ -123,6 +123,16 @@ class TestProcessor(object):
             class TestProcessor1(Processor):
                 param = Param(2)
 
+    def test_update_defaults(self, processor_type):
+        proc = processor_type(param_1='soup')
+        proc.update_defaults(param_2=1)
+        assert proc.param_2 == 1
+
+    def test_update_defaults_wrong_dtype(self, processor_type):
+        proc = processor_type(param_1='soup')
+        with pytest.raises(TypeError):
+            proc.update_defaults(param_2='bogus')
+
 
 class TestFunctionProcessor(object):
     def test_instantiation(self, unbound_function):
@@ -155,8 +165,8 @@ class TestEnsureProcessor(object):
         with pytest.raises(TypeError):
             ensure_processor('mummy')
 
-    def test_default_param_none(self, processor_type):
-        processor = processor_type(param_1='giraffe', is_output=None)
+    def test_default_param_omitted(self, processor_type):
+        processor = processor_type(param_1='giraffe')
         ensured = ensure_processor(processor, is_output=True)
         assert ensured.is_output
 

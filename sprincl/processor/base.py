@@ -1,7 +1,7 @@
 """Base classes Param and Processor.
 
 """
-from types import FunctionType, BuiltinFunctionType, MethodType
+from types import FunctionType, MethodType
 
 from ..tracker import MetaTracker
 
@@ -32,9 +32,10 @@ class Param(object):
         self.default = default
         self.mandatory = mandatory
 
-        allowed_dtypes = (type, FunctionType, BuiltinFunctionType)
-        if not all(isinstance(x, allowed_dtypes) for x in self.dtype):
-            raise TypeError("Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes))
+        if not all(isinstance(dty, type) for dty in self.dtype):
+            raise TypeError("Only instances of type are a valid dtype!")
+        if default is not None and not isinstance(default, dtype):
+            raise TypeError("Default object is not of supplied dtype!")
 
 
 class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
@@ -59,7 +60,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         processor.
 
     """
-    is_output = Param(bool, None)
+    is_output = Param(bool, False)
     is_checkpoint = Param(bool, False)
 
     def __init__(self, **kwargs):
@@ -77,18 +78,58 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             Other potential parameters defined in sub classes.
 
         """
+        self.update_defaults()
         for key, param in self.params.items():
             if param.mandatory and key not in kwargs:
                 raise TypeError('{} parameter {} is mandatory.'.format(key, param.dtype))
-            attr = kwargs.pop(key, param.default)
-            if attr is None or isinstance(attr, param.dtype):
-                setattr(self, key, attr)
-            else:
-                raise TypeError('{} parameter is {}, whereas it should be {}.'.format(key, type(attr), param.dtype))
+            try:
+                attr = kwargs.pop(key)
+            except KeyError:
+                continue
+            if attr is not None and not isinstance(attr, param.dtype):
+                raise TypeError('{} parameter is no subtype of {}.'.format(key, param.dtype))
+            setattr(self, key, attr)
         if kwargs:
             key, _ = kwargs.popitem()
             raise TypeError('\'{}\' is an invalid keyword argument'.format(key))
         self.checkpoint_data = None
+
+    def __getattr__(self, name):
+        """Return default param values if attribute is not set.
+
+        """
+        try:
+            return self._default_param_values[name]
+        except KeyError:
+            pass
+        raise AttributeError('\'{} \' has no attribute \'{}\''.format(type(self), name))
+
+    def update_defaults(self, **kwargs):
+        """Update dictionary for the default (fallback) values of parameters!
+
+        Parameters that are not explicitly assigned as an instance attribute are retrieved from the default dict.
+        Resets to class Param defaults if no keyword arguments are supplied.
+
+        Parameters
+        ----------
+        **kwargs :
+            Names of Params to be updated. Only existing Params are allowed. If empty, defaults from class are restored.
+
+        Raises
+        ------
+        KeyError
+            If a keyword argument is supplied that does not describe any existing Param.
+
+        """
+        for key, val in kwargs.items():
+            if key in self._default_param_values:
+                if not isinstance(val, self.params[key].dtype):
+                    raise TypeError('{} parameter is no subtype of {}.'.format(key, self.params[key].dtype))
+                self._default_param_values[key] = val
+            else:
+                raise KeyError('Name \'{}\' does not describe any existing Param!'.format(key))
+        if not kwargs:
+            self._default_param_values = {key: param.default for key, param in self.params.items()}
 
     def function(self, data):
         """Abstract function this Processor should apply on input
@@ -224,11 +265,8 @@ def ensure_processor(proc, **kwargs):
     """
     if not isinstance(proc, Processor):
         if callable(proc):
-            proc = FunctionProcessor(function=proc, **kwargs)
+            proc = FunctionProcessor(function=proc)
         else:
             raise TypeError('Supplied processor {} is neither a Processor, nor callable!')
-    else:
-        for key, val in kwargs.items():
-            if getattr(proc, key, None) is None:
-                setattr(proc, key, val)
+    proc.update_defaults(**kwargs)
     return proc

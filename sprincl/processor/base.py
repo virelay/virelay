@@ -81,7 +81,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             if param.mandatory and key not in kwargs:
                 raise TypeError('{} parameter {} is mandatory.'.format(key, param.dtype))
             attr = kwargs.pop(key, param.default)
-            if isinstance(attr, param.dtype + (type(None), )):
+            if attr is None or isinstance(attr, param.dtype):
                 setattr(self, key, attr)
             else:
                 raise TypeError('{} parameter is {}, whereas it should be {}.'.format(key, type(attr), param.dtype))

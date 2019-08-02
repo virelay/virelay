@@ -2,6 +2,9 @@ import pytest
 import numpy as np
 from numpy import pi
 
+import os
+import matplotlib.pyplot as plt
+
 from sprincl.pipeline.spectral import SpectralEmbedding, SpectralClustering
 from sprincl.processor.affinity import SparseKNN
 from sprincl.processor.laplacian import SymmetricNormalLaplacian
@@ -12,6 +15,7 @@ from sprincl.processor.clustering import KMeans
 @pytest.fixture(scope='module')
 def spiral_data(N=150):      # N = samples per class of the two classes
     np.random.seed(1345123)  # fix seed for data
+    _ = np.random.uniform(size=(2, 100)).T  # "part of the seed"
 
     # generates double-spiral data in 2-d with N data points
     theta = np.sqrt(np.random.rand(N)) * 2 * pi
@@ -159,3 +163,19 @@ class TestSpectral(object):
         np.testing.assert_array_equal(label_man,
                                       label_pipe,
                                       'Label vectors not equal!')
+
+        path = '/tmp/spectral_eigenvalues.pdf'
+        plt.figure()
+        plt.plot(eig_pipe[0][::-1], '.')
+        plt.xticks([])
+        plt.yticks([])
+        plt.savefig(path)
+        os.remove(path)
+
+        path = '/tmp/spectral_labelling.pdf'
+        plt.figure()
+        plt.scatter(x=spiral_data[:, 0], y=spiral_data[:, 1], c=label_pipe)
+        plt.xticks([])
+        plt.yticks([])
+        plt.savefig(path)
+        os.remove(path)

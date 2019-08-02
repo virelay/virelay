@@ -6,6 +6,17 @@ import numpy as np
 import h5py
 
 
+def automatic_key(func):
+    """This wrapper automatically uses self.key is key is not provided.
+    Use to decorate a class method.
+
+    """
+    def func_wrapper(self, key=None):
+        key = key or self.key
+        return func(self, key)
+    return func_wrapper
+
+
 class DataStorageBase(metaclass=ABCMeta):
     """Implements a key, value storage object.
 
@@ -15,15 +26,17 @@ class DataStorageBase(metaclass=ABCMeta):
         self.key = 'data'
 
     @abstractmethod
-    def read(self, key): pass
+    def read(self, key):
+        pass
 
     @abstractmethod
-    def write(self, data): pass
+    def write(self, data):
+        pass
 
     def close(self):
         self.io.close()
 
-    def exists(self, key=None):
+    def exists(self, key):
         raise NotImplementedError
 
     def keys(self):
@@ -85,6 +98,7 @@ class PickleStorage(DataStorageBase):
         except EOFError:
             pass
 
+    @automatic_key
     def read(self, key):
         """Return data for a given key. Need to load the complete pickle at first read. After the data is cached.
 
@@ -108,12 +122,11 @@ class PickleStorage(DataStorageBase):
 
         Parameters
         ----------
-        key: str
-            With which key the data is being stored.
         data: np.ndarray, dict
             Data being stored.
 
         """
+        self.data[self.key] = data
         pickle.dump({"data": data, "key": self.key}, self.io)
 
     def keys(self):
@@ -124,11 +137,11 @@ class PickleStorage(DataStorageBase):
             self._load_data()
         return self.data.keys()
 
+    @automatic_key
     def exists(self, key=None):
         """Return True if key exists in self.keys().
 
         """
-        key = key or self.key
         return key in self.keys()
 
 
@@ -146,6 +159,7 @@ class HDF5Storage(DataStorageBase):
         super().__init__()
         self.io = h5py.File(path, mode=mode, **kwargs)
 
+    @automatic_key
     def read(self, key):
         """
         Parameters
@@ -160,7 +174,8 @@ class HDF5Storage(DataStorageBase):
         """
         data = self.io[key]
         if isinstance(data, h5py.Group):
-            return dict(((k, v[()]) for k, v in data.items()))
+            # Change key to integer if k is digit, so that we can use the dict like a tuple or list
+            return dict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
         else:
             return data[()]
 
@@ -184,11 +199,11 @@ class HDF5Storage(DataStorageBase):
             shape, dtype = self._get_shape_dtype(data)
             self.io.require_dataset(data=data, shape=shape, dtype=dtype, name=self.key)
 
-    def exists(self, key=None):
+    @automatic_key
+    def exists(self, key):
         """Returns True if key exists in self.io.
 
         """
-        key = key or self.key
         return key in self.io
 
     def keys(self):
@@ -210,6 +225,7 @@ class HDF5Storage(DataStorageBase):
         -------
         shape, dtype: tuple, type
             Return the shape and dtype of v that works with h5py.require_dataset
+
         """
         if not isinstance(v, np.ndarray):
             shape = ()

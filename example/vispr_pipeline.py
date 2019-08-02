@@ -25,7 +25,7 @@ with io.HDF5Storage(analysis_path, mode='w') as analysis_file, \
         preprocessing=FunctionProcessor(function=lambda x: x.mean(1).reshape(x.shape[0], -1),
                                         bind_method=False),
         pairwise_distance=SciPyPDist(metric='euclidean'),
-        affinity=SparseKNN(k_neighbors=10, symmetric=True),
+        affinity=SparseKNN(n_neighbors=10, symmetric=True),
         laplacian=SymmetricNormalLaplacian(),
         embedding=EigenDecomposition(n_eigval=32, io=analysis_file.at('embedding/spectral')),
         clustering=KMeans(n_clusters=2, io=analysis_file.at('cluster/kmeans-2'))

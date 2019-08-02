@@ -39,7 +39,15 @@ def test_data_storage(storage, tmp_path, data, param_values):
         assert data_storage.at('data').exists()
         assert not data_storage.at('non_existing').exists()
         ret_param_values = data_storage['param_values']
+        ret_param_values_2 = data_storage.at('param_values').read()
         with pytest.raises(KeyError):
             data_storage['non_existing']
 
     np.testing.assert_equal(ret_param_values, param_values)
+    np.testing.assert_equal(ret_param_values_2, param_values)
+
+    with storage(test_path, mode='a') as data_storage:
+        data_storage.at('new_entry/data').write(data=data)
+        assert data_storage.at('new_entry/data').exists()
+        ret_data = data_storage.at('new_entry/data').read()
+        np.testing.assert_equal(ret_data, data)

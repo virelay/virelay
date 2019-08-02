@@ -166,6 +166,9 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             Depending on what operation `self.function` executes.
 
         """
+        if self.io is not None and self.io.exists():
+            return self.io.read()
+
         out = self.function(data)
         if self.is_checkpoint:
             self.checkpoint_data = out

@@ -1,17 +1,11 @@
 import pytest
 import numpy as np
 from numpy import pi
-# from scipy import sparse as sp
+from scipy.sparse.linalg import eigsh
+import sklearn.cluster
 
-# from scipy.spatial.distance import pdist, squareform
-# from scipy.sparse.linalg import eigsh
-# from sklearn.cluster import KMeans
-# from sklearn.manifold import TSNE
-
-from sprincl.processor.base import Processor
-from sprincl.pipeline.base import Task
+from sprincl.processor.base import Param
 from sprincl.pipeline.spectral import SpectralEmbedding, SpectralClustering
-
 from sprincl.processor.affinity import SparseKNN
 from sprincl.processor.laplacian import SymmetricNormalLaplacian
 from sprincl.processor.embedding import EigenDecomposition
@@ -68,8 +62,8 @@ class TestSpectral(object):
 
     def test_spectral_embedding_default_params(self, spiral_data):
         # test wheter the SE operates on data all the way through, using its default parameters.
-        SE = SpectralEmbedding()
-        output = SE(spiral_data)
+        se = SpectralEmbedding()
+        output = se(spiral_data)
         assert isinstance(output, tuple), 'Expected tuple type output, got {}'.format(type(output))
         assert len(output) == 2, 'Expected output length of 2, got {}'.format(len(output))
 
@@ -85,8 +79,8 @@ class TestSpectral(object):
 
     def test_spectral_clustering_default_params(self, spiral_data):
         # test wheter the SC operates on data all the way through, using its default parameters.
-        SC = SpectralClustering()
-        output = SC(spiral_data)
+        sc = SpectralClustering()
+        output = sc(spiral_data)
         assert isinstance(output, tuple), 'Expected tuple type output, got {}'.format(type(output))
         assert len(output) == 2, 'Expected output lenght of 2, got {}'.format(len(output))
 
@@ -113,8 +107,6 @@ class TestSpectral(object):
 
         assert labels.ndim == 1, 'Expected labels to be flat array, but was shaped {}'.format(labels.shape)
 
-
-
     def test_spectral_clustering_step_by_step_custom_params(self, spiral_data, k_knn, k_eig, k_clusters):
         # this test manually compares the pipelines working order against manually
         # executed steps with custom parameters attuned to the spiral data
@@ -123,105 +115,71 @@ class TestSpectral(object):
         # customizations:
         #   1) parameters, as passed to the test function
         #   2) all processors (affected by changed parameters) produce outputs this time for later comparison
-        knn = SparseKNN(k_neighbors=k_knn, symmetric=True, is_output=True)
-        lap = #CONTINUE HERE: 1) BACKUP THIS CODE; GO TO / FAST FORWARD MASTER / CONTINUE WRITING TEST CODE.
 
-        assert isinstance(knn, Processor), 'YAY'
+        # let's first create a deterministic eigendecomposer and kmeans processor
+        class DeterminsticEigenDecomposition(EigenDecomposition):
+            # require a starting vector for the iterative eigendecomposition
+            v0 = Param(dtype=np.ndarray, default=None, mandatory=True)
+
+            def function(self, data):
+                eigval, eigvec = eigsh(data, k=self.n_eigval, which=self.which, v0=self.v0)
+                eigval = 1. - eigval
+
+                if self.normalize:
+                    eigvec /= np.linalg.norm(eigvec, axis=1, keepdims=True)
+                return eigval, eigvec
+
+        class DeterministicKMeans(KMeans):
+            # require a starting random state for deterministic results
+            random_state = Param(dtype=int, default=0, mandatory=False)
+
+            def function(self, data):
+                return sklearn.cluster.KMeans(n_clusters=self.n_clusters,
+                                              random_state=self.random_state).fit_predict(data[self.index])
+
+        knn = SparseKNN(n_neighbors=k_knn, symmetric=True, is_output=True)
+        lap = SymmetricNormalLaplacian(is_output=True)
+        eig = DeterminsticEigenDecomposition(n_eigval=k_eig, is_output=True,
+                                             v0=np.random.randn(spiral_data.shape[0])
+                                             )
+        kmn = DeterministicKMeans(n_clusters=k_clusters, is_output=True, random_state=0)
+
         pipeline = SpectralClustering(
             affinity=knn,
-
+            laplacian=lap,
+            embedding=eig,
+            clustering=kmn
         )
 
-        output = pipeline(spiral_data)
-        assert len(output) == 2, 'len output is {}'.format(len(output))
+        output_pipeline = pipeline(spiral_data)
+        assert len(output_pipeline) == 4,\
+            'length of output expected to be 4 (affinity, laplacian, embedding, labels), but is {}'\
+            .format(len(output_pipeline))
 
+        # unpack pipeline results
+        aff_pipe, lap_pipe, eig_pipe, label_pipe = output_pipeline
 
-        # WEIRDNESS BELOW!
+        # produce results manually and compare to pipeline output
+        dist_man = pipeline.processes['pairwise_distance'](spiral_data)
+        aff_man = knn(dist_man)
+        np.testing.assert_array_equal(np.array(aff_man.todense()),
+                                      np.array(aff_pipe.todense()),
+                                      'Affinity matrices are not equal!')
 
-        # pipeline = SpectralClustering(
-        #    affinity=SparseKNN(k_neighbors=k_knn, symmetric=True),
-        #    embedding=EigenDecomposition(n_eigval=k_eig),
-        #    clustering=KMeans(n_clusters=k_clusters) # WORKS!
-        # )
+        lap_man = lap(aff_man)
+        np.testing.assert_array_equal(np.array(lap_man.todense()),
+                                      np.array(lap_pipe.todense()),
+                                      'Laplacians are not equal!')
 
-        # pipeline = SpectralClustering(
-        #     affinity=Task(default=SparseKNN(k_neighbors=k_knn, symmetric=True)), #<- change!
-        #     embedding=EigenDecomposition(n_eigval=k_eig),
-        #     clustering=KMeans(n_clusters=k_clusters) #fails because of this!
-        # )
+        eig_man = eig(lap_man)
+        np.testing.assert_array_equal(eig_man[0],
+                                      eig_pipe[0],
+                                      'Eigenvalues not equal!')
+        np.testing.assert_array_equal(eig_man[1],
+                                      eig_pipe[1],
+                                      'Eigenvectors not equal enough!')
 
-
-
-        # def test_assert_with_spiral_data(self):
-        #     # this test tries to run/assert the results of the Pipeline implementation with a manual pipeline.
-
-
-        #     from sprincl.pipeline.spectral import SpectralClustering
-
-
-
-        #     def knn(distance, k, symmetric):
-        #         """Compute Sparse K-Nearest-Neighbors affinity matrix.
-        #         Note: This is the old KNN code from previous sprincl versions
-
-        #         Parameters
-        #         ----------
-        #         distance : :obj:`numpy.ndarray`
-        #             Distance matrix used to compute affinity matrix.
-
-        #         Returns
-        #         ------
-        #         :obj:`sp.csr_matrix`
-        #             Sparse CSR representation of KNN affinity matrix
-
-        #         """
-        #         # number of samples
-        #         n = distance.shape[0]
-
-        #         # silently use maximum number of neighbors if there are more samples than k
-        #         k = k if k < (n-1) else (n-1)
-
-        #         # set up indices for sparse representation of nearest neighbors
-        #         cols = distance.argsort(1)[:, 1:k+1]
-        #         rows = np.mgrid[:n, :k][0]
-        #         # existing edges are denoted with ones
-        #         vals = np.ones((n, k), dtype=distance.dtype)
-        #         affinity = sp.csr_matrix((vals.flat, (rows.flat, cols.flat)), shape=(n, n))
-
-        #         # make the affinity matrix symmetric
-        #         if symmetric:
-        #             affinity = (affinity + affinity.T) / 2.
-        #         return affinity
-
-        #     def laplacian(affinity):
-        #         """ Note: this is the old laplacian code from a previous sprincl version """
-        #         def A1ifmat(x):
-        #             return x.A1 if isinstance(x, np.matrix) else x
-        #         deg = sp.diags(A1ifmat(affinity.sum(1))**-.5, 0)
-        #         lap = deg @ affinity @ deg
-        #         return lap
-
-        #     #generate some data
-        #     np.random.seed(1345123)
-        #     data = spiral_data(150)
-
-        #     #run the manual pipeline
-        #     k_knn = int(np.log(data.shape[0]))
-        #     k_eig = 8
-        #     k_clusters = 4
-
-        #     D_man = squareform(pdist(data))
-        #     A_man = knn(D_man, k=k_knn, symmetric=True)
-        #     L_man = laplacian(A_man)
-
-        #     eigval_man, eigvec_man = eigsh(L_man, k=k_eig, which='LM')
-        #     eigval_man = 1. - eigval_man
-        #     eigvec_man /= np.linalg.norm(eigvec_man, axis=1, keepdims=True)
-        #     labels_man = KMeans(n_clusters=k_clusters).fit_predict(eigvec_man)
-        #     e_data_man = TSNE().fit_transform(eigvec_man)   #compute embedding for Data
-
-        #     # build the SpRAy pipeline
-
-        #     SC = SpectralClustering
-        #     labels_pipe = SC(data)
-        #     print(labels_pipe)
+        label_man = kmn(eig_man[1])
+        np.testing.assert_array_equal(label_man,
+                                      label_pipe,
+                                      'Label vectors not equal!')

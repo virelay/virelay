@@ -1,4 +1,4 @@
 
 tests:
   script:
-    - python3 -m tox
+    - python3.7 -m tox

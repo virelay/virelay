@@ -59,8 +59,8 @@ Since the continuous integration uses tox (a framework for standardized Python t
 
 ```sh
 sudo apt install python-pip python3-pip
-sudo runuser -l gitlab-runner -c 'pip install tox'
-sudo runuser -l gitlab-runner -c 'pip3 install tox'
+sudo runuser -l gitlab-runner -c 'pip install --user tox'
+sudo runuser -l gitlab-runner -c 'pip3 install --user tox'
 ```
 
 If the server does not have Python 3.7 installed, then it can be installed from source. For example for Ubuntu there may be PPAs with newer versions of Python, but for a server it may be a security risk to use unsupported PPAs. Therefore installing from source should be the preferred option.
@@ -90,4 +90,10 @@ make -j 8
 
 # Install Python (please make sure to use altinstall, because install will override the system Python)
 sudo make altinstall
+```
+
+When installing Python 3.7 from source, make sure to also install `tox` for it.
+
+```sh
+sudo runuser -l gitlab-runner -c 'pip3.7 install --user tox'
 ```

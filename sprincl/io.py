@@ -1,6 +1,6 @@
 import copy
 import pickle
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, ABC
 
 import numpy as np
 import h5py
@@ -15,6 +15,18 @@ def automatic_key(func):
         key = key or self.key
         return func(self, key)
     return func_wrapper
+
+
+class NoDataSource(Exception):
+    """Raise when no data source available."""
+    def __init__(self):
+        super().__init__('No Data Source available.')
+
+
+class NoDataTarget(Exception):
+    """Raise when no target source available."""
+    def __init__(self):
+        super().__init__('No Data Target available.')
 
 
 class DataStorageBase(metaclass=ABCMeta):
@@ -58,6 +70,9 @@ class DataStorageBase(metaclass=ABCMeta):
         self.key = key
         return self.write(value)
 
+    def __bool__(self):
+        return bool(self.io)
+
     def at(self, key):
         """Return a copy of the instance with a self.key=key
         In this way self.write(data) automatically writes the data to self.key
@@ -71,6 +86,17 @@ class DataStorageBase(metaclass=ABCMeta):
         c = copy.copy(self)
         c.key = key
         return c
+
+
+class NoStorage(DataStorageBase, ABC):
+    def __bool__(self):
+        return False
+
+    def read(self, key):
+        raise NoDataSource()
+
+    def write(self, key):
+        raise NoDataTarget()
 
 
 class PickleStorage(DataStorageBase):
@@ -112,9 +138,8 @@ class PickleStorage(DataStorageBase):
         data for a given key
 
         """
-
-        if not self.data:
-            self._load_data()
+        if not self.exists(key):
+            raise KeyError("Key: '{}' does not exist.")
         return self.data[key]
 
     def write(self, data):
@@ -172,6 +197,8 @@ class HDF5Storage(DataStorageBase):
         data for a given key
 
         """
+        if not self.exists(key):
+            raise KeyError("Key: '{}' does not exist.")
         data = self.io[key]
         if isinstance(data, h5py.Group):
             # Change key to integer if k is digit, so that we can use the dict like a tuple or list

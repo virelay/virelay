@@ -51,3 +51,11 @@ def test_data_storage(storage, tmp_path, data, param_values):
         assert data_storage.at('new_entry/data').exists()
         ret_data = data_storage.at('new_entry/data').read()
         np.testing.assert_equal(ret_data, data)
+
+
+def test_no_storage(data):
+    data_storage = io.NoStorage()
+    with pytest.raises(io.NoDataSource):
+        data_storage.read('data')
+    with pytest.raises(io.NoDataTarget):
+        data_storage.write(data)

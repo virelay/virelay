@@ -4,7 +4,7 @@
 import inspect
 from types import FunctionType, MethodType, LambdaType
 
-from sprincl.io import DataStorageBase, HDF5Storage
+from sprincl.io import DataStorageBase, NoStorage, NoDataSource, NoDataTarget
 from ..tracker import MetaTracker
 
 
@@ -64,7 +64,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
     """
     is_output = Param(bool, False)
     is_checkpoint = Param(bool, False)
-    io = Param(DataStorageBase, None)
+    io = Param(DataStorageBase, NoStorage())
 
     def __init__(self, **kwargs):
         """Initialize all :obj:`Param` defined parameters to either there default value or, if supplied as keyword
@@ -166,14 +166,16 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             Depending on what operation `self.function` executes.
 
         """
-        if self.io is not None and self.io.exists():
-            return self.io.read()
-
-        out = self.function(data)
+        try:
+            out = self.io.read(data)
+        except NoDataSource:
+            out = self.function(data)
+            try:
+                self.io.write(out)
+            except NoDataTarget:
+                pass
         if self.is_checkpoint:
             self.checkpoint_data = out
-        if self.io is not None:
-            self.io.write(out)
         return out
 
     def param_values(self):

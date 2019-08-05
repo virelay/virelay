@@ -1,5 +1,6 @@
 import pytest
 
+from sprincl.io import NoStorage
 from sprincl.processor.base import Processor, Param, FunctionProcessor, ensure_processor
 
 
@@ -26,6 +27,7 @@ def kwargs(processor_type):
         'param_1': 'stuff',
         'param_2': 5,
         'param_3': 6,
+        'io': NoStorage()
     }
     return kwargs
 
@@ -67,7 +69,7 @@ class TestParam(object):
 
 class TestProcessor(object):
     def test_params_tracked(self, processor_type):
-        assert ['is_output', 'is_checkpoint', 'param_1', 'param_2', 'param_3'] == list(processor_type.params)
+        assert ['is_output', 'is_checkpoint', 'io', 'param_1', 'param_2', 'param_3'] == list(processor_type.params)
 
     def test_params_no_attributes(self, processor_type):
         assert not any(hasattr(processor_type, name) for name in ('param_1', 'param_2'))

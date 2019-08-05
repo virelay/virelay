@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from numpy import pi
 
+
 import os
 import matplotlib.pyplot as plt
 
@@ -11,6 +12,73 @@ from sprincl.processor.laplacian import SymmetricNormalLaplacian
 from sprincl.processor.embedding import EigenDecomposition
 from sprincl.processor.clustering import KMeans
 
+
+
+import numpy as np
+from numpy import pi
+import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist, squareform
+from scipy import sparse as sp
+from scipy.sparse.linalg import eigsh
+from sklearn.cluster import KMeans as SKKMeans
+from sklearn.manifold import TSNE
+from sklearn import datasets
+from sklearn.decomposition import PCA
+
+def knn_fn(distance, k, symmetric):
+    """Compute Sparse K-Nearest-Neighbors affinity matrix.
+
+    Parameters
+    ----------
+    distance : :obj:`numpy.ndarray`
+        Distance matrix used to compute affinity matrix.
+
+    Returns
+    ------
+    :obj:`sp.csr_matrix`
+        Sparse CSR representation of KNN affinity matrix
+
+    """
+    # number of samples
+    n = distance.shape[0]
+
+    # silently use maximum number of neighbors if there are more samples than k
+    k = k if k < (n-1) else (n-1)
+
+    # set up indices for sparse representation of nearest neighbors
+    cols = distance.argsort(1)[:, 1:k+1]
+    rows = np.mgrid[:n, :k][0]
+    # existing edges are denoted with ones
+    vals = np.ones((n, k), dtype=distance.dtype)
+    affinity = sp.csr_matrix((vals.flat, (rows.flat, cols.flat)), shape=(n, n))
+
+    # make the affinity matrix symmetric
+    if symmetric:
+        affinity = (affinity + affinity.T) / 2.
+    return affinity
+
+
+def laplacian(affinity):
+    def A1ifmat(x):
+        return x.A1 if isinstance(x, np.matrix) else x
+    deg = sp.diags(A1ifmat(affinity.sum(1))**-.5, 0)
+    lap = deg @ affinity @ deg
+    return lap
+
+
+def completely_manual_pipeline(data, k_knn, k_eig, k_clusters, v0=None, random_state=None):
+    D = squareform(pdist(data))
+
+    A = knn_fn(D, k=k_knn, symmetric=True)
+    L = laplacian(A)
+
+    eigval, eigvec = eigsh(L, k=k_eig, which='LM', v0=v0)
+    eigval = 1. - eigval
+    eigvec /= np.linalg.norm(eigvec, axis=1, keepdims=True)
+
+    labels = SKKMeans(n_clusters=k_clusters).fit_predict(eigvec)
+
+    return {'A':A, 'D':D, 'L':L, 'eigval':eigval, 'eigvec':eigvec, 'labels':labels, 'data':data}
 
 @pytest.fixture(scope='module')
 def spiral_data(N=150):      # N = samples per class of the two classes
@@ -119,10 +187,15 @@ class TestSpectral(object):
 
         knn = SparseKNN(n_neighbors=k_knn, symmetric=True, is_output=True)
         lap = SymmetricNormalLaplacian(is_output=True)
+
+        v0 = np.random.rand(spiral_data.shape[0]) # some fixed init vector
+        v0 /= np.linalg.norm(v0,1)
         eig = EigenDecomposition(n_eigval=k_eig, is_output=True,
-                                 kwargs={'v0': np.random.randn(spiral_data.shape[0])})
+                                 kwargs={'v0': v0})
+
+        random_state = 0
         kmn = KMeans(n_clusters=k_clusters, is_output=True,
-                     kwargs={'random_state': 0})
+                     kwargs={'random_state': random_state})
 
         pipeline = SpectralClustering(
             affinity=knn,
@@ -170,7 +243,7 @@ class TestSpectral(object):
         plt.xticks([])
         plt.yticks([])
         plt.savefig(path)
-        os.remove(path)
+        # os.remove(path)
 
         path = '/tmp/spectral_labelling.pdf'
         plt.figure()
@@ -178,4 +251,42 @@ class TestSpectral(object):
         plt.xticks([])
         plt.yticks([])
         plt.savefig(path)
-        os.remove(path)
+        # os.remove(path)
+
+
+
+
+        # testing against completely manual implementation of pipeline
+        results = completely_manual_pipeline(spiral_data, k_knn, k_eig, k_clusters, v0=v0, random_state=random_state)
+
+        path = '/tmp/spectral_labelling_manual.pdf'
+        plt.figure()
+        plt.scatter(x=results['data'][:,0], y=results['data'][:,1], c=results['labels'])
+        plt.xticks([])
+        plt.yticks([])
+        plt.savefig(path)
+
+        # this is fine so far.
+        np.testing.assert_array_equal(dist_man,
+                                    results['D'],
+                                    'Manual and completely manual distance not equal!'
+                                    )
+
+        # also this is fine so far.
+        np.testing.assert_array_equal(np.array(aff_man.todense()),
+                                      np.array(results['A'].todense()),
+                                      'Manual and completely manual affinity matrices are not equal!')
+
+        # also this is fine so far.
+        np.testing.assert_array_equal(np.array(lap_man.todense()),
+                                      np.array(results['L'].todense()),
+                                      'Manual and completely manual Laplacians are not equal!')
+
+        # also this is fine so far, WHEN THE INITIAL V0 IS PASSED. IS THIS THE SOURCE FOR THE WRONG LABELS?
+        np.testing.assert_array_equal(eig_man[0],
+                                      results['eigval'],
+                                      'Manual and completely manual Eigenvalues not equal!')
+
+
+
+

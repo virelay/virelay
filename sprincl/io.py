@@ -1,26 +1,16 @@
 import copy
 import pickle
+from collections import OrderedDict
 from abc import ABCMeta, abstractmethod, ABC
 
 import numpy as np
 import h5py
 
 
-def automatic_key(func):
-    """This wrapper automatically uses self.key is key is not provided.
-    Use to decorate a class method.
-
-    """
-    def func_wrapper(self, key=None):
-        key = key or self.key
-        return func(self, key)
-    return func_wrapper
-
-
 class NoDataSource(Exception):
     """Raise when no data source available."""
-    def __init__(self):
-        super().__init__('No Data Source available.')
+    def __init__(self, message='No Data Source available.'):
+        super().__init__(message)
 
 
 class NoDataTarget(Exception):
@@ -35,10 +25,10 @@ class DataStorageBase(metaclass=ABCMeta):
     """
 
     def __init__(self):
-        self.key = 'data'
+        self._default_params = {}
 
     @abstractmethod
-    def read(self, key):
+    def read(self):
         pass
 
     @abstractmethod
@@ -48,7 +38,7 @@ class DataStorageBase(metaclass=ABCMeta):
     def close(self):
         self.io.close()
 
-    def exists(self, key):
+    def exists(self):
         raise NotImplementedError
 
     def keys(self):
@@ -61,30 +51,29 @@ class DataStorageBase(metaclass=ABCMeta):
         self.io.close()
 
     def __contains__(self, key):
-        return self.exists(key)
+        return self.at(data_key=key).exists()
 
     def __getitem__(self, key):
-        return self.read(key)
+        return self.at(data_key=key).read()
 
     def __setitem__(self, key, value):
-        self.key = key
-        return self.write(value)
+        return self.at(data_key=key).write(value)
 
     def __bool__(self):
         return bool(self.io)
 
-    def at(self, key):
+    def at(self, **kwargs):
         """Return a copy of the instance with a self.key=key
         In this way self.write(data) automatically writes the data to self.key
 
         Parameters
         ----------
-        key: str
+        data_key: str
             At which key the data will be stored.
 
         """
         c = copy.copy(self)
-        c.key = key
+        c._default_params.update(kwargs)  # TODO add type checking, fix the structure of _default_params
         return c
 
 
@@ -92,10 +81,10 @@ class NoStorage(DataStorageBase, ABC):
     def __bool__(self):
         return False
 
-    def read(self, key):
+    def read(self):
         raise NoDataSource()
 
-    def write(self, key):
+    def write(self, data):
         raise NoDataTarget()
 
 
@@ -124,23 +113,17 @@ class PickleStorage(DataStorageBase):
         except EOFError:
             pass
 
-    @automatic_key
-    def read(self, key):
+    def read(self):
         """Return data for a given key. Need to load the complete pickle at first read. After the data is cached.
-
-        Parameters
-        ----------
-        key: str
-            Key of the data stored in self.io
 
         Returns
         -------
         data for a given key
 
         """
-        if not self.exists(key):
-            raise KeyError("Key: '{}' does not exist.")
-        return self.data[key]
+        if not self.exists():
+            raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
+        return self.data[self.data_key]
 
     def write(self, data):
         """Write and pickle the data as: {"data": data, "key": key}
@@ -151,8 +134,8 @@ class PickleStorage(DataStorageBase):
             Data being stored.
 
         """
-        self.data[self.key] = data
-        pickle.dump({"data": data, "key": self.key}, self.io)
+        self.data[self.data_key] = data
+        pickle.dump({"data": data, "key": self.data_key}, self.io)
 
     def keys(self):
         """Return keys from self.data. Need to load the complete pickle at first read.
@@ -162,15 +145,17 @@ class PickleStorage(DataStorageBase):
             self._load_data()
         return self.data.keys()
 
-    @automatic_key
-    def exists(self, key=None):
+    def exists(self):
         """Return True if key exists in self.keys().
 
         """
-        return key in self.keys()
+        return self.data_key in self.keys()
 
 
 class HDF5Storage(DataStorageBase):
+
+    data_key = Param(str, 'data')
+
     def __init__(self, path, mode='r', **kwargs):
         """
         Parameters
@@ -183,26 +168,22 @@ class HDF5Storage(DataStorageBase):
         """
         super().__init__()
         self.io = h5py.File(path, mode=mode, **kwargs)
+        self._mandatory_params = ['data_key']
+        self._default_params = {'data_key': 'data'}
 
-    @automatic_key
-    def read(self, key):
+    def read(self):
         """
-        Parameters
-        ----------
-        key: str
-            Key of the data stored in self.io
-
         Returns
         -------
         data for a given key
 
         """
-        if not self.exists(key):
-            raise KeyError("Key: '{}' does not exist.")
-        data = self.io[key]
+        if not self.exists():
+            raise NoDataSource("Key: '{}' does not exist.".format(self.data_key))
+        data = self.io[self.data_key]
         if isinstance(data, h5py.Group):
             # Change key to integer if k is digit, so that we can use the dict like a tuple or list
-            return dict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
+            return OrderedDict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
         else:
             return data[()]
 
@@ -217,21 +198,20 @@ class HDF5Storage(DataStorageBase):
         if isinstance(data, dict):
             for k, v in data.items():
                 shape, dtype = self._get_shape_dtype(v)
-                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.key, k))
+                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, k))
         elif isinstance(data, tuple):
             for k, v in enumerate(data):
                 shape, dtype = self._get_shape_dtype(v)
-                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.key, k))
+                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, k))
         else:
             shape, dtype = self._get_shape_dtype(data)
-            self.io.require_dataset(data=data, shape=shape, dtype=dtype, name=self.key)
+            self.io.require_dataset(data=data, shape=shape, dtype=dtype, name=self.data_key)
 
-    @automatic_key
-    def exists(self, key):
+    def exists(self):
         """Returns True if key exists in self.io.
 
         """
-        return key in self.io
+        return self.data_key in self.io
 
     def keys(self):
         """Return keys of the storage.

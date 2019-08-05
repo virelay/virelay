@@ -167,7 +167,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
 
         """
         try:
-            out = self.io.read(data)
+            out = self.io.read()
         except NoDataSource:
             out = self.function(data)
             try:

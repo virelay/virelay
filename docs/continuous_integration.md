@@ -62,3 +62,32 @@ sudo apt install python-pip python3-pip
 sudo runuser -l gitlab-runner -c 'pip install tox'
 sudo runuser -l gitlab-runner -c 'pip3 install tox'
 ```
+
+If the server does not have Python 3.7 installed, then it can be installed from source. For example for Ubuntu there may be PPAs with newer versions of Python, but for a server it may be a security risk to use unsupported PPAs. Therefore installing from source should be the preferred option.
+
+```sh
+# Install the pre-requisites
+sudo apt install \
+    build-essential \
+    zlib1g-dev \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libssl-dev \
+    libreadline-dev \
+    libffi-dev \
+    wget
+
+# Download the Python 3.7 source code
+wget https://www.python.org/ftp/python/3.7.4/Python-3.7.4.tar.xz
+tar -xf Python-3.7.3.tar.xz
+rm Python-3.7.4.tar.xz
+cd Python-3.7.4
+
+# Build Python with optimizations
+./configure --enable-optimizations
+make -j 8
+
+# Install Python (please make sure to use altinstall, because install will override the system Python)
+sudo make altinstall
+```

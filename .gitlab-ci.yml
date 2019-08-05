@@ -1,13 +1,19 @@
 
 stages:
   - tests
+  - linting
 
 unit-tests:
   stage: tests
   script:
     - python3.7 -m tox -e py37
 
-linting:
-  stage: tests
+pylint:
+  stage: linting
   script:
     - python3.7 -m tox -e pylint
+
+flake8:
+  stage: linting
+  script:
+    - python3.7 -m tox -e flake8

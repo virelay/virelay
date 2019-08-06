@@ -1,8 +1,8 @@
-# **Sp**ectral **R**elevance **In**vestigating **Cl**usters
+# Spectral Relevance Investigating Clusters (SPRINCL)
 
 There are two command-line interfaces:
 
-## Sprincl for Analysis
+## SPRINCL for Analysis
 
 ```sh
 sprincl \
@@ -23,7 +23,7 @@ sprincl \
         --eigvals 8
 ```
 
-## Vispr for Visualization
+## VISPR for Visualization
 
 ```sh
 vispr \

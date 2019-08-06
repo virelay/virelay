@@ -1,4 +1,4 @@
-"""Vispr command-line interface to run the Bokeh server."""
+"""VISPR command-line interface to run the Bokeh server."""
 
 import logging
 from sys import stderr
@@ -34,7 +34,7 @@ def main(
         verbose
     ):
     """
-    Starts the Vispr Bokeh server.
+    Starts the VISPR Bokeh server.
 
     Parameters:
     -----------

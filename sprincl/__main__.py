@@ -1,11 +1,11 @@
-"""sprincl module invocation.
+"""SPRINCL module invocation.
 
 """
 from .cli import main as cli_main
 
 
 def main():
-    """Execute sprincl command line interface.
+    """Execute SPRINCL command line interface.
 
     """
     # pylint: disable=no-value-for-parameter,unexpected-keyword-arg

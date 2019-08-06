@@ -203,7 +203,7 @@ def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path
     bottom = row(eigen_value_figure, sample_table, visual_fig, column(image_fig, alpha_slider))
     layout = column(top, bottom)
     doc.add_root(layout)
-    doc.title = "Sprincl TSNE"
+    doc.title = 'SPRINCL TSNE'
 
     def update_selection(attr, old, new):
         sample_table.view = CDSView(source=sample_src, filters=[IndexFilter(new)])

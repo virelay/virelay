@@ -6,7 +6,7 @@ from sys import stderr
 import click
 from bokeh.server.server import Server
 
-from .server_application import modify_doc
+from .server_application import ServerApplication
 
 @click.command()
 @click.argument('input_path', type=click.Path())
@@ -78,8 +78,9 @@ def main(
         'allow_websocket_origin': list(allow_websocket_origin),
         'num_procs': num_procs,
     }
+    server_application = ServerApplication(input_path, attribution_path, analysis_path, wordmap, wnids)
     server = Server({
-        '/': (lambda doc: modify_doc(doc, input_path, attribution_path, analysis_path, wordmap, wnids))
+        '/': server_application.setup_up_bokeh_document
     }, **server_kwargs)
     server.io_loop.add_callback(server.show, '/')
     server.run_until_shutdown()

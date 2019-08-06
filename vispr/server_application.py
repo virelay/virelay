@@ -16,219 +16,333 @@ from bokeh.palettes import d3 # pylint: disable=no-name-in-module
 
 from .data import OrigImage, AttrImage
 
-def modify_doc(doc, original_path, attribution_path, analysis_path, wordmap_path, wnid_path):
-    """Handler for Bokeh server."""
+class ServerApplication:
+    """Represents the Bokeh server application that renders the data on the client and handles user input."""
 
-    logger = logging.getLogger(__name__)
-    logger.info('Setting up document...')
+    def __init__(self, input_path, attribution_path, analysis_path, wnid_path, wordmap_path):
+        """
+        Initializes a new ServerApplication instance.
 
-    # load all analysis category names
-    with h5py.File(analysis_path, 'r') as analysis_file:
-        categories = list(analysis_file)
+        Parameters:
+        -----------
+            input_path: str
+                The path to the directory that contains the images of the dataset.
+            attribution_path: str
+                The path to the HDF5 file that contains the attributions.
+            analysis_path: str
+                The path to the HDF5 file that contains the analysis.
+            wnids_path: str
+                The path to the text file that contains the WordNet IDs of the classes of the classifier.
+            wordmap_path: str
+                The path to the JSON file that contains the mappings between the WordNet IDs and human-readable class
+                names.
+        """
 
-    # load mapping from label number to wnid
-    with open(wnid_path, 'r') as wnid_file:
-        wnids = wnid_file.read().split('\n')[:-1]
+        # Stores the arguments for later use
+        self.input_path = input_path
+        self.attribution_path = attribution_path
+        self.analysis_path = analysis_path
+        self.wordmap_path = wordmap_path
+        self.wnid_path = wnid_path
 
-    # load mapping from wnid to description
-    with open(wordmap_path, 'r') as wordmap_file:
-        words = json.load(wordmap_file)
+        # Some configuration constants for the plotting
+        self.number_of_images = 16
+        self.width = 224
+        self.height = 224
+        self.maximum_width = 4 * self.width
+        self.maximum_height = 4 * self.height
+        self.colormap = d3['Category20'][20]
 
-    def map_wnid(wnid):
-        return words.get(wnid, 'UNKNOWN')
+        # Gets the logger for the module
+        self.logger = logging.getLogger(__name__)
 
-    # loader for original input images
-    original_loader = OrigImage(original_path)
-    attribution_loader = AttrImage(attribution_path)
+        # Loads the analysis file and extracts the category names
+        with h5py.File(self.analysis_path, 'r') as analysis_file:
+            self.categories = list(analysis_file)
 
-    # Namespace to store data references
-    data = Namespace()
-    data.sel = Namespace()
-    data.sel.cat = categories[random.randint(0, len(categories))]
-    data.sel.clu = None
-    data.sel.vis = None
+        # Loads the WordNet IDs file, which contains a mapping from the label numbers to the WNIDs
+        with open(self.wnid_path, 'r') as wnid_file:
+            self.wnids = wnid_file.read().split('\n')[:-1]
+
+        # Loads the wordmap file, which contains the mapping between the WNIDs and their corresponding cleartext
+        # descriptions
+        with open(self.wordmap_path, 'r') as wordmap_file:
+            self.wordmap = json.load(wordmap_file)
+
+        # Loads the input images and the attributed images
+        self.original_image_loader = OrigImage(self.input_path)
+        self.attribution_image_loader = AttrImage(self.attribution_path)
+
+        # Namespace to store data references
+        self.data = Namespace()
+        self.data.selected = Namespace()
+        self.data.selected.category = self.categories[random.randint(0, len(self.categories))]
+        self.data.selected.cluster = None
+        self.data.selected.visualization = None
+
+        # Initializes other class members
+        self.sample_source = None
+        self.image_source = None
+        self.eigen_value_source = None
+        self.sample_table = None
+        self.original_image_renderer = None
+        self.attribution_image_renderer = None
+
+    def get_wnid_description(self, wnid):
+        """
+        Gets the human-readable cleartext descriptions for the specified WordNet ID.
+
+        Parameters:
+        -----------
+            wnid: str
+                The WordNet ID that is to be mapped.
+
+        Returns:
+        --------
+            str:
+                Returns the cleartext description for the specified WordNet ID. If the WordNet ID is invalid, 'UNKNOWN'
+                is returned.
+        """
+
+        return self.wordmap.get(wnid, 'UNKNOWN')
 
     # load data for a new category
-    # pylint: disable=unused-argument
-    def update_cat(attr, old, new):
-        data.sel.cat = new
+    def update_category(self, new_category):
+        """
+        Selects a new category and loads the associated data for it.
 
-        # analysis data
-        with h5py.File(analysis_path, 'r') as analysis_file:
-            analysis_file = analysis_file[data.sel.cat]
-            data.cluster = {key: val[:] for key, val in analysis_file['cluster'].items()}
-            data.visualization = {key: val[:] for key, val in analysis_file['visualization'].items()}
-            data.eigenvalue = analysis_file['eigenvalue'][:]
-            data.index = analysis_file['index'][:]
+        Parameters:
+        -----------
+            new_category:
+                The new category that is to be selected.
+        """
 
-        # reset selected values if necessary
-        if data.sel.clu not in data.cluster:
-            data.sel.clu = next(iter(data.cluster))
-        if data.sel.vis not in data.visualization:
-            data.sel.vis = next(iter(data.visualization))
+        # Selects the new category and deselects everything selected previously
+        self.data.selected.category = new_category
+        self.sample_source.selected.indices = []
 
-        # attribution data
-        indices = list(range(num))
-        with h5py.File(attribution_path, 'r') as attribution_file:
-            data.prediction = attribution_file['prediction'][data.index, :]
+        # Loads the data of the newly selected category
+        with h5py.File(self.analysis_path, 'r') as analysis_file:
+            analysis_file = analysis_file[self.data.selected.category]
+            self.data.cluster = {key: value[:] for key, value in analysis_file['cluster'].items()}
+            self.data.visualization = {key: value[:] for key, value in analysis_file['visualization'].items()}
+            self.data.eigen_value = analysis_file['eigen_value'][:]
+            self.data.index = analysis_file['index'][:]
 
-        # label descriptions for each sample prediction
-        visual_desc = [map_wnid(wnids[label_id]) for label_id in data.prediction.argmax(1)]
-        visual_x, visual_y = data.visualization[data.sel.vis].T
-        visual_cluster = data.cluster[data.sel.clu]
+        # Resets the selected cluster and visualization if necessary (that is, when they are not in the newly selected
+        # category)
+        if self.data.selected.cluster not in self.data.cluster:
+            self.data.selected.cluster = next(iter(self.data.cluster))
+        if self.data.selected.visualization not in self.data.visualization:
+            self.data.selected.visualization = next(iter(self.data.visualization))
 
-        # update sample source with new category data
-        sample_src.data.update({
+        # Loads the attribution data for the newly selected category
+        with h5py.File(self.attribution_path, 'r') as attribution_file:
+            self.data.prediction = attribution_file['prediction'][self.data.index, :]
+
+        # Updates the sample source with new category data
+        description = [self.get_wnid_description(self.wnids[label_id]) for label_id in self.data.prediction.argmax(1)]
+        visual_x, visual_y = self.data.visualization[self.data.selected.visualization].T
+        visual_cluster = self.data.cluster[self.data.selected.cluster]
+        self.sample_source.data.update({
             'i': range(len(visual_x)),
             'x': visual_x,
             'y': visual_y,
             'cluster': visual_cluster,
-            'prediction': visual_desc
+            'prediction': description
         })
 
-        # unselect everything
-        sample_src.selected.indices = []
-
-        # decide which images to show in image_src
-        image_src.data.update({
-            'attribution': attribution_loader[data.index[indices]],
-            'original': list(original_loader[data.index[indices]]),
-            'x': (np.arange(len(indices), dtype=int) * width) % max_width,
-            'y': (np.arange(len(indices), dtype=int) * width) // max_width * height,
+        # Decides which images to show
+        indices = list(range(self.number_of_images))
+        self.image_source.data.update({
+            'attribution': self.attribution_image_loader[self.data.index[indices]],
+            'original': list(self.original_image_loader[self.data.index[indices]]),
+            'x': (np.arange(self.number_of_images, dtype=int) * self.width) % self.maximum_width,
+            'y': (np.arange(self.number_of_images, dtype=int) * self.width) // self.maximum_width * self.height,
         })
 
-        # update eigenvalue plot
-        eigen_value_src.data.update({
-            'x': range(len(data.eigenvalue)),
-            'y': data.eigenvalue[::-1],
+        # Updates the eigen value plot
+        self.eigen_value_source.data.update({
+            'x': range(len(self.data.eigen_value)),
+            'y': self.data.eigen_value[::-1],
         })
 
-    # various plotting constants
-    cmap = d3['Category20'][20]
-    width, height = (224, 224)
-    max_width = 4 * 224
-    max_height = 4 * 224
-    num = 16
+    def update_selection(self, new_sample_index):
+        """
+        Updates the selected sample.
 
-    # initialize sources
-    sample_src = ColumnDataSource({'i': [], 'x': [], 'y': [], 'cluster': [], 'prediction': []})
-    image_src = ColumnDataSource({'attribution': [], 'original': [], 'x': [], 'y': []})
-    eigen_value_src = ColumnDataSource({'x': [], 'y': []})
+        Parameters:
+        -----------
+            new_sample_index: int
+                The index of the sample that is to be selected.
+        """
 
-    update_cat(None, data.sel.cat, data.sel.cat)
+        self.sample_table.view = CDSView(source=self.sample_source, filters=[IndexFilter(new_sample_index)])
 
-    # === Eigenvalue Figure ===
-    eigen_value_figure = figure(
-        tools=[],
-        plot_width=200,
-        plot_height=800,
-        min_border=1,
-        min_border_left=1,
-        toolbar_location="above",
-        title="Eigenvalues"
-    )
-
-    # === Cluster Visualization Figure (e.g. TSNE) ===
-    visual_fig = figure(
-        tools="pan,wheel_zoom,box_select,lasso_select,reset",
-        plot_width=600,
-        plot_height=800,
-        min_border=1,
-        min_border_left=1,
-        toolbar_location="above",
-        x_axis_location=None,
-        y_axis_location=None,
-        title="Visualization",
-        active_drag='box_select'
-    )
-    visual_cmap = linear_cmap('cluster', cmap, 0, len(cmap) - 1)
-    visual_fig.scatter(
-        'x',
-        'y',
-        source=sample_src,
-        size=6,
-        color=visual_cmap,
-        nonselection_alpha=0.2,
-        nonselection_color=visual_cmap
-    )
-
-    # === Table of selected Samples ===
-    sample_columns = [
-        TableColumn(field='cluster', title='cluster', width=50),
-        TableColumn(field='prediction', title='prediction'),
-    ]
-    sample_table = DataTable(source=sample_src, columns=sample_columns, width=250, height=800)
-
-    # === Figure containing original images and attributions ===
-    image_fig = figure(
-        tools=[],
-        plot_width=800,
-        plot_height=800,
-        min_border=10,
-        min_border_left=10,
-        toolbar_location=None,
-        x_axis_location=None,
-        y_axis_location=None,
-        title="Images",
-        x_range=Range1d(start=0, end=max_width),
-        y_range=Range1d(start=0, end=max_height)
-    )
-    attribution_rend = image_fig.image(
-        'attribution',
-        x='x',
-        y='y',
-        dw=width,
-        dh=height,
-        source=image_src,
-        palette='Magma256',
-        global_alpha=0.0
-    )
-    original_rend = image_fig.image_rgba(
-        'original',
-        x='x',
-        y='y',
-        dw=width,
-        dh=height,
-        source=image_src,
-        global_alpha=1.0
-    )
-
-    # === Widgets ==
-    category_select = Select(value=data.sel.cat, options=[(k, '{} ({})'.format(words[k], k)) for k in categories])
-    cluster_select = Select(value=data.sel.clu, options=[k for k in data.cluster], width=200)
-    alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
-
-    # === Document Layout ===
-    top = row(category_select, cluster_select)
-    bottom = row(eigen_value_figure, sample_table, visual_fig, column(image_fig, alpha_slider))
-    layout = column(top, bottom)
-    doc.add_root(layout)
-    doc.title = 'SPRINCL TSNE'
-
-    def update_selection(attr, old, new):
-        sample_table.view = CDSView(source=sample_src, filters=[IndexFilter(new)])
-        indices = sample_src.selected.indices[:num] if sample_src.selected.indices else list(range(num))
+        if self.sample_source.selected.indices: # pylint: disable=no-member
+            indices = self.sample_source.selected.indices[:self.number_of_images] # pylint: disable=no-member
+        else:
+            indices = list(range(self.number_of_images))
         indices = sorted(indices)
-        image_src.data.update({
-            'attribution': attribution_loader[data.index[indices]],
-            'original': list(original_loader[data.index[indices]]),
-            'x': (np.arange(len(indices), dtype=int) * width) % max_width,
-            'y': (np.arange(len(indices), dtype=int) * width) // max_width * height,
+
+        self.image_source.data.update({
+            'attribution': self.attribution_image_loader[self.data.index[indices]],
+            'original': list(self.original_image_loader[self.data.index[indices]]),
+            'x': (np.arange(len(indices), dtype=int) * self.width) % self.maximum_width,
+            'y': (np.arange(len(indices), dtype=int) * self.width) // self.maximum_width * self.height,
         })
 
-    # pylint: disable=unused-argument
-    def update_clusters(attr, old, new):
-        data.sel.clu = new
-        sample_src.data.update({'cluster': data.cluster[data.sel.clu]})
+    def update_clusters(self, new_cluster):
+        """
+        Updates the clusters.
 
-    # pylint: disable=unused-argument
-    def update_alpha(attr, old, new):
-        original_rend.glyph.global_alpha = 1. - new
-        attribution_rend.glyph.global_alpha = new
+        Parameters:
+        -----------
+            new_cluster
+                The new cluster.
+        """
 
-    # === Event Registration ===
-    category_select.on_change('value', update_cat)
-    cluster_select.on_change('value', update_clusters)
-    alpha_slider.on_change('value', update_alpha)
-    sample_src.selected.on_change('indices', update_selection) # pylint: disable=no-member
-    logger.info('Ready for service.')
+        self.data.selected.cluster = new_cluster
+        self.sample_source.data.update({'cluster': self.data.cluster[self.data.selected.cluster]})
+
+    def update_alpha(self, new_alpha):
+        """
+        Updates the alpha channel of the original and the attribution images. This slowly hides or reveals the original
+        image, which is rendered under the attribution image.
+
+        Parameters:
+        -----------
+            new_alpha: float
+                The new value for the alpha channel.
+        """
+
+        self.original_image_renderer.glyph.global_alpha = 1.0 - new_alpha
+        self.attribution_image_renderer.glyph.global_alpha = new_alpha
+
+    def setup_up_bokeh_document(self, document):
+        """
+        Sets up the Bokeh server document.
+
+        Parameters:
+        -----------
+            document:
+                The document that represents the website displayed by the Bokeh server.
+        """
+
+        # Starts the initialization of the document
+        self.logger.info('Setting up document...')
+
+
+        # Initializes the source of the samples, images, and eigen values
+        self.sample_source = ColumnDataSource({'i': [], 'x': [], 'y': [], 'cluster': [], 'prediction': []})
+        self.image_source = ColumnDataSource({'attribution': [], 'original': [], 'x': [], 'y': []})
+        self.eigen_value_source = ColumnDataSource({'x': [], 'y': []})
+
+        # Loads the data for the initial selected category
+        self.update_category(self.data.selected.category)
+
+        # Creates a figure for the eigen values
+        eigen_value_figure = figure(
+            tools=[],
+            plot_width=200,
+            plot_height=800,
+            min_border=1,
+            min_border_left=1,
+            toolbar_location="above",
+            title="Eigen values"
+        )
+
+        # Creates a figure for the visualization (e.g. TSNE)
+        visualization_figure = figure(
+            tools="pan,wheel_zoom,box_select,lasso_select,reset",
+            plot_width=600,
+            plot_height=800,
+            min_border=1,
+            min_border_left=1,
+            toolbar_location="above",
+            x_axis_location=None,
+            y_axis_location=None,
+            title="Visualization",
+            active_drag='box_select'
+        )
+        visualization_colormap = linear_cmap('cluster', self.colormap, 0, len(self.colormap) - 1)
+        visualization_figure.scatter(
+            'x',
+            'y',
+            source=self.sample_source,
+            size=6,
+            color=visualization_colormap,
+            nonselection_alpha=0.2,
+            nonselection_color=visualization_colormap
+        )
+
+        # Creates the table for the selected samples
+        sample_columns = [
+            TableColumn(field='cluster', title='cluster', width=50),
+            TableColumn(field='prediction', title='prediction'),
+        ]
+        sample_table = DataTable(source=self.sample_source, columns=sample_columns, width=250, height=800)
+
+        # Creates a figure containing the original images and attributions
+        image_figure = figure(
+            tools=[],
+            plot_width=800,
+            plot_height=800,
+            min_border=10,
+            min_border_left=10,
+            toolbar_location=None,
+            x_axis_location=None,
+            y_axis_location=None,
+            title="Images",
+            x_range=Range1d(start=0, end=self.maximum_width),
+            y_range=Range1d(start=0, end=self.maximum_height)
+        )
+        self.attribution_image_renderer = image_figure.image(
+            'attribution',
+            x='x',
+            y='y',
+            dw=self.width,
+            dh=self.height,
+            source=self.image_source,
+            palette='Magma256',
+            global_alpha=0.0
+        )
+        self.original_image_renderer = image_figure.image_rgba(
+            'original',
+            x='x',
+            y='y',
+            dw=self.width,
+            dh=self.height,
+            source=self.image_source,
+            global_alpha=1.0
+        )
+
+        # Adds some widgets to the document for selecting categories, selecting clusters, and changing the alpha channel
+        # of the images (the attribution images are rendered above the respective original image, changing the alpha
+        # reveals the original image or hides it behind the attribution image)
+        category_select = Select(
+            value=self.data.selected.category,
+            options=[(category, '{0} ({1})'.format(self.wordmap[category], category)) for category in self.categories]
+        )
+        cluster_select = Select(
+            value=self.data.selected.cluster,
+            options=[cluster for cluster in self.data.cluster],
+            width=200
+        )
+        alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
+
+        # Registers the event handlers for the UI controls
+        category_select.on_change('value', self.update_category)
+        cluster_select.on_change('value', self.update_clusters)
+        alpha_slider.on_change('value', self.update_alpha)
+        self.sample_source.selected.on_change('indices', self.update_selection) # pylint: disable=no-member
+
+        # Sets up the layouting of the document
+        top = row(category_select, cluster_select)
+        bottom = row(eigen_value_figure, sample_table, visualization_figure, column(image_figure, alpha_slider))
+        layout = column(top, bottom)
+        document.add_root(layout)
+        document.title = 'SPRINCL'
+
+        # Finishes the setup of the Bokeh application
+        self.logger.info('Ready for service.')

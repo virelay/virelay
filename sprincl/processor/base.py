@@ -78,7 +78,7 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             Other potential parameters defined in sub classes.
 
         """
-        self.update_defaults()
+        self.reset_defaults()
         for key, param in self.params.items():
             if param.mandatory and key not in kwargs:
                 raise TypeError('{} parameter {} is mandatory.'.format(key, param.dtype))
@@ -104,16 +104,21 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
             pass
         raise AttributeError('\'{} \' has no attribute \'{}\''.format(type(self), name))
 
+    def reset_defaults(self):
+        """Reset dictionary for the default (fallback) values of parameters to their parameter defaults.
+
+        """
+        self._default_param_values = {key: param.default for key, param in self.params.items()}
+
     def update_defaults(self, **kwargs):
         """Update dictionary for the default (fallback) values of parameters!
 
         Parameters that are not explicitly assigned as an instance attribute are retrieved from the default dict.
-        Resets to class Param defaults if no keyword arguments are supplied.
 
         Parameters
         ----------
         **kwargs :
-            Names of Params to be updated. Only existing Params are allowed. If empty, defaults from class are restored.
+            Names of Params to be updated. Only existing Params are allowed.
 
         Raises
         ------
@@ -128,8 +133,6 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
                 self._default_param_values[key] = val
             else:
                 raise KeyError('Name \'{}\' does not describe any existing Param!'.format(key))
-        if not kwargs:
-            self._default_param_values = {key: param.default for key, param in self.params.items()}
 
     def function(self, data):
         """Abstract function this Processor should apply on input

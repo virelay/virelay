@@ -128,6 +128,18 @@ class TestProcessor(object):
         proc.update_defaults(param_2=1)
         assert proc.param_2 == 1
 
+    def test_reset_defaults(self, processor_type):
+        proc = processor_type(param_1='soup')
+        proc.update_defaults(param_2=1)
+        proc.reset_defaults()
+        assert proc.param_2 == -25
+
+    def test_reset_defaults_assigned(self, processor_type):
+        proc = processor_type(param_1='soup', param_2=2)
+        proc.update_defaults(param_2=1)
+        proc.reset_defaults()
+        assert proc.param_2 == 2
+
     def test_update_defaults_wrong_dtype(self, processor_type):
         proc = processor_type(param_1='soup')
         with pytest.raises(TypeError):

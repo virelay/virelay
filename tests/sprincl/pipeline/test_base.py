@@ -97,7 +97,7 @@ class TestPipeline(object):
     def test_default_param_values(self, pipeline_type, processor_type):
         proc = processor_type(is_output=False)
         pipeline = pipeline_type(task_2=proc)
-        assert not pipeline.processos['task_2'].is_output
+        assert not pipeline.processes['task_2'].is_output
 
     def test_checkpoint_processes(self, pipeline_type, processor_type):
         proc_1 = FunctionProcessor(function=lambda x: x + 5, is_checkpoint=False)

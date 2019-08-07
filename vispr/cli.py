@@ -78,7 +78,7 @@ def main(
         'allow_websocket_origin': list(allow_websocket_origin),
         'num_procs': num_procs,
     }
-    server_application = ServerApplication(input_path, attribution_path, analysis_path, wordmap, wnids)
+    server_application = ServerApplication(input_path, attribution_path, analysis_path, wnids, wordmap)
     server = Server({
         '/': server_application.setup_up_bokeh_document
     }, **server_kwargs)

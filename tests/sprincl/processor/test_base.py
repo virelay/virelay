@@ -46,27 +46,6 @@ def unbound_function():
     return some_function
 
 
-class TestParam(object):
-    def test_instatiation(self):
-        Param(object)
-
-    def test_dtype_not_assigned(self):
-        with pytest.raises(TypeError):
-            Param()
-
-    def test_dtype_no_type(self):
-        with pytest.raises(TypeError):
-            Param('monkey')
-
-    def test_dtype_multiple(self):
-        param = Param((object, type))
-        assert param.dtype == (object, type)
-
-    def test_dtype_single_to_tuple(self):
-        param = Param(object)
-        assert param.dtype == (object,)
-
-
 class TestProcessor(object):
     def test_params_tracked(self, processor_type):
         assert ['is_output', 'is_checkpoint', 'io', 'param_1', 'param_2', 'param_3'] == list(processor_type.params)

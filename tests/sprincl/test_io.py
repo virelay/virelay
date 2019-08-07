@@ -15,6 +15,26 @@ def param_values():
 
 
 @pytest.mark.parametrize("storage", [io.HDF5Storage, io.PickleStorage])
+def test_data_storage_at_functionality(storage, tmp_path, data, param_values):
+    test_path = tmp_path / "test.file"
+    with storage(test_path, mode='a') as data_storage:
+        assert not data_storage._is_copy, 'Should not be a copy.'
+        c = data_storage.at(data_key='param_values')
+        assert c.data_key == 'param_values', "Data key was not changed."
+        assert c._is_copy, 'Should be a copy, not all the mandatory parameters were set.'
+        with pytest.raises(KeyError):
+            # raises KeyError because the mandatory key was not set.
+            data_storage.at(key='param_values')
+        with pytest.raises(KeyError):
+            # raises KeyError because non existing key was set.
+            data_storage.at(data_key='param_values', key='key')
+        with pytest.raises(TypeError):
+            data_storage.at(data_key=1)
+
+        data_storage.at(data_key='param_values').at(data_key='data')
+
+
+@pytest.mark.parametrize("storage", [io.HDF5Storage, io.PickleStorage])
 def test_data_storage(storage, tmp_path, data, param_values):
     # Test writing
     test_path = tmp_path / "test.file"
@@ -56,6 +76,6 @@ def test_data_storage(storage, tmp_path, data, param_values):
 def test_no_storage(data):
     data_storage = io.NoStorage()
     with pytest.raises(io.NoDataSource):
-        data_storage.read('data')
+        data_storage.read()
     with pytest.raises(io.NoDataTarget):
         data_storage.write(data)

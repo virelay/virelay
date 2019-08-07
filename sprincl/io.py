@@ -1,10 +1,13 @@
 import copy
 import pickle
 from collections import OrderedDict
-from abc import ABCMeta, abstractmethod, ABC
+from abc import abstractmethod
 
 import numpy as np
 import h5py
+
+from sprincl.tracker import MetaTracker
+from sprincl.base import Param
 
 
 class NoDataSource(Exception):
@@ -19,13 +22,26 @@ class NoDataTarget(Exception):
         super().__init__('No Data Target available.')
 
 
-class DataStorageBase(metaclass=ABCMeta):
+class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
     """Implements a key, value storage object.
 
     """
 
-    def __init__(self):
-        self._default_params = {}
+    def __init__(self, **kwargs):
+        for key, param in self.params.items():
+            attr = kwargs.pop(key, param.default)
+            if attr is not None and not isinstance(attr, param.dtype):
+                raise TypeError('{} parameter is no subtype of {}.'.format(key, param.dtype))
+            setattr(self, key, attr)
+        if kwargs:
+            key, _ = kwargs.popitem()
+            raise TypeError('\'{}\' is an invalid keyword argument'.format(key))
+        self._default_params = {key: param.default for key, param in self.params.items()}
+        self._is_copy = False  # used in self.at and mandatory parameters.
+
+    @property
+    def _mandatory_params(self):
+        return set([key for key, param in self.params.items() if param.mandatory])
 
     @abstractmethod
     def read(self):
@@ -38,6 +54,7 @@ class DataStorageBase(metaclass=ABCMeta):
     def close(self):
         self.io.close()
 
+    @abstractmethod
     def exists(self):
         raise NotImplementedError
 
@@ -62,22 +79,34 @@ class DataStorageBase(metaclass=ABCMeta):
     def __bool__(self):
         return bool(self.io)
 
-    def at(self, **kwargs):
-        """Return a copy of the instance with a self.key=key
-        In this way self.write(data) automatically writes the data to self.key
-
-        Parameters
-        ----------
-        data_key: str
-            At which key the data will be stored.
+    def _update_defaults(self, kwargs):
+        """Update and set kwargs as instance attributes. kwargs must have the same keys as self.params and values must
+        have the same type as specified in self.params.
 
         """
+        for key, value in kwargs.items():
+            if key not in self.params.keys():
+                raise KeyError('Non expected key: {}. Available keys: {}'.format(key, self.params.keys()))
+            if not isinstance(value, self.params[key].dtype):
+                raise TypeError('Value for key {} is of wrong type {}, whereas it should be of type {}.'.format(
+                    key, type(value), self.params[key].dtype))
+            setattr(self, key, value)
+
+    def at(self, **kwargs):
+        """Return a copy of the instance where kwargs become the attributes of the class.
+        I.e. a specific self.data_key is set so that self.write(data) automatically writes the data to correct key.
+
+        """
+        missing_params = self._mandatory_params - set(kwargs.keys())
+        if missing_params and not self._is_copy:
+            raise KeyError('Missing mandatory parameters: {}'.format(missing_params))
         c = copy.copy(self)
-        c._default_params.update(kwargs)  # TODO add type checking, fix the structure of _default_params
+        c._update_defaults(kwargs)
+        c._is_copy = True
         return c
 
 
-class NoStorage(DataStorageBase, ABC):
+class NoStorage(DataStorageBase):
     def __bool__(self):
         return False
 
@@ -89,7 +118,10 @@ class NoStorage(DataStorageBase, ABC):
 
 
 class PickleStorage(DataStorageBase):
-    def __init__(self, path, mode='r'):
+
+    data_key = Param(str, 'data', mandatory=True)
+
+    def __init__(self, path, mode='r', **kwargs):
         """
         Parameters
         ----------
@@ -99,7 +131,7 @@ class PickleStorage(DataStorageBase):
             Write, Read or Append mode ['w', 'r', 'a'].
 
         """
-        super().__init__()
+        super().__init__(**kwargs)
         if mode not in ['w', 'r', 'a']:
             raise ValueError("Mode should be set to 'w', 'r' or 'a'.")
         self.io = open(path, mode + 'b')
@@ -154,7 +186,7 @@ class PickleStorage(DataStorageBase):
 
 class HDF5Storage(DataStorageBase):
 
-    data_key = Param(str, 'data')
+    data_key = Param(str, 'data', mandatory=True)
 
     def __init__(self, path, mode='r', **kwargs):
         """
@@ -166,10 +198,8 @@ class HDF5Storage(DataStorageBase):
             Write, Read or Append mode ['w', 'r', 'a'].
 
         """
-        super().__init__()
-        self.io = h5py.File(path, mode=mode, **kwargs)
-        self._mandatory_params = ['data_key']
-        self._default_params = {'data_key': 'data'}
+        super().__init__(**kwargs)
+        self.io = h5py.File(path, mode=mode)
 
     def read(self):
         """

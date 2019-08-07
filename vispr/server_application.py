@@ -12,9 +12,10 @@ from bokeh.models import ColumnDataSource, CDSView, IndexFilter, DataTable, Tabl
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
 from bokeh.models.widgets import Select, Slider
-from bokeh.palettes import d3 # pylint: disable=no-name-in-module
+from bokeh.palettes import d3  # pylint: disable=no-name-in-module
 
 from .data import OrigImage, AttrImage
+
 
 class ServerApplication:
     """Represents the Bokeh server application that renders the data on the client and handles user input."""
@@ -126,7 +127,7 @@ class ServerApplication:
             analysis_file = analysis_file[self.data.selected.category]
             self.data.cluster = {key: value[:] for key, value in analysis_file['cluster'].items()}
             self.data.visualization = {key: value[:] for key, value in analysis_file['visualization'].items()}
-            self.data.eigen_value = analysis_file['eigen_value'][:]
+            self.data.eigen_value = analysis_file['eigenvalue'][:]
             self.data.index = analysis_file['index'][:]
 
         # Resets the selected cluster and visualization if necessary (that is, when they are not in the newly selected
@@ -179,8 +180,8 @@ class ServerApplication:
 
         self.sample_table.view = CDSView(source=self.sample_source, filters=[IndexFilter(new_sample_index)])
 
-        if self.sample_source.selected.indices: # pylint: disable=no-member
-            indices = self.sample_source.selected.indices[:self.number_of_images] # pylint: disable=no-member
+        if self.sample_source.selected.indices:  # pylint: disable=no-member
+            indices = self.sample_source.selected.indices[:self.number_of_images]  # pylint: disable=no-member
         else:
             indices = list(range(self.number_of_images))
         indices = sorted(indices)
@@ -232,7 +233,6 @@ class ServerApplication:
         # Starts the initialization of the document
         self.logger.info('Setting up document...')
 
-
         # Initializes the source of the samples, images, and eigen values
         self.sample_source = ColumnDataSource({'i': [], 'x': [], 'y': [], 'cluster': [], 'prediction': []})
         self.image_source = ColumnDataSource({'attribution': [], 'original': [], 'x': [], 'y': []})
@@ -250,6 +250,13 @@ class ServerApplication:
             min_border_left=1,
             toolbar_location="above",
             title="Eigen values"
+        )
+        eigen_value_renderer = eigen_value_figure.scatter(
+            'x',
+            'y',
+            source=self.eigen_value_source,
+            size=4,
+            color="#3A5785"
         )
 
         # Creates a figure for the visualization (e.g. TSNE)
@@ -281,7 +288,7 @@ class ServerApplication:
             TableColumn(field='cluster', title='cluster', width=50),
             TableColumn(field='prediction', title='prediction'),
         ]
-        sample_table = DataTable(source=self.sample_source, columns=sample_columns, width=250, height=800)
+        self.sample_table = DataTable(source=self.sample_source, columns=sample_columns, width=250, height=800)
 
         # Creates a figure containing the original images and attributions
         image_figure = figure(
@@ -332,14 +339,17 @@ class ServerApplication:
         alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
 
         # Registers the event handlers for the UI controls
-        category_select.on_change('value', self.update_category)
-        cluster_select.on_change('value', self.update_clusters)
-        alpha_slider.on_change('value', self.update_alpha)
-        self.sample_source.selected.on_change('indices', self.update_selection) # pylint: disable=no-member
+        category_select.on_change('value', lambda _, __, new_category: self.update_category(new_category))
+        cluster_select.on_change('value', lambda _, __, new_cluster: self.update_clusters(new_cluster))
+        alpha_slider.on_change('value', lambda _, __, new_alpha: self.update_alpha(new_alpha))
+        self.sample_source.selected.on_change(  # pylint: disable=no-member
+            'indices',
+            lambda _, __, new_sample_index: self.update_selection(new_sample_index)
+        )
 
         # Sets up the layouting of the document
         top = row(category_select, cluster_select)
-        bottom = row(eigen_value_figure, sample_table, visualization_figure, column(image_figure, alpha_slider))
+        bottom = row(eigen_value_figure, self.sample_table, visualization_figure, column(image_figure, alpha_slider))
         layout = column(top, bottom)
         document.add_root(layout)
         document.title = 'SPRINCL'

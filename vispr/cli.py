@@ -8,6 +8,7 @@ from bokeh.server.server import Server
 
 from .server_application import ServerApplication
 
+
 @click.command()
 @click.argument('input_path', type=click.Path())
 @click.argument('attribution_path', type=click.Path())
@@ -32,7 +33,7 @@ def main(
         num_procs,
         log,
         verbose
-    ):
+):
     """
     Starts the VISPR Bokeh server.
 

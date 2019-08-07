@@ -11,7 +11,7 @@ from bokeh.layouts import row, column
 from bokeh.models import ColumnDataSource, CDSView, IndexFilter, DataTable, TableColumn, Range1d
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
-from bokeh.models.widgets import Select, Slider
+from bokeh.models.widgets import Select, Slider, Button, TextInput
 from bokeh.palettes import d3  # pylint: disable=no-name-in-module
 
 from .data import OrigImage, AttrImage
@@ -82,6 +82,8 @@ class ServerApplication:
         self.data.selected.visualization = None
 
         # Initializes other class members
+        self.save_selected_samples_button = None
+        self.save_selected_samples_note_text_input = None
         self.sample_source = None
         self.image_source = None
         self.eigen_value_source = None
@@ -122,6 +124,8 @@ class ServerApplication:
         # Selects the new category and deselects everything selected previously
         self.data.selected.category = new_category
         self.sample_source.selected.indices = []
+        if self.save_selected_samples_button is not None:
+            self.save_selected_samples_button.disabled = True
 
         # Loads the data of the newly selected category
         with h5py.File(self.analysis_path, 'r') as analysis_file:
@@ -169,23 +173,26 @@ class ServerApplication:
             'y': self.data.eigen_value[::-1],
         })
 
-    def update_selection(self, new_sample_index):
+    def update_selection(self, new_sample_indices):
         """
         Updates the selected sample.
 
         Parameters:
         -----------
-            new_sample_index: int
+            new_sample_indices: list
                 The index of the sample that is to be selected.
         """
 
-        self.sample_table.view = CDSView(source=self.sample_source, filters=[IndexFilter(new_sample_index)])
+        self.sample_table.view = CDSView(source=self.sample_source, filters=[IndexFilter(new_sample_indices)])
 
         if self.sample_source.selected.indices:  # pylint: disable=no-member
             indices = self.sample_source.selected.indices[:self.number_of_images]  # pylint: disable=no-member
         else:
             indices = list(range(self.number_of_images))
         indices = sorted(indices)
+
+        if indices:
+            self.save_selected_samples_button.disabled = False
 
         self.image_source.data.update({
             'attribution': self.attribution_image_loader[self.data.index[indices]],
@@ -220,6 +227,14 @@ class ServerApplication:
 
         self.original_image_renderer.glyph.global_alpha = 1.0 - new_alpha
         self.attribution_image_renderer.glyph.global_alpha = new_alpha
+
+    def save_selected_samples(self):
+        """Saves the currently selected samples for later reference."""
+
+        print(self.sample_source.selected.indices)  # pylint: disable=no-member
+        print(self.data.selected.category)
+        print(self.data.selected.cluster)
+        print(self.save_selected_samples_note_text_input.value)
 
     def setup_up_bokeh_document(self, document):
         """
@@ -325,9 +340,10 @@ class ServerApplication:
             global_alpha=1.0
         )
 
-        # Adds some widgets to the document for selecting categories, selecting clusters, and changing the alpha channel
+        # Adds some widgets to the document for selecting categories, selecting clusters, changing the alpha channel
         # of the images (the attribution images are rendered above the respective original image, changing the alpha
-        # reveals the original image or hides it behind the attribution image)
+        # reveals the original image or hides it behind the attribution image), and saving the currently selected
+        # elements as interesting results
         category_select = Select(
             value=self.data.selected.category,
             options=[(category, '{0} ({1})'.format(self.wordmap[category], category)) for category in self.categories]
@@ -338,6 +354,8 @@ class ServerApplication:
             width=200
         )
         alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
+        self.save_selected_samples_button = Button(label="Save", disabled=True, width=80)
+        self.save_selected_samples_note_text_input = TextInput(placeholder='Describe your interesting finding...')
 
         # Registers the event handlers for the UI controls
         category_select.on_change('value', lambda _, __, new_category: self.update_category(new_category))
@@ -347,9 +365,15 @@ class ServerApplication:
             'indices',
             lambda _, __, new_sample_index: self.update_selection(new_sample_index)
         )
+        self.save_selected_samples_button.on_click(lambda _: self.save_selected_samples())
 
         # Sets up the layouting of the document
-        top = row(category_select, cluster_select)
+        top = row(
+            category_select,
+            cluster_select,
+            self.save_selected_samples_button,
+            self.save_selected_samples_note_text_input
+        )
         bottom = row(eigen_value_figure, self.sample_table, visualization_figure, column(image_figure, alpha_slider))
         layout = column(top, bottom)
         document.add_root(layout)

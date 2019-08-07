@@ -88,6 +88,7 @@ class ServerApplication:
         self.sample_table = None
         self.original_image_renderer = None
         self.attribution_image_renderer = None
+        self.eigen_value_renderer = None
 
     def get_wnid_description(self, wnid):
         """
@@ -251,7 +252,7 @@ class ServerApplication:
             toolbar_location="above",
             title="Eigen values"
         )
-        eigen_value_renderer = eigen_value_figure.scatter(
+        self.eigen_value_renderer = eigen_value_figure.scatter(
             'x',
             'y',
             source=self.eigen_value_source,

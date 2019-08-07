@@ -1,8 +1,9 @@
 """Bokeh plotting handler."""
 
 import json
-import logging
 import random
+import sqlite3
+import logging
 from argparse import Namespace
 
 import h5py
@@ -20,7 +21,7 @@ from .data import OrigImage, AttrImage
 class ServerApplication:
     """Represents the Bokeh server application that renders the data on the client and handles user input."""
 
-    def __init__(self, input_path, attribution_path, analysis_path, wnid_path, wordmap_path):
+    def __init__(self, input_path, attribution_path, analysis_path, wnid_path, wordmap_path, database_path):
         """
         Initializes a new ServerApplication instance.
 
@@ -37,6 +38,10 @@ class ServerApplication:
             wordmap_path: str
                 The path to the JSON file that contains the mappings between the WordNet IDs and human-readable class
                 names.
+            database_path: str
+                The path to the SQLite3 database that is to be used to store interesting results. If the file already
+                exists, then it is used, otherwise a new database is created. When no path is specified, then the save
+                feature is disabled.
         """
 
         # Stores the arguments for later use
@@ -45,6 +50,17 @@ class ServerApplication:
         self.analysis_path = analysis_path
         self.wordmap_path = wordmap_path
         self.wnid_path = wnid_path
+
+        # Initializes other class members
+        self.save_selected_samples_button = None
+        self.save_selected_samples_note_text_input = None
+        self.sample_source = None
+        self.image_source = None
+        self.eigen_value_source = None
+        self.sample_table = None
+        self.original_image_renderer = None
+        self.attribution_image_renderer = None
+        self.eigen_value_renderer = None
 
         # Some configuration constants for the plotting
         self.number_of_images = 16
@@ -56,6 +72,12 @@ class ServerApplication:
 
         # Gets the logger for the module
         self.logger = logging.getLogger(__name__)
+
+        # Initializes the SQLite3 database for storing interesting results
+        self.database_path = database_path
+        self.is_save_selected_samples_enabled = self.database_path is not None
+        if self.is_save_selected_samples_enabled:
+            self.initialize_database()
 
         # Loads the analysis file and extracts the category names
         with h5py.File(self.analysis_path, 'r') as analysis_file:
@@ -81,16 +103,27 @@ class ServerApplication:
         self.data.selected.cluster = None
         self.data.selected.visualization = None
 
-        # Initializes other class members
-        self.save_selected_samples_button = None
-        self.save_selected_samples_note_text_input = None
-        self.sample_source = None
-        self.image_source = None
-        self.eigen_value_source = None
-        self.sample_table = None
-        self.original_image_renderer = None
-        self.attribution_image_renderer = None
-        self.eigen_value_renderer = None
+    def initialize_database(self):
+        """Initializes the database for storing interesting results."""
+
+        # Establishes a connection to the database, if the database does not exist, yet, then it is created
+        with sqlite3.connect(self.database_path) as connection:
+
+            # Initializes the schema of the database, if it does not exist, yet
+            try:
+                cursor = connection.cursor()
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS interesting_results(
+                        id integer PRIMARY KEY,
+                        sample_indices text NOT NULL,
+                        category text NOT NULL,
+                        cluster text NOT NULL,
+                        note text
+                    )
+                """)
+            except sqlite3.Error as sql_error:
+                self.logger.error('The schema of the database could not be initialized: %s', sql_error.msg)
+                self.is_save_selected_samples_enabled = False
 
     def get_wnid_description(self, wnid):
         """
@@ -124,7 +157,7 @@ class ServerApplication:
         # Selects the new category and deselects everything selected previously
         self.data.selected.category = new_category
         self.sample_source.selected.indices = []
-        if self.save_selected_samples_button is not None:
+        if self.is_save_selected_samples_enabled and self.save_selected_samples_button is not None:
             self.save_selected_samples_button.disabled = True
 
         # Loads the data of the newly selected category
@@ -191,7 +224,7 @@ class ServerApplication:
             indices = list(range(self.number_of_images))
         indices = sorted(indices)
 
-        if indices:
+        if indices and self.is_save_selected_samples_enabled:
             self.save_selected_samples_button.disabled = False
 
         self.image_source.data.update({
@@ -231,10 +264,25 @@ class ServerApplication:
     def save_selected_samples(self):
         """Saves the currently selected samples for later reference."""
 
-        print(self.sample_source.selected.indices)  # pylint: disable=no-member
-        print(self.data.selected.category)
-        print(self.data.selected.cluster)
-        print(self.save_selected_samples_note_text_input.value)
+        # Checks if the saving of interesting findings is enabled, if not, nothing needs to be done
+        if not self.is_save_selected_samples_enabled:
+            return
+
+        # Retrieves the information that is to be saved
+        # pylint: disable=no-member
+        selected_indices = ','.join([str(index) for index in self.sample_source.selected.indices])
+        category = self.data.selected.category
+        cluster = self.data.selected.cluster
+        note = self.save_selected_samples_note_text_input.value
+
+        # Saves the data to the database
+        with sqlite3.connect(self.database_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "INSERT INTO interesting_results(sample_indices, category, cluster, note) VALUES(?, ?, ?, ?)",
+                (selected_indices, category, cluster, note)
+            )
+        self.logger.info('Saved interesting result in the database.')
 
     def setup_up_bokeh_document(self, document):
         """
@@ -354,8 +402,9 @@ class ServerApplication:
             width=200
         )
         alpha_slider = Slider(start=0.0, end=1.0, step=0.05, value=0.0, width=400, align='center')
-        self.save_selected_samples_button = Button(label="Save", disabled=True, width=80)
-        self.save_selected_samples_note_text_input = TextInput(placeholder='Describe your interesting finding...')
+        if self.is_save_selected_samples_enabled:
+            self.save_selected_samples_button = Button(label="Save", disabled=True, width=80)
+            self.save_selected_samples_note_text_input = TextInput(placeholder='Describe your interesting finding...')
 
         # Registers the event handlers for the UI controls
         category_select.on_change('value', lambda _, __, new_category: self.update_category(new_category))
@@ -365,15 +414,22 @@ class ServerApplication:
             'indices',
             lambda _, __, new_sample_index: self.update_selection(new_sample_index)
         )
-        self.save_selected_samples_button.on_click(lambda _: self.save_selected_samples())
+        if self.is_save_selected_samples_enabled:
+            self.save_selected_samples_button.on_click(lambda _: self.save_selected_samples())
 
         # Sets up the layouting of the document
-        top = row(
-            category_select,
-            cluster_select,
-            self.save_selected_samples_button,
-            self.save_selected_samples_note_text_input
-        )
+        if self.is_save_selected_samples_enabled:
+            top = row(
+                category_select,
+                cluster_select,
+                self.save_selected_samples_button,
+                self.save_selected_samples_note_text_input
+            )
+        else:
+            top = row(
+                category_select,
+                cluster_select
+            )
         bottom = row(eigen_value_figure, self.sample_table, visualization_figure, column(image_figure, alpha_slider))
         layout = column(top, bottom)
         document.add_root(layout)

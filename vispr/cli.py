@@ -20,6 +20,7 @@ from .server_application import ServerApplication
 @click.option('--allow-websocket-origin', multiple=True, default=['127.0.0.1:5096'])
 @click.option('--num-procs', type=int, default=1)
 @click.option('--log', type=click.File(), default=stderr)
+@click.option('--database-path', type=str, default=None)
 @click.option('-v', '--verbose', count=True)
 def main(
         input_path,
@@ -32,6 +33,7 @@ def main(
         allow_websocket_origin,
         num_procs,
         log,
+        database_path,
         verbose
 ):
     """
@@ -59,6 +61,10 @@ def main(
             The number of processes that the server is allowed to use. Defaults to 1.
         log: io.TextIOBase
             The file to which the logs are written to. Defaults to stderr.
+        database_path: str
+            The path to the SQLite3 database that is to be used to store interesting results. If the file already
+            exists, then it is used, otherwise a new database is created. When no path is specified, then the save
+            feature is disabled. Defaults to None.
         verbose: int
             The verbosity level of the logging.
     """
@@ -79,7 +85,7 @@ def main(
         'allow_websocket_origin': list(allow_websocket_origin),
         'num_procs': num_procs,
     }
-    server_application = ServerApplication(input_path, attribution_path, analysis_path, wnids, wordmap)
+    server_application = ServerApplication(input_path, attribution_path, analysis_path, wnids, wordmap, database_path)
     server = Server({
         '/': server_application.setup_up_bokeh_document
     }, **server_kwargs)

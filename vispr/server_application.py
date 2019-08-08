@@ -59,6 +59,8 @@ class ServerApplication:
         self.eigen_value_source = None
         self.sample_table = None
         self.interesting_results_table = None
+        self.category_select = None
+        self.cluster_select = None
         self.original_image_renderer = None
         self.attribution_image_renderer = None
         self.eigen_value_renderer = None
@@ -180,6 +182,30 @@ class ServerApplication:
         """
 
         return self.wordmap.get(wnid, 'UNKNOWN')
+
+    def select_interesting_result(self, new_interesting_result_index):
+        """
+        Selects the intersting result.
+
+        Parameters:
+        -----------
+            new_interesting_result_index:
+                The index of the interesting result that was selected by the user.
+        """
+
+        # Gets the information about the interesting result
+        new_interesting_result_index = new_interesting_result_index[0]
+        sample_indices = self.data.interesting_results.sample_indices[new_interesting_result_index]
+        category = self.data.interesting_results.category[new_interesting_result_index]
+        cluster = self.data.interesting_results.cluster[new_interesting_result_index]
+
+        # Selects the interesting result
+        self.category_select.value = category
+        self.update_category(category)
+        self.cluster_select.value = cluster
+        self.update_clusters(cluster)
+        self.sample_source.selected.indices = [int(index) for index in sample_indices.split(',')]
+        self.update_selection(self.sample_source.selected.indices)
 
     # load data for a new category
     def update_category(self, new_category):
@@ -451,11 +477,11 @@ class ServerApplication:
         # of the images (the attribution images are rendered above the respective original image, changing the alpha
         # reveals the original image or hides it behind the attribution image), and saving the currently selected
         # elements as interesting results
-        category_select = Select(
+        self.category_select = Select(
             value=self.data.selected.category,
             options=[(category, '{0} ({1})'.format(self.wordmap[category], category)) for category in self.categories]
         )
-        cluster_select = Select(
+        self.cluster_select = Select(
             value=self.data.selected.cluster,
             options=[cluster for cluster in self.data.cluster],
             width=200
@@ -466,8 +492,8 @@ class ServerApplication:
             self.save_selected_samples_note_text_input = TextInput(placeholder='Describe your interesting finding...')
 
         # Registers the event handlers for the UI controls
-        category_select.on_change('value', lambda _, __, new_category: self.update_category(new_category))
-        cluster_select.on_change('value', lambda _, __, new_cluster: self.update_clusters(new_cluster))
+        self.category_select.on_change('value', lambda _, __, new_category: self.update_category(new_category))
+        self.cluster_select.on_change('value', lambda _, __, new_cluster: self.update_clusters(new_cluster))
         alpha_slider.on_change('value', lambda _, __, new_alpha: self.update_alpha(new_alpha))
         self.sample_source.selected.on_change(  # pylint: disable=no-member
             'indices',
@@ -475,19 +501,23 @@ class ServerApplication:
         )
         if self.is_save_selected_samples_enabled:
             self.save_selected_samples_button.on_click(lambda _: self.save_selected_samples())
+        self.interesting_results_source.selected.on_change(  # pylint: disable=no-member
+            'indices',
+            lambda _, __, new_interesting_result_index: self.select_interesting_result(new_interesting_result_index)
+        )
 
         # Sets up the layouting of the document
         if self.is_save_selected_samples_enabled:
             top = row(
-                category_select,
-                cluster_select,
+                self.category_select,
+                self.cluster_select,
                 self.save_selected_samples_button,
                 self.save_selected_samples_note_text_input
             )
         else:
             top = row(
-                category_select,
-                cluster_select
+                self.category_select,
+                self.cluster_select
             )
         middle = row(eigen_value_figure, self.sample_table, visualization_figure, column(image_figure, alpha_slider))
         bottom = row(self.interesting_results_table)

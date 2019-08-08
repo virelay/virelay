@@ -126,7 +126,7 @@ class ServerApplication:
         """Initializes the database for storing interesting results."""
 
         # Establishes a connection to the database, if the database does not exist, yet, then it is created
-        with sqlite3.connect(self.database_path) as connection:
+        with sqlite3.connect(self.database_path) as connection:  # pylint: disable=no-member
 
             # Initializes the schema of the database, if it does not exist, yet
             try:
@@ -140,7 +140,7 @@ class ServerApplication:
                         note text
                     )
                 """)
-            except sqlite3.Error as sql_error:
+            except sqlite3.Error as sql_error:  # pylint: disable=no-member
                 self.logger.error('The schema of the database could not be initialized: %s', sql_error.msg)
                 self.is_save_selected_samples_enabled = False
 
@@ -161,7 +161,7 @@ class ServerApplication:
                     'cluster': self.data.interesting_results.cluster,
                     'note': self.data.interesting_results.note
                 })
-            except sqlite3.Error as sql_error:
+            except sqlite3.Error as sql_error:  # pylint: disable=no-member
                 self.logger.error('The interesting result data could not be read from the database: %s', sql_error.msg)
                 self.is_save_selected_samples_enabled = False
 
@@ -352,7 +352,7 @@ class ServerApplication:
         })
 
         # Saves the data to the database
-        with sqlite3.connect(self.database_path) as connection:
+        with sqlite3.connect(self.database_path) as connection:  # pylint: disable=no-member
             cursor = connection.cursor()
             cursor.execute(
                 "INSERT INTO interesting_results(sample_indices, category, cluster, note) VALUES(?, ?, ?, ?)",

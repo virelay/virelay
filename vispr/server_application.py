@@ -58,6 +58,7 @@ class ServerApplication:
         self.image_source = None
         self.eigen_value_source = None
         self.sample_table = None
+        self.interesting_results_table = None
         self.original_image_renderer = None
         self.attribution_image_renderer = None
         self.eigen_value_renderer = None
@@ -72,12 +73,6 @@ class ServerApplication:
 
         # Gets the logger for the module
         self.logger = logging.getLogger(__name__)
-
-        # Initializes the SQLite3 database for storing interesting results
-        self.database_path = database_path
-        self.is_save_selected_samples_enabled = self.database_path is not None
-        if self.is_save_selected_samples_enabled:
-            self.initialize_database()
 
         # Loads the analysis file and extracts the category names
         with h5py.File(self.analysis_path, 'r') as analysis_file:
@@ -96,12 +91,34 @@ class ServerApplication:
         self.original_image_loader = OrigImage(self.input_path)
         self.attribution_image_loader = AttrImage(self.attribution_path)
 
+        # Initializes the source of the samples, images, and eigen values
+        self.sample_source = ColumnDataSource({'i': [], 'x': [], 'y': [], 'cluster': [], 'prediction': []})
+        self.image_source = ColumnDataSource({'attribution': [], 'original': [], 'x': [], 'y': []})
+        self.eigen_value_source = ColumnDataSource({'x': [], 'y': []})
+        self.interesting_results_source = ColumnDataSource({
+            'sample_indices': [],
+            'category': [],
+            'cluster': [],
+            'note': []
+        })
+
         # Namespace to store data references
         self.data = Namespace()
         self.data.selected = Namespace()
         self.data.selected.category = self.categories[random.randint(0, len(self.categories))]
         self.data.selected.cluster = None
         self.data.selected.visualization = None
+        self.data.interesting_results = Namespace()
+        self.data.interesting_results.sample_indices = []
+        self.data.interesting_results.category = []
+        self.data.interesting_results.cluster = []
+        self.data.interesting_results.note = []
+
+        # Initializes the SQLite3 database for storing interesting results
+        self.database_path = database_path
+        self.is_save_selected_samples_enabled = self.database_path is not None
+        if self.is_save_selected_samples_enabled:
+            self.initialize_database()
 
     def initialize_database(self):
         """Initializes the database for storing interesting results."""
@@ -123,6 +140,27 @@ class ServerApplication:
                 """)
             except sqlite3.Error as sql_error:
                 self.logger.error('The schema of the database could not be initialized: %s', sql_error.msg)
+                self.is_save_selected_samples_enabled = False
+
+            # Loads the interesting results that are already stored in the database
+            try:
+                cursor = connection.cursor()
+                cursor.execute("SELECT sample_indices, category, cluster, note FROM interesting_results")
+                interesting_results = cursor.fetchall()
+                for interesting_result in interesting_results:
+                    sample_indices, category, cluster, note = interesting_result
+                    self.data.interesting_results.sample_indices.append(sample_indices)
+                    self.data.interesting_results.category.append(category)
+                    self.data.interesting_results.cluster.append(cluster)
+                    self.data.interesting_results.note.append(note)
+                self.interesting_results_source.data.update({
+                    'sample_indices': self.data.interesting_results.sample_indices,
+                    'category': self.data.interesting_results.category,
+                    'cluster': self.data.interesting_results.cluster,
+                    'note': self.data.interesting_results.note
+                })
+            except sqlite3.Error as sql_error:
+                self.logger.error('The interesting result data could not be read from the database: %s', sql_error.msg)
                 self.is_save_selected_samples_enabled = False
 
     def get_wnid_description(self, wnid):
@@ -270,17 +308,29 @@ class ServerApplication:
 
         # Retrieves the information that is to be saved
         # pylint: disable=no-member
-        selected_indices = ','.join([str(index) for index in self.sample_source.selected.indices])
+        sample_indices = ','.join([str(index) for index in self.sample_source.selected.indices])
         category = self.data.selected.category
         cluster = self.data.selected.cluster
         note = self.save_selected_samples_note_text_input.value
+
+        # Adds the intersting result to the interesting results table
+        self.data.interesting_results.sample_indices.append(sample_indices)
+        self.data.interesting_results.category.append(category)
+        self.data.interesting_results.cluster.append(cluster)
+        self.data.interesting_results.note.append(note)
+        self.interesting_results_source.data.update({
+            'sample_indices': self.data.interesting_results.sample_indices,
+            'category': self.data.interesting_results.category,
+            'cluster': self.data.interesting_results.cluster,
+            'note': self.data.interesting_results.note
+        })
 
         # Saves the data to the database
         with sqlite3.connect(self.database_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
                 "INSERT INTO interesting_results(sample_indices, category, cluster, note) VALUES(?, ?, ?, ?)",
-                (selected_indices, category, cluster, note)
+                (sample_indices, category, cluster, note)
             )
         self.logger.info('Saved interesting result in the database.')
 
@@ -296,11 +346,6 @@ class ServerApplication:
 
         # Starts the initialization of the document
         self.logger.info('Setting up document...')
-
-        # Initializes the source of the samples, images, and eigen values
-        self.sample_source = ColumnDataSource({'i': [], 'x': [], 'y': [], 'cluster': [], 'prediction': []})
-        self.image_source = ColumnDataSource({'attribution': [], 'original': [], 'x': [], 'y': []})
-        self.eigen_value_source = ColumnDataSource({'x': [], 'y': []})
 
         # Loads the data for the initial selected category
         self.update_category(self.data.selected.category)
@@ -350,9 +395,23 @@ class ServerApplication:
         # Creates the table for the selected samples
         sample_columns = [
             TableColumn(field='cluster', title='cluster', width=50),
-            TableColumn(field='prediction', title='prediction'),
+            TableColumn(field='prediction', title='prediction')
         ]
         self.sample_table = DataTable(source=self.sample_source, columns=sample_columns, width=250, height=800)
+
+        # Creates the table for the interesting results that are stored in the database
+        interesting_result_columns = [
+            TableColumn(field='sample_indices', title='sample indices'),
+            TableColumn(field='category', title='category', width=50),
+            TableColumn(field='cluster', title='cluster', width=50),
+            TableColumn(field='note', title='note')
+        ]
+        self.interesting_results_table = DataTable(
+            source=self.interesting_results_source,
+            columns=interesting_result_columns,
+            width=1800,
+            height=250
+        )
 
         # Creates a figure containing the original images and attributions
         image_figure = figure(
@@ -430,8 +489,9 @@ class ServerApplication:
                 category_select,
                 cluster_select
             )
-        bottom = row(eigen_value_figure, self.sample_table, visualization_figure, column(image_figure, alpha_slider))
-        layout = column(top, bottom)
+        middle = row(eigen_value_figure, self.sample_table, visualization_figure, column(image_figure, alpha_slider))
+        bottom = row(self.interesting_results_table)
+        layout = column(top, middle, bottom)
         document.add_root(layout)
         document.title = 'SPRINCL'
 

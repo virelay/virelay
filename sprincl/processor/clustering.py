@@ -9,18 +9,9 @@ import sklearn.cluster
 from matplotlib import pyplot as plt
 import scipy.cluster.hierarchy as shc
 
+from sprincl.utils import import_or_stub
 from .base import Processor, Param
-
-
-try:
-    import hdbscan
-except ImportError:
-    class hdbscan(object):
-        def __getattr__(self, item):
-            raise RuntimeError("Support for hdbscan was not installed! Install with: pip install {}[{}]".format(
-                __name__.split('.')[0], "hdbscan"))
-    hdbscan = hdbscan()
-
+hdbscan = import_or_stub('hdbscan')
 
 LOGGER = logging.getLogger(__name__)
 

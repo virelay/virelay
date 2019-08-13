@@ -3,11 +3,11 @@
 """
 from collections import OrderedDict
 
-from ..tracker import MetaTracker
 from ..processor.base import ensure_processor, Processor
+from ..plugboard import Slot, Plugboard
 
 
-class Task:
+class Task(Slot):
     """A single item in a :obj:`Pipeline` task scheme.
 
     Attributes
@@ -40,13 +40,15 @@ class Task:
             If the default :obj:`Processor` is not of type `proc_type`.
 
         """
+        if not issubclass(proc_type, Processor):
+            raise TypeError("Only sub-classes of Processors are allowed!")
         default = ensure_processor(default, **kwargs)
-        if not isinstance(default, proc_type):
-            raise TypeError('Task default processor {} is not of type {}!'.format(default, proc_type))
-        self.proc_type = proc_type
-        self.default = default
-        self.proc_kwargs = kwargs
+        super().__init__(dtype=proc_type, default=default)
 
+    def __set__(self, instance, value):
+        """Make sure only processors are assigned to slots"""
+        proc = ensure_processor(value)
+        super().__set__(instance, proc)
 
 class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
     """Abstract base class for all pipelines using MetaPipeline's tracked Task attributes

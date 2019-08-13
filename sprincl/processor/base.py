@@ -172,8 +172,8 @@ class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
         new.checkpoint_data = self.checkpoint_data
         return new
 
-    @staticmethod
-    def _output_repr():
+    @property
+    def _output_repr(self):
         return 'output:np.ndarray'
 
     def __repr__(self):
@@ -193,7 +193,7 @@ class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
 
         name = self.__class__.__name__
         params = ', '.join(['{}={}'.format(k, transform(v)) for k, v in self.param_values().items() if v])
-        return '{}({}) -> {}'.format(name, params, self._output_repr())
+        return '{}({}) -> {}'.format(name, params, self._output_repr)
 
     # TODO: this is not yet clean chaining, we have to find the common base, which is something like the second-to-top
     # class

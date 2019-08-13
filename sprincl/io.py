@@ -42,6 +42,7 @@ class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params'
             raise TypeError('\'{}\' is an invalid keyword argument'.format(key))
         self._default_params = {key: param.default for key, param in self.params.items()}
         self._is_copy = False  # used in self.at and mandatory parameters.
+        self.io = None
 
     @property
     def _mandatory_params(self):
@@ -49,26 +50,39 @@ class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params'
 
     @abstractmethod
     def read(self):
-        pass
+        """Should implement read functionality.
+
+        """
 
     @abstractmethod
     def write(self, data):
-        pass
+        """Should implement write functionality.
+
+        """
 
     def close(self):
+        """Close opened io file object.
+
+        """
         self.io.close()
 
     @abstractmethod
     def exists(self):
+        """Return True if data exists.
+
+        """
         raise NotImplementedError
 
     def keys(self):
+        """Return keys of the io file object.
+
+        """
         raise NotImplementedError
 
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, typ, value, traceback):
         self.io.close()
 
     def __contains__(self, key):
@@ -105,6 +119,8 @@ class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params'
         if missing_params and not self._is_copy:
             raise KeyError('Missing mandatory parameters: {}'.format(missing_params))
         c = copy.copy(self)
+
+        # pylint: disable=protected-access
         c._update_defaults(kwargs)
         c._is_copy = True
         return c
@@ -122,6 +138,9 @@ class NoStorage(DataStorageBase):
 
 
 class PickleStorage(DataStorageBase):
+    """Experimental pickle storage that uses pickle to store data.
+
+    """
 
     data_key = Param(str, 'data', mandatory=True)
 
@@ -189,7 +208,9 @@ class PickleStorage(DataStorageBase):
 
 
 class HDF5Storage(DataStorageBase):
+    """HDF5 storage that stores data under different keys.
 
+    """
     data_key = Param(str, 'data', mandatory=True)
 
     def __init__(self, path, mode='r', **kwargs):
@@ -218,8 +239,7 @@ class HDF5Storage(DataStorageBase):
         if isinstance(data, h5py.Group):
             # Change key to integer if k is digit, so that we can use the dict like a tuple or list
             return OrderedDict(((int(k) if k.isdigit() else k, v[()]) for k, v in data.items()))
-        else:
-            return data[()]
+        return data[()]
 
     def write(self, data):
         """
@@ -254,12 +274,12 @@ class HDF5Storage(DataStorageBase):
         return self.io.keys()
 
     @staticmethod
-    def _get_shape_dtype(v):
+    def _get_shape_dtype(value):
         """Infer shape and dtype of given element v.
 
         Parameters
         ----------
-        v: np.ndarray, str, int, float
+        value: np.ndarray, str, int, float
             Element for which we want to infer the shape and dtype.
 
         Returns
@@ -268,10 +288,10 @@ class HDF5Storage(DataStorageBase):
             Return the shape and dtype of v that works with h5py.require_dataset
 
         """
-        if not isinstance(v, np.ndarray):
+        if not isinstance(value, np.ndarray):
             shape = ()
-            dtype = h5py.special_dtype(vlen=str) if isinstance(v, str) else np.dtype(type(v))
+            dtype = h5py.special_dtype(vlen=str) if isinstance(value, str) else np.dtype(type(value))
         else:
-            shape = v.shape
-            dtype = v.dtype
+            shape = value.shape
+            dtype = value.dtype
         return shape, dtype

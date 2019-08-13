@@ -16,9 +16,6 @@ class Embedding(Processor):
 
     """
     kwargs = Param(dict, {})
-    """Embedding Processor base class
-
-    """
 
 
 class EigenDecomposition(Embedding):
@@ -29,8 +26,8 @@ class EigenDecomposition(Embedding):
     which = Param(str, 'LM')
     normalize = Param(bool, True)
 
-    @staticmethod
-    def _output_repr():
+    @property
+    def _output_repr(self):
         return '(eigval:np.ndarray, eigvec:np.ndarray)'
 
     def function(self, data):

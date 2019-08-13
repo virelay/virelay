@@ -111,9 +111,9 @@ class Resize(ImagePreProcessor):
         """
         if self.channels_first:
             data = np.moveaxis(data, 1, -1)
-        out = np.stack(skimage.transform.resize(x, output_shape=(self.height, self.width), order=self.filter,
-                                                **self.kwargs)
-                       for x in data)
+        out = np.stack([skimage.transform.resize(x, output_shape=(self.height, self.width), order=self.filter,
+                                                 **self.kwargs)
+                       for x in data])
         if self.channels_first:
             out = np.moveaxis(out, -1, 1)
         return out
@@ -156,9 +156,11 @@ class Rescale(ImagePreProcessor):
         data: np.ndarray
             height and width axes are rescaled by scale parameter.
         """
+        multichannel = len(data.shape) > 3
         if self.channels_first:
             data = np.moveaxis(data, 1, -1)
-        out = np.stack(skimage.transform.rescale(x, self.scale, order=self.filter, **self.kwargs) for x in data)
+        out = np.stack([skimage.transform.rescale(x, self.scale, order=self.filter, multichannel=multichannel,
+                                                  **self.kwargs) for x in data])
         if self.channels_first:
             out = np.moveaxis(out, -1, 1)
         return out

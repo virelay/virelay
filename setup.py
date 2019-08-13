@@ -13,7 +13,7 @@ setup(
         'scipy>=1.2.1',
         'Click>=7.0',
         'bokeh>=1.2.0',
-        'scikit-image==0.15.0'
+        'scikit-image>=0.15.0'
     ],
     entry_points={
         'console_scripts': [

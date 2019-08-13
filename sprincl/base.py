@@ -1,5 +1,8 @@
-class Param(object):
-    """A single parameter, which instances are to be tracked by an `MetaTracker`.
+from .plugboard import Slot
+
+
+class Param(Slot):
+    """A single parameter, which instances are to be tracked by a `MetaTracker`.
 
     Attributes
     ----------
@@ -20,11 +23,12 @@ class Param(object):
             Default parameter value, should be an instance of (one of) :obj:`dtype`.
 
         """
-        self.dtype = dtype if isinstance(dtype, tuple) else (dtype,)
-        self.default = default
-        self.mandatory = mandatory
+        super().__init__(dtype, default)
+        if mandatory:
+            del self.default
 
-        if not all(isinstance(dty, type) for dty in self.dtype):
-            raise TypeError("Only instances of type are a valid dtype!")
-        if default is not None and not isinstance(default, dtype):
-            raise TypeError("Default object is not of supplied dtype!")
+        # allowed_dtypes = (type, FunctionType, BuiltinFunctionType)
+        # if not all(isinstance(x, allowed_dtypes) for x in self.dtype):
+        #     raise TypeError(
+        #         "Following dtypes: {} are not in the allowed types {}.".format(self.dtype, allowed_dtypes)
+        #     )

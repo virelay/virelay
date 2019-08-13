@@ -1,18 +1,68 @@
-from ..tracker import Tracker
+from .tracker import Tracker
 
 
-class Slot(object):
-    def __init__(self, dtype=object, default=None):
-        self._dtype = dtype
+class EmptyInit(object):
+    def __init__(self):
+        super().__init__()
+
+
+class Slot(EmptyInit):
+    """
+
+    Attributes
+    ----------
+    dtype : type or tuple of type
+        Allowed type(s) of the parameter.
+    default : :obj:`dtype`
+        Default parameter value, should be an instance of (one of) :obj:`dtype`.
+
+    """
+    def __init__(self, dtype=object, default=None, **kwargs):
+        """Configure type and default value of slot.
+
+        Parameters
+        ----------
+        dtype : type or tuple of type
+            Allowed type(s) inside the slot.
+        default : :obj:`dtype`
+            Default plug value, should be an instance of (one of) :obj:`dtype`.
+
+        """
+        super().__init__(**kwargs)
+        self._dtype = dtype if isinstance(dtype, tuple) else (dtype,)
         self._default = default
-        if not isinstance(default, dtype):
-            raise TypeError
+        self.__name__ = ''
+        self._consistent()
 
-    def get_plug(self, instance, default=None):
+    def _consistent(self):
+        if (
+            not isinstance(self.dtype, type) and
+            not (
+                isinstance(self.dtype, tuple) and
+                all(isinstance(element, type) for element in self.dtype)
+            )
+        ):
+            raise TypeError(
+                "'{}' object '{}' default values '{}' is neither a type, nor a tuple of types.".format(
+                    type(self).__name__,
+                    self.__name__,
+                    self.dtype
+                )
+            )
+        if self.default is not None and not isinstance(self.default, self.dtype):
+            raise TypeError(
+                "'{}' object '{}' default value is not of type '{}'.".format(
+                    type(self).__name__,
+                    self.__name__,
+                    self.dtype
+                )
+            )
+
+    def get_plug(self, instance, obj=None, default=None):
         try:
             plug = instance.__dict__[self.__name__]
         except KeyError:
-            plug = self(default)
+            plug = self(obj=obj, default=default)
             instance.__dict__[self.__name__] = plug
         return plug
 
@@ -25,7 +75,7 @@ class Slot(object):
         return self.get_plug(instance).obj
 
     def __set__(self, instance, value):
-        self.get_plug(instance, value).obj = value
+        self.get_plug(instance, obj=value).obj = value
 
     def __delete__(self, instance):
         del self.get_plug(instance).obj
@@ -36,9 +86,12 @@ class Slot(object):
 
     @default.setter
     def default(self, value):
-        if not isinstance(value, self.dtype):
-            raise TypeError
         self._default = value
+        self._consistent()
+
+    @default.deleter
+    def default(self):
+        self._default = None
 
     @property
     def dtype(self):
@@ -46,27 +99,42 @@ class Slot(object):
 
     @dtype.setter
     def dtype(self, value):
-        if not isinstance(self.default, value):
-            raise TypeError
         self._dtype = value
+        self._consistent()
 
     @property
     def optional(self):
         return self.default is not None
 
-    def __call__(self, obj=None):
-        return Plug(obj, self)
+    def __call__(self, obj=None, default=None):
+        return Plug(obj, self, default=default)
 
 
-class Plug(object):
-    def __init__(self, obj, slot):
+class Plug(EmptyInit):
+    def __init__(self, obj, slot, default=None, **kwargs):
+        super().__init__(**kwargs)
         self._obj = obj
         self._slot = slot
-        self._default = slot.default
-        if not isinstance(obj, slot.dtype):
-            raise TypeError
-        if not slot.optional and obj is None:
-            raise TypeError
+        self._default = default
+        self._consistent()
+
+    def _consistent(self):
+        if self.obj is None:
+            raise TypeError(
+                "'{}' object '{}' is mandatory, yet it has been accessed without being set.".format(
+                    type(self.slot).__name__,
+                    self.slot.__name__
+                )
+            )
+        if not isinstance(self.obj, self.slot.dtype):
+            raise TypeError(
+                "'{}' object '{}' value '{}' is not of type '{}'.".format(
+                    type(self.slot).__name__,
+                    self.slot.__name__,
+                    self.obj,
+                    self.slot.dtype
+                )
+            )
 
     @property
     def slot(self):
@@ -74,11 +142,8 @@ class Plug(object):
 
     @slot.setter
     def slot(self, value):
-        if not isinstance(self.obj, value.dtype):
-            raise TypeError
-        if not value.optional and self.obj is None:
-            raise TypeError
         self._slot = value
+        self._consistent()
 
     @property
     def dtype(self):
@@ -100,11 +165,8 @@ class Plug(object):
 
     @obj.setter
     def obj(self, value):
-        if not isinstance(value, self.dtype):
-            raise TypeError
-        if not self.optional and value is None:
-            raise TypeError
         self._obj = value
+        self._consistent()
 
     @obj.deleter
     def obj(self):
@@ -118,9 +180,8 @@ class Plug(object):
 
     @default.setter
     def default(self, value):
-        if not isinstance(value, self.dtype):
-            raise TypeError
         self._default = value
+        self._consistent()
 
     @default.deleter
     def default(self, value):
@@ -129,9 +190,9 @@ class Plug(object):
 
 class SlotDefaultAccess:
     def __init__(self, instance=None):
-        self._instance = instance
+        object.__setattr__(self, '_instance', instance)
 
-    def _get_plug(self, name):
+    def _get_plug(self, name, default=None):
         slot = getattr(type(self._instance), name)
         if not isinstance(slot, Slot):
             raise AttributeError(
@@ -141,22 +202,22 @@ class SlotDefaultAccess:
                     Slot
                 )
             )
-        return slot.get_plug(self._instance)
+        return slot.get_plug(self._instance, default=default)
 
     def __get__(self, instance, owner):
         return type(self)(instance)
 
     def __set__(self, instance, value):
         if not isinstance(value, dict):
-            raise TypeError
+            raise TypeError("Can only directly set default values using a dict!")
         for key, val in value:
-            getattr(self, key).default
+            setattr(self, key, value)
 
     def __getattr__(self, name):
         return self._get_plug(name).default
 
     def __setattr__(self, name, value):
-        self._get_plug(name).default = value
+        self._get_plug(name, default=value).default = value
 
     def __delattr__(self, name):
         del self._get_plug(name).default
@@ -165,18 +226,21 @@ class SlotDefaultAccess:
         return list(type(self._instance).collect(Slot))
 
 
-class Plugboard(Tracker):
+class Plugboard(Tracker, EmptyInit):
     default = SlotDefaultAccess()
 
     def __init__(self, **kwargs):
         slots = self.collect(Slot)
-        for key, val in kwargs:
-            if key not in slots:
-                raise TypeError(
-                    "invalid keyword argument '{}' for '{}' object: no such attribute of type '{}'".format(
-                        key,
-                        type(self),
-                        Slot
-                    )
-                )
+        non_slot_kwargs = {key: val for key, val in kwargs.items() if key not in slots}
+        # also pass responsibility to raise Exception on wrong kwargs to super-class
+        super().__init__(**non_slot_kwargs)
+        for key, val in kwargs.items():
             setattr(self, key, val)
+
+    def reset_defaults(self):
+        for key in self.collect(Slot):
+            delattr(self.default, key)
+
+    def update_defaults(self, **kwargs):
+        for key, val in kwargs.items():
+            setattr(self.default, key, val)

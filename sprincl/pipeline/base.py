@@ -50,7 +50,8 @@ class Task(Slot):
         proc = ensure_processor(value)
         super().__set__(instance, proc)
 
-class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
+
+class Pipeline(Processor):
     """Abstract base class for all pipelines using MetaPipeline's tracked Task attributes
 
     Attributes
@@ -76,12 +77,7 @@ class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
             If some :obj:`Processor` does not have a matching type of the :obj:`Task` it has be assigned to.
 
         """
-        self.processes = OrderedDict()
-        for key, task in self.task_scheme.items():
-            proc = ensure_processor(kwargs.get(key, task.default.copy()), **task.proc_kwargs)
-            if not isinstance(proc, task.proc_type):
-                raise TypeError('Task {} function {} is not of type {}!'.format(key, proc.func, task.proc_type))
-            self.processes[key] = proc
+        super().__init__(**kwargs)
 
     def checkpoint_processes(self):
         """Find the checkpoint :obj:`Processor` closest to output in `self.processes` and return an
@@ -100,7 +96,7 @@ class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
 
         """
         checkpoint_process_list = []
-        for key, proc in reversed(self.processes.items()):
+        for key, proc in reversed(self.collect_attr(Task).items()):
             checkpoint_process_list.append((key, proc))
             if proc.is_checkpoint:
                 break
@@ -134,7 +130,7 @@ class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
             data = proc(data)
         return data
 
-    def __call__(self, data):
+    def function(self, data):
         """Propagate `data` through the whole pipeline from front to back, calling all `self.processes` in series.
 
         Attributes
@@ -151,7 +147,7 @@ class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
 
         """
         outputs = []
-        for proc in self.processes.values():
+        for proc in self.collect_attr(Task).values():
             data = proc(data)
             if proc.is_output:
                 outputs.append(data)

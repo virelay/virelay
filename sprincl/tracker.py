@@ -71,4 +71,7 @@ class MetaTracker(ABCMeta):
 class Tracker(metaclass=MetaTracker):
     @classmethod
     def collect(cls, dtype):
-        return OrderedDict((key, val) for key, val in cls.__tracked__ if isinstance(val, dtype))
+        return OrderedDict((key, val) for key, val in cls.__tracked__.items() if isinstance(val, dtype))
+
+    def collect_attr(self, dtype):
+        return OrderedDict((key, getattr(self, key)) for key, val in self.__tracked__.items() if isinstance(val, dtype))

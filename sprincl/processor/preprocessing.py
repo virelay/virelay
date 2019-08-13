@@ -125,6 +125,19 @@ class Rescale(ImagePreProcessor):
     scale = Param(float, 0.5)
 
     def function(self, data):
+        """
+        Parameters
+        ----------
+        data: np.ndarray
+            Shape of data should be in one of the following formats:
+                1. (batch_size, channels, height, width)    with channels_first=True
+                2. (batch_size, height, width, channels)    with channels_first=False
+                3. (batch_size, height, width)              with channels_first=False
+        Returns
+        -------
+        data: np.ndarray
+            height and width axes are rescaled by scale parameter.
+        """
         return np.stack(skimage.transform.rescale(x, self.scale, order=self.filter, **self.kwargs) for x in data)
 
 

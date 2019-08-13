@@ -1,3 +1,7 @@
+"""Sprincl utils contains conditional importing functionality.
+
+"""
+
 from importlib import import_module
 
 
@@ -12,7 +16,8 @@ def dummy_from_module_import(name):
 
 def dummy_import_module(name):
     """Use to replace 'import lib`."""
-    class Class(object):
+    class Class:
+        """Dummy substitute class."""
         def __getattr__(self, item):
             raise RuntimeError("Support for {1} was not installed! Install with: pip install {0}[{1}]".format(
                 __name__.split('.')[0], name))
@@ -41,9 +46,9 @@ def import_or_stub(name, subname=None):
             for subname in subnames:
                 try:
                     attr = getattr(tmp, subname)
-                except AttributeError as e:
+                except AttributeError as err:
                     message = "cannot import name '{}' from '{}' ({})".format(subname, name, tmp.__file__)
-                    raise ImportError(message) from e
+                    raise ImportError(message) from err
                 else:
                     module.append(attr)
         if len(module) == 1:

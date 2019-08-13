@@ -29,7 +29,8 @@ class EigenDecomposition(Embedding):
     which = Param(str, 'LM')
     normalize = Param(bool, True)
 
-    def _output_repr(self):
+    @staticmethod
+    def _output_repr():
         return '(eigval:np.ndarray, eigvec:np.ndarray)'
 
     def function(self, data):

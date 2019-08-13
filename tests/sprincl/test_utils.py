@@ -1,9 +1,15 @@
-from sprincl.utils import import_or_stub
+"""Test sprincl.utils
+
+"""
 
 import pytest
 
+from sprincl.utils import import_or_stub
+
+
 
 def test_conditional_import():
+    """Test conditional import which fails only when actually using the imported module."""
     non_existing_module = import_or_stub('non_existing_module')
     non_existing_function = import_or_stub('non_existing_module', 'non_existing_function')
     re = import_or_stub('re')
@@ -18,6 +24,7 @@ def test_conditional_import():
 
 
 def test_conditional_import_of_multiple_functions():
+    """Test conditional importing of multiple function from the same module."""
     match, fullmatch = import_or_stub('non_existing_module', ('match', 'fullmatch'))
     with pytest.raises(RuntimeError):
         match('aba', 'a')

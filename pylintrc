@@ -144,7 +144,9 @@ disable=print-statement,
         too-many-arguments,
         too-many-locals,
         too-few-public-methods,
-        too-many-statements
+        too-many-statements,
+        redefined-outer-name,
+
 
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -264,6 +266,8 @@ good-names=i,
            f,
            fp,
            fd,
+           io,
+           re,
 
 
 # Include a hint for the correct naming format with invalid-name.

@@ -11,7 +11,7 @@ import scipy.cluster.hierarchy as shc
 
 from sprincl.utils import import_or_stub
 from .base import Processor, Param
-hdbscan = import_or_stub('hdbscan')
+hdbscan = import_or_stub('hdbscan')  # pylint: disable=invalid-name
 
 LOGGER = logging.getLogger(__name__)
 

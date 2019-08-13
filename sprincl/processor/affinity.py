@@ -33,12 +33,12 @@ class SparseKNN(Affinity):
     n_neighbors = Param(int, 10)
     symmetric = Param(bool, True)
 
-    def function(self, distance):
+    def function(self, data):
         """Compute Sparse K-Nearest-Neighbors affinity matrix.
 
         Parameters
         ----------
-        distance : :obj:`numpy.ndarray`
+        data : :obj:`numpy.ndarray`
             Distance matrix used to compute affinity matrix.
 
         Returns
@@ -49,16 +49,16 @@ class SparseKNN(Affinity):
         """
         k = self.n_neighbors
         # number of samples
-        n = distance.shape[0]
+        n = data.shape[0]
 
         # silently use maximum number of neighbors if there are more samples than k
         k = k if k < (n - 1) else (n - 1)
 
         # set up indices for sparse representation of nearest neighbors
-        cols = distance.argsort(1)[:, 1:k + 1]
+        cols = data.argsort(1)[:, 1:k + 1]
         rows = np.mgrid[:n, :k][0]
         # existing edges are denoted with ones
-        vals = np.ones((n, k), dtype=distance.dtype)
+        vals = np.ones((n, k), dtype=data.dtype)
         affinity = sp.csr_matrix((vals.flat, (rows.flat, cols.flat)), shape=(n, n))
 
         # make the affinity matrix symmetric

@@ -1,3 +1,7 @@
+"""Test io functionalities
+
+"""
+
 import pytest
 import numpy as np
 
@@ -6,16 +10,26 @@ from sprincl import io
 
 @pytest.fixture
 def data():
+    """Return random data with shape (10, 2).
+
+    """
     return np.random.rand(10, 2)
 
 
 @pytest.fixture
 def param_values():
+    """Return dict with param1=1 and param2='string'.
+
+    """
     return dict(param1=1, param2='string')
 
 
 @pytest.mark.parametrize("storage", [io.HDF5Storage, io.PickleStorage])
-def test_data_storage_at_functionality(storage, tmp_path, data, param_values):
+def test_data_storage_at_functionality(storage, tmp_path):
+    """Test HDF5storage and PickleStorage using .at(data_key) functionality.
+
+    """
+    # pylint: disable=protected-access
     test_path = tmp_path / "test.file"
     with storage(test_path, mode='a') as data_storage:
         assert not data_storage._is_copy, 'Should not be a copy.'
@@ -36,6 +50,9 @@ def test_data_storage_at_functionality(storage, tmp_path, data, param_values):
 
 @pytest.mark.parametrize("storage", [io.HDF5Storage, io.PickleStorage])
 def test_data_storage(storage, tmp_path, data, param_values):
+    """Test HDF5storage and PickleStorage writing and loading functionalities.
+
+    """
     # Test writing
     test_path = tmp_path / "test.file"
     data_storage = storage(test_path, mode='w')
@@ -61,7 +78,7 @@ def test_data_storage(storage, tmp_path, data, param_values):
         ret_param_values = data_storage['param_values']
         ret_param_values_2 = data_storage.at(data_key='param_values').read()
         with pytest.raises(io.NoDataSource):
-            data_storage['non_existing']
+            _ = data_storage['non_existing']
 
     np.testing.assert_equal(ret_param_values, param_values)
     np.testing.assert_equal(ret_param_values_2, param_values)
@@ -74,6 +91,9 @@ def test_data_storage(storage, tmp_path, data, param_values):
 
 
 def test_no_storage(data):
+    """Test NoStorage instance that raises error when reading and writing.
+
+    """
     data_storage = io.NoStorage()
     with pytest.raises(io.NoDataSource):
         data_storage.read()

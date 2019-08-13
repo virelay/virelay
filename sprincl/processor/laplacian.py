@@ -38,12 +38,12 @@ class SymmetricNormalLaplacian(Laplacian):
     """ Normal Symmetric Graph Laplacian
 
     """
-    def function(self, affinity):
+    def function(self, data):
         """Normalized Symmetric Graph Laplacian
 
         Parameters
         ----------
-        affinity : :obj:`sp.csr_matrix` or :obj:`np.ndarray`
+        data : :obj:`sp.csr_matrix` or :obj:`np.ndarray`
             Graph affinity/similarity matrix.
 
         Returns
@@ -52,8 +52,8 @@ class SymmetricNormalLaplacian(Laplacian):
             Sparse representation of a symmetric graph laplacian matrix
 
         """
-        deg = sp.diags(a1ifmat(affinity.sum(1))**-.5, 0)
-        lap = deg @ affinity @ deg
+        deg = sp.diags(a1ifmat(data.sum(1))**-.5, 0)
+        lap = deg @ data @ deg
         return lap
 
 
@@ -61,7 +61,7 @@ class RandomWalkNormalLaplacian(Laplacian):
     """ Normal Random Walk Graph Laplacian
 
     """
-    def function(self, affinity):
+    def function(self, data):
         """Normalized Random Walk Graph Laplacian
 
         Parameters
@@ -75,6 +75,6 @@ class RandomWalkNormalLaplacian(Laplacian):
             Sparse representation of a random walk graph laplacian matrix
 
         """
-        deg = sp.diags(a1ifmat(affinity.sum(1))**-1., 0)
-        lap = deg @ affinity
+        deg = sp.diags(a1ifmat(data.sum(1))**-1., 0)
+        lap = deg @ data
         return lap

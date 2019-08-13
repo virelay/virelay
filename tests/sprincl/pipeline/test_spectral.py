@@ -1,9 +1,14 @@
+"""Test spectral pipeline and processors.
+
+"""
+
+import os
+
 import pytest
 import numpy as np
 from numpy import pi
 
 
-import os
 import matplotlib.pyplot as plt
 
 from sprincl.pipeline.spectral import SpectralEmbedding, SpectralClustering
@@ -14,20 +19,20 @@ from sprincl.processor.clustering import KMeans
 
 
 @pytest.fixture(scope='module')
-def spiral_data(N=150):      # N = samples per class of the two classes
+def spiral_data(n=150):      # n = samples per class of the two classes
     np.random.seed(1345123)  # fix seed for data
     _ = np.random.uniform(size=(2, 100)).T  # "part of the seed"
 
     # generates double-spiral data in 2-d with N data points
-    theta = np.sqrt(np.random.rand(N)) * 2 * pi
+    theta = np.sqrt(np.random.rand(n)) * 2 * pi
 
     r_a = 2 * theta + pi
     data_a = np.array([np.cos(theta) * r_a, np.sin(theta) * r_a]).T
-    x_a = data_a + np.random.randn(N, 2) * .5
+    x_a = data_a + np.random.randn(n, 2) * .5
 
     r_b = -2 * theta - pi
     data_b = np.array([np.cos(theta) * r_b, np.sin(theta) * r_b]).T
-    x_b = data_b + np.random.randn(N, 2) * .5
+    x_b = data_b + np.random.randn(n, 2) * .5
 
     return np.append(x_a, x_b, axis=0)
 

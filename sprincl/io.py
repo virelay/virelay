@@ -1,3 +1,7 @@
+"""'io module contains classes to load and dump different files like hdf5, etc.
+
+"""
+
 import copy
 import pickle
 from collections import OrderedDict
@@ -226,13 +230,13 @@ class HDF5Storage(DataStorageBase):
 
         """
         if isinstance(data, dict):
-            for k, v in data.items():
-                shape, dtype = self._get_shape_dtype(v)
-                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, k))
+            for key, value in data.items():
+                shape, dtype = self._get_shape_dtype(value)
+                self.io.require_dataset(data=value, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, key))
         elif isinstance(data, tuple):
-            for k, v in enumerate(data):
-                shape, dtype = self._get_shape_dtype(v)
-                self.io.require_dataset(data=v, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, k))
+            for key, value in enumerate(data):
+                shape, dtype = self._get_shape_dtype(value)
+                self.io.require_dataset(data=value, shape=shape, dtype=dtype, name='{}/{}'.format(self.data_key, key))
         else:
             shape, dtype = self._get_shape_dtype(data)
             self.io.require_dataset(data=data, shape=shape, dtype=dtype, name=self.data_key)

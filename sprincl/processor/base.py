@@ -9,7 +9,7 @@ from ..tracker import MetaTracker
 from ..base import Param
 
 
-class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
+class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
     """Base class of processors of tasks in a pipeline instance.
 
     Attributes of type :obj:`Param` are tracked as the class' attribute `params` of type :obj:`collections.OrderedDict`.
@@ -172,7 +172,8 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
         new.checkpoint_data = self.checkpoint_data
         return new
 
-    def _output_repr(self):
+    @staticmethod
+    def _output_repr():
         return 'output:np.ndarray'
 
     def __repr__(self):
@@ -187,9 +188,8 @@ class Processor(object, metaclass=MetaTracker.sub('MetaProcessor', Param, 'param
 
             """
             if isinstance(x, LambdaType):
-                return inspect.getsource(x).split('=', 1)[1].strip()
-            else:
-                return x
+                x = inspect.getsource(x).split('=', 1)[1].strip()
+            return x
 
         name = self.__class__.__name__
         params = ', '.join(['{}={}'.format(k, transform(v)) for k, v in self.param_values().items() if v])

@@ -7,7 +7,7 @@ from ..tracker import MetaTracker
 from ..processor.base import ensure_processor, Processor
 
 
-class Task(object):
+class Task:
     """A single item in a :obj:`Pipeline` task scheme.
 
     Attributes
@@ -48,7 +48,7 @@ class Task(object):
         self.proc_kwargs = kwargs
 
 
-class Pipeline(object, metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
+class Pipeline(metaclass=MetaTracker.sub('MetaPipeline', Task, 'task_scheme')):
     """Abstract base class for all pipelines using MetaPipeline's tracked Task attributes
 
     Attributes

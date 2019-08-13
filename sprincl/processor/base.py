@@ -3,22 +3,18 @@
 """
 import inspect
 from types import FunctionType, MethodType, LambdaType
+from abc import abstractmethod
 
 from sprincl.io import DataStorageBase, NoStorage, NoDataSource, NoDataTarget
-from ..tracker import MetaTracker
 from ..base import Param
+from ..plugboard import Plugboard
 
 
-class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
+class Processor(Plugboard):
     """Base class of processors of tasks in a pipeline instance.
-
-    Attributes of type :obj:`Param` are tracked as the class' attribute `params` of type :obj:`collections.OrderedDict`.
-    All tracked attributes will be assigned as instance attributes in `__init__`.
 
     Attributes
     ----------
-    params : :obj:`collections.OrderedDict`
-        OrderedDict of all assigned class attributes of type :obj:`Param`.
     is_output : bool
         Assigned as :obj:`Param`, will be assigned as an instance attribute in `__init__`.
         Defines whether the Processor should yield an output for a Pipeline.
@@ -50,62 +46,10 @@ class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
             Other potential parameters defined in sub classes.
 
         """
-        self.reset_defaults()
-        for key, param in self.params.items():
-            if param.mandatory and key not in kwargs:
-                raise TypeError('{} parameter {} is mandatory.'.format(key, param.dtype))
-            try:
-                attr = kwargs.pop(key)
-            except KeyError:
-                continue
-            if attr is not None and not isinstance(attr, param.dtype):
-                raise TypeError('{} parameter is no subtype of {}.'.format(key, param.dtype))
-            setattr(self, key, attr)
-        if kwargs:
-            key, _ = kwargs.popitem()
-            raise TypeError('\'{}\' is an invalid keyword argument'.format(key))
+        super().__init__(**kwargs)
         self.checkpoint_data = None
 
-    def __getattr__(self, name):
-        """Return default param values if attribute is not set.
-
-        """
-        try:
-            return self._default_param_values[name]
-        except KeyError:
-            pass
-        raise AttributeError('\'{} \' has no attribute \'{}\''.format(type(self), name))
-
-    def reset_defaults(self):
-        """Reset dictionary for the default (fallback) values of parameters to their parameter defaults.
-
-        """
-        self._default_param_values = {key: param.default for key, param in self.params.items()}
-
-    def update_defaults(self, **kwargs):
-        """Update dictionary for the default (fallback) values of parameters!
-
-        Parameters that are not explicitly assigned as an instance attribute are retrieved from the default dict.
-
-        Parameters
-        ----------
-        **kwargs :
-            Names of Params to be updated. Only existing Params are allowed.
-
-        Raises
-        ------
-        KeyError
-            If a keyword argument is supplied that does not describe any existing Param.
-
-        """
-        for key, val in kwargs.items():
-            if key in self._default_param_values:
-                if not isinstance(val, self.params[key].dtype):
-                    raise TypeError('{} parameter is no subtype of {}.'.format(key, self.params[key].dtype))
-                self._default_param_values[key] = val
-            else:
-                raise KeyError('Name \'{}\' does not describe any existing Param!'.format(key))
-
+    @abstractmethod
     def function(self, data):
         """Abstract function this Processor should apply on input
 
@@ -119,7 +63,6 @@ class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
         NotImplementedError
             Always, since this is an abstract function.
         """
-        raise NotImplementedError
 
     def __call__(self, data):
         """Apply `self.funtion` on input data, save output if `self.is_checkpoint`
@@ -156,7 +99,7 @@ class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
             Dict of the instance values of defined parameters.
 
         """
-        return {key: getattr(self, key) for key in self.params}
+        return self.collect_attr(Param)
 
     def copy(self):
         """Copy self, creating a new Processor instance with the same values for :obj:`Param` attribute defined
@@ -194,32 +137,6 @@ class Processor(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
         name = self.__class__.__name__
         params = ', '.join(['{}={}'.format(k, transform(v)) for k, v in self.param_values().items() if v])
         return '{}({}) -> {}'.format(name, params, self._output_repr)
-
-    # TODO: this is not yet clean chaining, we have to find the common base, which is something like the second-to-top
-    # class
-    # def __add__(self, other):
-    #     common_base = type(self)
-    #     if not isinstance(other, common_base)
-    #         raise TypeError("Processor-chaining: expected instance of type '{}', got '{}'."
-    #                         .format(common_base, type(other))
-    #                     )
-    #     if not isinstance(self, ChainedProcessor):
-    #         chained_proc = type("Chained{}".format(common_base),
-    #                            [common_base, ChainedProcessor], {})(chain=[self, other], **self.param_values())
-    #     else:
-    #         chain = self.chain + [other]
-    #         chained_proc = type(self)(**self.param_values())
-    #     return chained_proc
-
-
-# TODO: Chained Processors
-# class ChainedProcessor(Processor):
-#     chain = Param(list, [])
-#
-#     def function(self, data):
-#         for proc in self.chain:
-#             data = proc(data)
-#         return data
 
 
 class FunctionProcessor(Processor):

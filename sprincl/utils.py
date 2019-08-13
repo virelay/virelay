@@ -34,12 +34,18 @@ def import_or_stub(name, subname=None):
     if subname is not None:
         try:
             tmp = import_module(name)
-            module = [getattr(tmp, subname) for subname in subnames]
         except ImportError:
             module = [dummy_from_module_import(name) for _ in subnames]
-        except AttributeError as e:
-            subname = str(e).split("'")[-2]
-            raise ImportError("cannot import name '{}' from '{}' ({})".format(subname, name, tmp.__file__))
+        else:
+            module = []
+            for subname in subnames:
+                try:
+                    attr = getattr(tmp, subname)
+                except AttributeError as e:
+                    message = "cannot import name '{}' from '{}' ({})".format(subname, name, tmp.__file__)
+                    raise ImportError(message) from e
+                else:
+                    module.append(attr)
         if len(module) == 1:
             module = module[0]
     else:

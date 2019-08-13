@@ -32,18 +32,17 @@ def test_data_storage_at_functionality(storage, tmp_path):
     # pylint: disable=protected-access
     test_path = tmp_path / "test.file"
     with storage(test_path, mode='a') as data_storage:
-        assert not data_storage._is_copy, 'Should not be a copy.'
         c = data_storage.at(data_key='param_values')
         assert c.data_key == 'param_values', "Data key was not changed."
-        assert c._is_copy, 'Should be a copy, not all the mandatory parameters were set.'
-        with pytest.raises(KeyError):
-            # raises KeyError because the mandatory key was not set.
-            data_storage.at(key='param_values')
-        with pytest.raises(KeyError):
-            # raises KeyError because non existing key was set.
+        with pytest.raises(TypeError):
+            # raises TypeError because non existing key was set.
             data_storage.at(data_key='param_values', key='key')
         with pytest.raises(TypeError):
             data_storage.at(data_key=1)
+
+        with pytest.raises(TypeError):
+            # raise TypeError, since we try to access data_key internally without it being ever set
+            data_storage.at().exists()
 
         data_storage.at(data_key='param_values').at(data_key='data')
 
@@ -61,7 +60,7 @@ def test_data_storage(storage, tmp_path, data, param_values):
 
     # Test reading
     data_storage = storage(test_path, mode='r')
-    ret_data = data_storage.read()
+    ret_data = data_storage.at(data_key='data').read()
     np.testing.assert_equal(ret_data, data)
     data_storage.close()
 

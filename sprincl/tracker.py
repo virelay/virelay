@@ -3,36 +3,33 @@ from collections import OrderedDict
 from abc import ABCMeta
 
 
+class PublicOrderedDict(OrderedDict):
+    """Supplies `public` function to return copy with only keys that are not inclosed in double underscores"""
+    def public(self):
+        """Returns copy with only keys that are not inclosed in double underscores"""
+        return OrderedDict((key, value) for key, value in self.items() if not (key[:2] + key[-2:]) == '____')
+
+
 class MetaTracker(ABCMeta):
     """Meta class to track attributes of some type in order of declaration
 
-    Needs to be sub-classed with attributes 'attr_class' and 'attr_name' set. Classmethod 'sub' can be used for this.
-
-    Tracked attributes can be overwritten for instances by supplying the attribute's name as a keyword argument for
-    `MetaTracker.__init__`.
-
-
     Example
     -------
-    >>> class OrderedInts(metaclass=MetaTracker.sub('IntMetaTracker', int, 'ints')):
+    >>> class OrderedInts(metaclass=MetaTracker):
     ...     a = 14
     ...     b = 21
     ...     c = 42
-    ... OrderedInts(a=0).ints
-    OrderedDict([('a', 0), ('b', 21), ('c', 42)])
+    ... OrderedInts(a=0).__tracked__
+    OrderedDict([('__module__', '__main__'), ('__qualname__', 'OrderedInts'), ('a', 0), ('b', 21), ('c', 42)])
 
     Note
     ----
-    There does not seem to be a better way to pass inherited parameters to class creation. Passing keywords to class
-    creation is not retained in inherited classes.
-
     See PEP3115
 
     """
     @classmethod
     def __prepare__(metacls, name, bases):
-        """Prepare the class dict to be an `InstanceTracker`. We store `attr_name` using the `InstanceTracker` as we
-        later do not have any other means to restore the attribute. The class does not exist yet.
+        """Prepare the class dict to be an `OrderedDict`.
 
         Parameters
         ----------
@@ -42,7 +39,7 @@ class MetaTracker(ABCMeta):
             Bases of the class, or meta class instance.
 
         """
-        return OrderedDict()
+        return PublicOrderedDict()
 
     def __new__(cls, classname, bases, class_dict):
         """Instantiate a meta class, resulting in a class.
@@ -58,13 +55,16 @@ class MetaTracker(ABCMeta):
 
         """
         result = super().__new__(cls, classname, bases, dict(class_dict))
-        if hasattr(result, class_dict.attr_name):
-            # if we inherit from another base, copy tracked dict and append our new one
-            result.__tracked__ = result.__tracked__.copy()
-            result.__tracked__.update(class_dict)
+        try:
+            tracked = result.__tracked__
+        except AttributeError:
+            # if there is no attribute `__tracked__`, we do not inherit it
+            tracked = class_dict.public()
         else:
-            # otherwise just use our new tracked dict
-            result.__tracked__ = class_dict
+            # otherwise we inherit from another base, copy tracked dict and append our new one
+            tracked = result.__tracked__.copy()
+            tracked.update(class_dict.public())
+        result.__tracked__ = tracked
         return result
 
 

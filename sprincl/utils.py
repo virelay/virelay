@@ -27,15 +27,21 @@ def import_or_stub(name, subname=None):
     ----------
     name: str
         Module name. Ie. 'module.lib'
-    subname: str or None
-        Function or class to be imported from 'name'.
+    subname: tuple[str] or str or None
+        Functions or classes to be imported from 'name'.
     """
+    subnames = (subname, ) if isinstance(subname, str) else subname  # convert to tuple
     if subname is not None:
         try:
             tmp = import_module(name)
-            module = getattr(tmp, subname)
+            module = [getattr(tmp, subname) for subname in subnames]
         except ImportError:
-            module = dummy_from_module_import(name)
+            module = [dummy_from_module_import(name) for _ in subnames]
+        except AttributeError as e:
+            subname = str(e).split("'")[-2]
+            raise ImportError("cannot import name '{}' from '{}' ({})".format(subname, name, tmp.__file__))
+        if len(module) == 1:
+            module = module[0]
     else:
         try:
             module = import_module(name)

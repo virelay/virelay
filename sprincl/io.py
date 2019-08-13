@@ -10,8 +10,8 @@ from abc import abstractmethod
 import numpy as np
 import h5py
 
-from sprincl.tracker import MetaTracker
-from sprincl.base import Param
+from .base import Param
+from .plugboard import Plugboard
 
 
 class NoDataSource(Exception):
@@ -26,27 +26,13 @@ class NoDataTarget(Exception):
         super().__init__('No Data Target available.')
 
 
-class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params')):
+class DataStorageBase(Plugboard):
     """Implements a key, value storage object.
 
     """
-
     def __init__(self, **kwargs):
-        for key, param in self.params.items():
-            attr = kwargs.pop(key, param.default)
-            if attr is not None and not isinstance(attr, param.dtype):
-                raise TypeError('{} parameter is no subtype of {}.'.format(key, param.dtype))
-            setattr(self, key, attr)
-        if kwargs:
-            key, _ = kwargs.popitem()
-            raise TypeError('\'{}\' is an invalid keyword argument'.format(key))
-        self._default_params = {key: param.default for key, param in self.params.items()}
-        self._is_copy = False  # used in self.at and mandatory parameters.
+        super().__init__(**kwargs)
         self.io = None
-
-    @property
-    def _mandatory_params(self):
-        return set([key for key, param in self.params.items() if param.mandatory])
 
     @abstractmethod
     def read(self):
@@ -71,13 +57,12 @@ class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params'
         """Return True if data exists.
 
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def keys(self):
         """Return keys of the io file object.
 
         """
-        raise NotImplementedError
 
     def __enter__(self):
         return self
@@ -97,33 +82,20 @@ class DataStorageBase(metaclass=MetaTracker.sub('MetaProcessor', Param, 'params'
     def __bool__(self):
         return bool(self.io)
 
-    def _update_defaults(self, kwargs):
-        """Update and set kwargs as instance attributes. kwargs must have the same keys as self.params and values must
-        have the same type as specified in self.params.
-
-        """
-        for key, value in kwargs.items():
-            if key not in self.params.keys():
-                raise KeyError('Non expected key: {}. Available keys: {}'.format(key, self.params.keys()))
-            if not isinstance(value, self.params[key].dtype):
-                raise TypeError('Value for key {} is of wrong type {}, whereas it should be of type {}.'.format(
-                    key, type(value), self.params[key].dtype))
-            setattr(self, key, value)
-
     def at(self, **kwargs):
         """Return a copy of the instance where kwargs become the attributes of the class.
         I.e. a specific self.data_key is set so that self.write(data) automatically writes the data to correct key.
 
         """
-        missing_params = self._mandatory_params - set(kwargs.keys())
-        if missing_params and not self._is_copy:
-            raise KeyError('Missing mandatory parameters: {}'.format(missing_params))
-        c = copy.copy(self)
-
-        # pylint: disable=protected-access
-        c._update_defaults(kwargs)
-        c._is_copy = True
-        return c
+        result = copy.copy(self)
+        for key, value in kwargs.items():
+            try:
+                setattr(result.default, key, value)
+            except AttributeError as err:
+                raise TypeError(
+                    "'{}' is an invalid keyword argument for '{}.at'.".format(key, type(self).__name__)
+                ) from err
+        return result
 
 
 class NoStorage(DataStorageBase):
@@ -135,6 +107,12 @@ class NoStorage(DataStorageBase):
 
     def write(self, data):
         raise NoDataTarget()
+
+    def exists(self):
+        raise NoDataSource()
+
+    def keys(self):
+        raise NoDataSource()
 
 
 class PickleStorage(DataStorageBase):

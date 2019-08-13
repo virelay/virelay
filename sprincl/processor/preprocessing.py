@@ -96,9 +96,27 @@ class Resize(ImagePreProcessor):
     height = Param(int, 100)
 
     def function(self, data):
-        return np.stack(skimage.transform.resize(x, output_shape=(self.height, self.width), order=self.filter,
-                                                 **self.kwargs)
-                        for x in data)
+        """
+        Parameters
+        ----------
+        data: np.ndarray
+            Shape of data should be in one of the following formats:
+                1. (batch_size, channels, height, width)    with channels_first=True
+                2. (batch_size, height, width, channels)    with channels_first=False
+                3. (batch_size, height, width)              with channels_first=False
+        Returns
+        -------
+        data: np.ndarray
+            Data is resized to given width and height.
+        """
+        if self.channels_first:
+            data = np.moveaxis(data, 1, -1)
+        out = np.stack(skimage.transform.resize(x, output_shape=(self.height, self.width), order=self.filter,
+                                                **self.kwargs)
+                       for x in data)
+        if self.channels_first:
+            out = np.moveaxis(out, -1, 1)
+        return out
 
 
 class Rescale(ImagePreProcessor):
@@ -138,7 +156,12 @@ class Rescale(ImagePreProcessor):
         data: np.ndarray
             height and width axes are rescaled by scale parameter.
         """
-        return np.stack(skimage.transform.rescale(x, self.scale, order=self.filter, **self.kwargs) for x in data)
+        if self.channels_first:
+            data = np.moveaxis(data, 1, -1)
+        out = np.stack(skimage.transform.rescale(x, self.scale, order=self.filter, **self.kwargs) for x in data)
+        if self.channels_first:
+            out = np.moveaxis(out, -1, 1)
+        return out
 
 
 class Pooling(PreProcessor):

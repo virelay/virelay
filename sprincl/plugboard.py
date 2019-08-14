@@ -184,7 +184,7 @@ class Plug(EmptyInit):
         self._consistent()
 
     @default.deleter
-    def default(self, value):
+    def default(self):
         self.default = None
 
 

@@ -9,7 +9,7 @@ def processor_type():
     class MyProcessor(Processor):
         param_1 = Param(str, mandatory=True)
         param_2 = Param(int, -25)
-        param_3 = Param((str, int))
+        param_3 = Param((str, int), 'default')
         value = 42
         text = 'apple'
 
@@ -52,11 +52,8 @@ class TestProcessor(object):
             ['is_output', 'is_checkpoint', 'io', 'param_1', 'param_2', 'param_3'] == list(processor_type.collect(Param))
         )
 
-    def test_params_no_attributes(self, processor_type):
-        assert not any(hasattr(processor_type, name) for name in ('param_1', 'param_2'))
-
     def test_creation(self, processor_type):
-        processor_type(param_1="neki")
+        processor_type()
 
     def test_instance_assign(self, processor_type, kwargs):
         processor = processor_type(**kwargs)
@@ -71,6 +68,8 @@ class TestProcessor(object):
             processor_type(param_1="bacon", parma_0='monkey')
 
     def test_abstract_func(self):
+        with pytest.raises(TypeError):
+            Processor()
 
     def test_checkpoint(self, processor_type):
         processor = processor_type(param_1="bacon", is_checkpoint=True)
@@ -91,8 +90,9 @@ class TestProcessor(object):
         processor_type(param_1='soup', param_3='spoon')
 
     def test_mandatory_param(self, processor_type):
+        processor = processor_type()
         with pytest.raises(TypeError):
-            processor_type()
+            processor.param_1
 
     def test_wrong_type_param(self, processor_type):
         with pytest.raises(TypeError):

@@ -151,7 +151,7 @@ class TestSpectral(object):
         aff_pipe, lap_pipe, eig_pipe, label_pipe = output_pipeline
 
         # produce results manually and compare to pipeline output
-        dist_man = pipeline.processes['pairwise_distance'](spiral_data)
+        dist_man = pipeline.pairwise_distance(spiral_data)
         aff_man = knn(dist_man)
         np.testing.assert_array_equal(np.array(aff_man.todense()),
                                       np.array(aff_pipe.todense()),

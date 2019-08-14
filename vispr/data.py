@@ -118,7 +118,7 @@ class AttrImage:
 class OrigImage:
     """Represents an original image."""
 
-    def __init__(self, inpath):
+    def __init__(self, inpath, center_crop=False):
         """
         Initializes a new OrigImage instance.
 
@@ -127,10 +127,14 @@ class OrigImage:
             inpath: str
                 The input path to a directory containing images: class_name/image_name.jpg or path to a file containing
                 absolute paths to images.
+            center_crop: bool
+                If True the images are center cropped. Usually used for pytorch models.
+
         """
 
         self._dummy = Image.new('RGBA', (224, 224), color=(255, 0, 0, 255))
         self._fpath = inpath
+        self._center_crop = center_crop
 
         if os.path.isdir(inpath):
             self._index = sorted(glob.glob(os.path.join(inpath, '*/*')))
@@ -155,7 +159,8 @@ class OrigImage:
 
         try:
             img = Image.open(self._index[key])
-            img = center_crop(img, (224, 224))
+            if self._center_crop:
+                img = center_crop(img, (224, 224))
             img = img.convert('RGB')
             img.putalpha(255)
         except FileNotFoundError:

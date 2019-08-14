@@ -153,7 +153,7 @@ class FunctionProcessor(Processor):
     function = Param((MethodType, FunctionType), (lambda self, data: data))
     bind_method = Param(bool, False)
 
-    def __init__(self, **kwargs):
+    def __call__(self, data):
         """Bind function as attribute of instance.
 
         See also
@@ -161,9 +161,9 @@ class FunctionProcessor(Processor):
         :obj:`Processor`
 
         """
-        super().__init__(**kwargs)
         if self.bind_method:
             self.function = self.function.__get__(self, type(self))
+        return super().__call__(data)
 
 
 def ensure_processor(proc, **kwargs):

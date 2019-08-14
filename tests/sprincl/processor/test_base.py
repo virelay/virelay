@@ -53,21 +53,26 @@ class TestProcessor(object):
         )
 
     def test_creation(self, processor_type):
+        """Processors should instatiatiate properly in all cases"""
         processor_type()
 
     def test_instance_assign(self, processor_type, kwargs):
+        """Parameter values passed as keyword arguments during instatiation should be properly set"""
         processor = processor_type(**kwargs)
         assert all(getattr(processor, key) == val for key, val in kwargs.items())
 
     def test_instance_default(self, processor_type):
+        """Default values should be properly assigned"""
         processor = processor_type(param_1="bacon")
         assert processor.param_2 == -25
 
     def test_unknown_param(self, processor_type):
+        """Unknown parameters should raise an Exception"""
         with pytest.raises(TypeError):
             processor_type(param_1="bacon", parma_0='monkey')
 
     def test_abstract_func(self):
+        """Processor should be abstract and thus fail to instantiate"""
         with pytest.raises(TypeError):
             Processor()
 
@@ -90,6 +95,7 @@ class TestProcessor(object):
         processor_type(param_1='soup', param_3='spoon')
 
     def test_mandatory_param(self, processor_type):
+        """Mandatory parameters should raise an Exception when accessed without being set"""
         processor = processor_type()
         with pytest.raises(TypeError):
             processor.param_1

@@ -4,11 +4,34 @@
 from collections import OrderedDict
 
 from ..processor.base import ensure_processor, Processor
-from ..plugboard import Slot, Plugboard
+from ..plugboard import Slot, Plug, Plugboard
+
+
+class TaskPlug(Plug):
+    """Plug to ensure all contained objects are Processors"""
+    def __init__(self, slot, obj=None, default=None, **kwargs):
+        if default is not None:
+            default = ensure_processor(default, **kwargs)
+        if obj is not None:
+            obj = ensure_processor(obj)
+        super().__init__(slot, obj=obj, default=default, **kwargs)
+
+    @Plug.obj.setter
+    def obj(self, value):
+        if value is not None:
+            value = ensure_processor(value)
+        Plug.obj.fset(self, value)
+
+    @Plug.default.setter
+    def default(self, value):
+        if value is not None:
+            value = ensure_processor(value)
+        Plug.default.fset(self, value)
 
 
 class Task(Slot):
-    """A single item in a :obj:`Pipeline` task scheme.
+    """A single item in a :obj:`Pipeline` task scheme. Tasks are slots that ensure all contained objects in Plugs and
+    own default values are Processors.
 
     Attributes
     ----------
@@ -42,13 +65,18 @@ class Task(Slot):
         """
         if not issubclass(proc_type, Processor):
             raise TypeError("Only sub-classes of Processors are allowed!")
-        default = ensure_processor(default, **kwargs)
+        if default is not None:
+            default = ensure_processor(default, **kwargs)
         super().__init__(dtype=proc_type, default=default)
 
-    def __set__(self, instance, value):
-        """Make sure only processors are assigned to slots"""
-        proc = ensure_processor(value)
-        super().__set__(instance, proc)
+    @Slot.default.setter
+    def default(self, value):
+        if value is not None:
+            value = ensure_processor(value)
+        Task.default.fset(self, value)
+
+    def __call__(self, obj=None, default=None):
+        return TaskPlug(self, obj=obj, default=default)
 
 
 class Pipeline(Processor):

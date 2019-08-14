@@ -4,7 +4,7 @@
 from collections import OrderedDict
 
 from ..processor.base import ensure_processor, Processor
-from ..plugboard import Slot, Plug, Plugboard
+from ..plugboard import Slot, Plug
 
 
 class TaskPlug(Plug):

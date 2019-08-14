@@ -7,7 +7,6 @@ import pytest
 from sprincl.utils import import_or_stub
 
 
-
 def test_conditional_import():
     """Test conditional import which fails only when actually using the imported module."""
     non_existing_module = import_or_stub('non_existing_module')

@@ -10,12 +10,12 @@ from sprincl.tracker import Tracker
 @pytest.fixture(scope='module')
 def tracked():
     class SubTracked(Tracker):
-        attr_1=42
-        attr_2='apple'
-        attr_3=object
-        attr_4=15
-        attr_5='pear'
-        attr_6=str
+        attr_1 = 42
+        attr_2 = 'apple'
+        attr_3 = object
+        attr_4 = 15
+        attr_5 = 'pear'
+        attr_6 = str
     return SubTracked
 
 

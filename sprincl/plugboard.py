@@ -1,3 +1,4 @@
+"""Plugboards are classes which contain Slots that are filled using Plugs."""
 from .tracker import Tracker
 
 
@@ -36,10 +37,10 @@ class Slot(EmptyInit):
 
     def _consistent(self):
         if (
-            not isinstance(self.dtype, type) and
-            not (
-                isinstance(self.dtype, tuple) and
-                all(isinstance(element, type) for element in self.dtype)
+            not isinstance(self.dtype, type)
+            and not (
+                isinstance(self.dtype, tuple)
+                and all(isinstance(element, type) for element in self.dtype)
             )
         ):
             raise TypeError(

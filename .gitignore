@@ -19,3 +19,5 @@ result
 
 # Testing
 .tox
+.coverage
+.coverage.*

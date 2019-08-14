@@ -107,11 +107,11 @@ class Slot(EmptyInit):
         return self.default is not None
 
     def __call__(self, obj=None, default=None):
-        return Plug(obj, self, default=default)
+        return Plug(self, obj=obj, default=default)
 
 
 class Plug(EmptyInit):
-    def __init__(self, obj, slot, default=None, **kwargs):
+    def __init__(self, slot, obj=None, default=None, **kwargs):
         super().__init__(**kwargs)
         self._obj = obj
         self._slot = slot

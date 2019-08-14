@@ -108,19 +108,19 @@ class Pipeline(Processor):
         super().__init__(**kwargs)
 
     def checkpoint_processes(self):
-        """Find the checkpoint :obj:`Processor` closest to output in `self.processes` and return an
-        :obj:`collections.OrderedDict` of that and all following :obj:`Processor`s in `self.processes`.
+        """Find the checkpoint :obj:`Processor` closest to output and return an
+        :obj:`collections.OrderedDict` of that and all following :obj:`Processor`s.
 
         Returns
         -------
         :obj:`collections.OrderedDict`
-            The :obj:`Processor` that is the checkpoint closest to output in `self.processes` and all its following
+            The :obj:`Processor` that is the checkpoint closest to output and all its following
             :obj:`Processor`s in an :obj:`OrderedDict`.
 
         Raises
         ------
         RuntimeError
-            If there is not a single checkpoint in `self.processes`
+            If there is not a single checkpoint.
 
         """
         checkpoint_process_list = []
@@ -139,13 +139,12 @@ class Pipeline(Processor):
         Returns
         -------
         object
-            Output of the whole pipeline, starting from checkpointed :obj:`Processor` closest to output in
-            `self.processes`.
+            Output of the whole pipeline, starting from checkpointed :obj:`Processor` closest to output.
 
         Raises
         ------
         RuntimeError
-            If the checkpointed :obj:`Processor` closest to output in `self.processes` does not have any
+            If the checkpointed :obj:`Processor` closest to output does not have any
             `checkpoint_data` store, i.e. the :obj:`Processor` was never called once after being declared a checkpoint.
 
         """
@@ -159,7 +158,7 @@ class Pipeline(Processor):
         return data
 
     def function(self, data):
-        """Propagate `data` through the whole pipeline from front to back, calling all `self.processes` in series.
+        """Propagate `data` through the whole pipeline from front to back, calling all Processors in series.
 
         Attributes
         ----------
@@ -170,7 +169,7 @@ class Pipeline(Processor):
         Returns
         -------
         object
-            Output of all :obj:`Processor`s in `self.processes` that are flagged as pipeline outputs. If no processors
+            Output of all :obj:`Processor`s that are flagged as pipeline outputs. If no processors
             are flagged as outputs, return the output of the last processor.
 
         """
@@ -194,5 +193,5 @@ class Pipeline(Processor):
             MyProcess(stuff=3, func=Param(FunctionType, lambda x: x**2)) -> output:np.ndarray
         )
         """
-        pipeline = '\n    '.join([proc.__repr__() for proc in self.processes.values()])
+        pipeline = '\n    '.join([proc.__repr__() for proc in self.collect_attr(Task).values()])
         return '{}(\n    {}\n)'.format(self.__class__.__name__, pipeline)

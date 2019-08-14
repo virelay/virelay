@@ -48,7 +48,9 @@ def unbound_function():
 
 class TestProcessor(object):
     def test_params_tracked(self, processor_type):
-        assert ['is_output', 'is_checkpoint', 'io', 'param_1', 'param_2', 'param_3'] == list(processor_type.params)
+        assert (
+            ['is_output', 'is_checkpoint', 'io', 'param_1', 'param_2', 'param_3'] == list(processor_type.collect(Param))
+        )
 
     def test_params_no_attributes(self, processor_type):
         assert not any(hasattr(processor_type, name) for name in ('param_1', 'param_2'))
@@ -69,9 +71,6 @@ class TestProcessor(object):
             processor_type(param_1="bacon", parma_0='monkey')
 
     def test_abstract_func(self):
-        processor = Processor()
-        with pytest.raises(NotImplementedError):
-            processor(0)
 
     def test_checkpoint(self, processor_type):
         processor = processor_type(param_1="bacon", is_checkpoint=True)

@@ -10,6 +10,7 @@ from sklearn.datasets import make_blobs
 from sklearn.metrics.pairwise import euclidean_distances
 
 from sprincl.processor import clustering
+from sprincl.base import Param
 
 try:
     import hdbscan  # pylint: disable=unused-import; # noqa: F401
@@ -61,7 +62,7 @@ def test_embedding_on_distances(processor, distances):
     are of similar size.
 
     """
-    params = {'eps': 0.9} if 'eps' in processor.params else {}
+    params = {'eps': 0.9} if 'eps' in processor.collect(Param) else {}
     emb = processor(metric='precomputed', **params)(distances)
     assert len(np.unique(emb)) == 5
     assert (np.unique(emb, return_counts=True)[1] / 1000).std() < 0.13

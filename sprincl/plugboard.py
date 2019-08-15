@@ -209,10 +209,11 @@ class SlotDefaultAccess:
         return type(self)(instance)
 
     def __set__(self, instance, value):
+        self = type(self)(instance)
         if not isinstance(value, dict):
             raise TypeError("Can only directly set default values using a dict!")
-        for key, val in value:
-            setattr(self, key, value)
+        for key, val in value.items():
+            setattr(self, key, val)
 
     def __getattr__(self, name):
         return self._get_plug(name).default

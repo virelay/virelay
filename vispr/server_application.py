@@ -1,5 +1,7 @@
 """Bokeh plotting handler."""
 
+import os
+import re
 import json
 import random
 import sqlite3
@@ -77,8 +79,12 @@ class ServerApplication:
         self.logger = logging.getLogger(__name__)
 
         # Loads the analysis file and extracts the category names
-        with h5py.File(self.analysis_path, 'r') as analysis_file:
-            self.categories = list(analysis_file)
+        self._multiple_analysis_files = os.path.isdir(self.analysis_path)
+        if self._multiple_analysis_files:
+            self.categories = sorted(os.listdir(self.analysis_path))
+        else:
+            with h5py.File(self.analysis_path, 'r') as analysis_file:
+                self.categories = list(analysis_file)
 
         # Loads the WordNet IDs file, which contains a mapping from the label numbers to the WNIDs
         with open(self.wnid_path, 'r') as wnid_file:
@@ -225,11 +231,18 @@ class ServerApplication:
             self.save_selected_samples_button.disabled = True
 
         # Loads the data of the newly selected category
-        with h5py.File(self.analysis_path, 'r') as analysis_file:
-            analysis_file = analysis_file[self.data.selected.category]
+        if self._multiple_analysis_files:
+            analysis_path = os.path.join(self.analysis_path, new_category)
+        else:
+            analysis_path = self.analysis_path
+
+        with h5py.File(analysis_path, 'r') as analysis_file:
+            if not self._multiple_analysis_files:
+                analysis_file = analysis_file[self.data.selected.category]
             self.data.cluster = {key: value[:] for key, value in analysis_file['cluster'].items()}
-            self.data.visualization = {key: value[:] for key, value in analysis_file['visualization'].items()}
-            self.data.eigen_value = analysis_file['eigenvalue'][:]
+            self.data.visualization = {key: value[:] for key, value in analysis_file['embedding'].items()
+                                       if isinstance(value, h5py.Dataset)}
+            self.data.eigen_value = analysis_file['embedding/spectral/0'][:]
             self.data.index = analysis_file['index'][:]
 
         # Resets the selected cluster and visualization if necessary (that is, when they are not in the newly selected
@@ -360,6 +373,19 @@ class ServerApplication:
             )
         self.logger.info('Saved interesting result in the database.')
 
+    @property
+    def class_ids(self):
+        class_ids = []
+        if self._multiple_analysis_files:
+            for cat in self.categories:
+                with h5py.File(os.path.join(self.analysis_path, cat), 'r') as f:
+                    class_ids.append(f.attrs['class_id'])
+        else:
+            with h5py.File(self.analysis_path, 'r') as f:
+                for cat in self.categories:
+                    class_ids.append(f[cat].attrs['class_id'])
+        return class_ids
+
     def setup_up_bokeh_document(self, document):
         """
         Sets up the Bokeh server document.
@@ -477,9 +503,12 @@ class ServerApplication:
         # of the images (the attribution images are rendered above the respective original image, changing the alpha
         # reveals the original image or hides it behind the attribution image), and saving the currently selected
         # elements as interesting results
+
+        class_names = [self.wnids[i] for i in self.class_ids]
         self.category_select = Select(
             value=self.data.selected.category,
-            options=[(category, '{0} ({1})'.format(self.wordmap[category], category)) for category in self.categories]
+            options=[(category, '{0} ({1})'.format(self.wordmap[class_name], category)) for class_name, category in
+                     zip(class_names, self.categories)]
         )
         self.cluster_select = Select(
             value=self.data.selected.cluster,

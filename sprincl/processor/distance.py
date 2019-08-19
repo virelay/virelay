@@ -28,4 +28,5 @@ class SciPyPDist(Distance):
     m_kwargs = Param(dict, {})
 
     def function(self, data):
+        # pylint: disable=not-an-iterable,not-a-mapping
         return squareform(pdist(data, metric=self.metric, *self.m_args, **self.m_kwargs))

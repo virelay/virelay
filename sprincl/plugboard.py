@@ -29,6 +29,8 @@ class Slot(EmptyInit):
         Allowed type(s) of the parameter.
     default : :obj:`dtype`
         Default parameter value, should be an instance of (one of) :obj:`dtype`.
+    optional : bool
+        Non-mutuable. True, if Slot has a non-None default value, e.g. is optional.
 
     """
     def __init__(self, dtype=object, default=None, **kwargs):
@@ -55,6 +57,11 @@ class Slot(EmptyInit):
     def _consistent(self):
         """Check whether self.dtype and self.default are consistent, e.g. self.default is either None, or of type
         self.dtype.
+
+        Raises
+        -------
+        TypeError
+            If self is not consistent in the sense written above.
         """
         if (
             not isinstance(self.dtype, type)
@@ -222,7 +229,42 @@ class Slot(EmptyInit):
 
 
 class Plug(EmptyInit):
+    """Container class to fill Slots associated with a certain instance. The instance is usually of type Plugboard, but
+    may be of any kind of type.
+
+    Attributes
+    ----------
+    obj : object
+        Explicitly defined object held in the Plug container. If not set, self.default is returned.
+    default : object
+        Plug-dependent lower-priority object held in the container. If not set, self.fallback is returned.
+    fallback : object
+        Slot-dependent lowest-priority value to fall back to when no value has been assigned to the container. If not
+        set, a TypeError is returned.
+    slot : :obj:`Slot`
+        Slot with which this Plug is associated.
+    dtype : type
+        dtype of the associated Slot.
+    optional : bool
+        Whether default or fallback is not None.
+
+    """
     def __init__(self, slot, obj=None, default=None, **kwargs):
+        """Initialize container and check for consistency.
+
+        Parameters
+        ----------
+        slot : :obj:`Slot`
+            Slot with which this Plug is associated.
+        obj : object
+            Explicitly defined object held in the Plug container. If not set, self.default is returned.
+        default : object
+            Plug-dependent lower-priority object held in the container. If not set, self.fallback is returned.
+        **kwargs :
+            Keyword arguments passed down to potential entries below Plug in the MRO, for cooperativities' sake. In
+            normal cases, this next class will be `EmptyInit`, and thus accept no more kwargs.
+
+        """
         super().__init__(**kwargs)
         self._obj = obj
         self._slot = slot
@@ -230,6 +272,15 @@ class Plug(EmptyInit):
         self._consistent()
 
     def _consistent(self):
+        """Checks whether all values are consistent, e.g. at least one of obj, default and fallback is set and of dtype
+        slot.dtype.
+
+        Raises
+        ------
+        TypeError
+            If none of obj, default and fallback is set, or obj is not of type slot.dtype.
+
+        """
         if self.obj is None:
             raise TypeError(
                 "'{}' object '{}' is mandatory, yet it has been accessed without being set.".format(
@@ -249,53 +300,64 @@ class Plug(EmptyInit):
 
     @property
     def slot(self):
+        """Get associated Slot."""
         return self._slot
 
     @slot.setter
     def slot(self, value):
+        """Set associated Slot. Checks for consistency"""
         self._slot = value
         self._consistent()
 
     @property
     def dtype(self):
+        """Get associated Slot's dtype. Non-mutuable."""
         return self.slot.dtype
 
     @property
     def optional(self):
+        """Get whether container has default values. Non-mutuable."""
         return self.default is not None
 
     @property
     def fallback(self):
+        """Get associated Slot's default value. Non-mutuable."""
         return self.slot.default
 
     @property
     def obj(self):
+        """Get contained object value. Get self.default instead if not set."""
         if self._obj is None:
             return self.default
         return self._obj
 
     @obj.setter
     def obj(self, value):
+        """Set contained object value. Checks for consistency."""
         self._obj = value
         self._consistent()
 
     @obj.deleter
     def obj(self):
+        """Delete contained object value by setting it to None."""
         self.obj = None
 
     @property
     def default(self):
+        """Get low-priority contained default value. Get self.fallback instead if not set."""
         if self._default is None:
             return self.fallback
         return self._default
 
     @default.setter
     def default(self, value):
+        """Set low-priority contained default value. Checks for consistency."""
         self._default = value
         self._consistent()
 
     @default.deleter
     def default(self):
+        """Delete low-priority contained default value by setting it to None."""
         self.default = None
 
 

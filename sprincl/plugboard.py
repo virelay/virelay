@@ -2,10 +2,12 @@
 from .tracker import Tracker
 
 
-class EmptyInit(object):
+class EmptyInit:
     """Empty Init is a class intened to be inherited as a last step down the MRO, to catch any remaining positional
     and/or keyword arguments and thus raise proper Exceptions.
     """
+    # Following is not useless, since this super delegation causes python to raise a more informative exception.
+    # pylint: disable=useless-super-delegation
     def __init__(self):
         super().__init__()
 
@@ -69,11 +71,11 @@ class Slot(EmptyInit):
             If self is not consistent in the sense written above.
         """
         if (
-            not isinstance(self.dtype, type)
-            and not (
-                isinstance(self.dtype, tuple)
-                and all(isinstance(element, type) for element in self.dtype)
-            )
+                not isinstance(self.dtype, type)
+                and not (
+                    isinstance(self.dtype, tuple)
+                    and all(isinstance(element, type) for element in self.dtype)
+                )
         ):
             raise TypeError(
                 "'{}' object '{}' default values '{}' is neither a type, nor a tuple of types.".format(
@@ -432,11 +434,11 @@ class SlotDefaultAccess:
 
     def __set__(self, instance, value):
         """Set the default values of the associated owner class instance's Slots by assigning a dict."""
-        self = type(self)(instance)
+        new = type(self)(instance)
         if not isinstance(value, dict):
             raise TypeError("Can only directly set default values using a dict!")
         for key, val in value.items():
-            setattr(self, key, val)
+            setattr(new, key, val)
 
     def __getattr__(self, name):
         """Get the default values of the associated owner class instance's Slots 'name' Plug by attribute."""

@@ -362,10 +362,43 @@ class Plug(EmptyInit):
 
 
 class SlotDefaultAccess:
+    """A proxy-object descriptor class to access Plug default values of the owning class, since Plug-instances can not
+    be returned except by accessing a classes' __dict__.
+
+    """
     def __init__(self, instance=None):
+        """Initialize associated instance reference.
+
+        Parameters
+        ----------
+        instance : object
+            Instance of the associated, Slot-owning owner class.
+
+        """
         object.__setattr__(self, '_instance', instance)
 
     def _get_plug(self, name, default=None):
+        """Return Plug of the instance of the associated Slot-owning owner class by name, by calling the Slot's
+        `get_plug` method.
+
+        Parameters
+        ----------
+        name : str
+            Name of the Slot.
+        default : object
+            Default value to set if there does not yet exist a Plug instance associated with the Slot and instance.
+
+        Returns
+        -------
+        :obj:`Plug`
+            Plug container associated with the instance of the Slot-owning owner class and name.
+
+        Raises
+        ------
+        AttributeError
+            If there is no attribute in the associated owner class of this name of type :obj:`Slot`.
+
+        """
         slot = getattr(type(self._instance), name)
         if not isinstance(slot, Slot):
             raise AttributeError(
@@ -378,9 +411,11 @@ class SlotDefaultAccess:
         return slot.get_plug(self._instance, default=default)
 
     def __get__(self, instance, owner):
+        """Return a new instance of SlotDefaultAccess, initialized with the priovided instance value."""
         return type(self)(instance)
 
     def __set__(self, instance, value):
+        """Set the default values of the associated owner class instance's Slots by assigning a dict."""
         self = type(self)(instance)
         if not isinstance(value, dict):
             raise TypeError("Can only directly set default values using a dict!")
@@ -388,15 +423,19 @@ class SlotDefaultAccess:
             setattr(self, key, val)
 
     def __getattr__(self, name):
+        """Get the default values of the associated owner class instance's Slots 'name' Plug by attribute."""
         return self._get_plug(name).default
 
     def __setattr__(self, name, value):
+        """Set the default values of the associated owner class instance's Slot's 'name' Plug by attribute."""
         self._get_plug(name, default=value).default = value
 
     def __delattr__(self, name):
+        """Delete the default values of the associated owner class instance's Slot 'name' Plug by attribute."""
         del self._get_plug(name).default
 
     def __dir__(self):
+        """Return a list of all Slots of the owner class."""
         return list(type(self._instance).collect(Slot))
 
 

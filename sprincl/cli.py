@@ -65,6 +65,7 @@ def main(ctx, data, exname, overwrite, modify, log, verbose):
 @click.option('--knn', type=int, default=10)
 @click.pass_context
 def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigvals, knn):
+    """Compute spectral embedding"""
     fout = data
 
     if not path.exists(fout) or modify:
@@ -124,17 +125,18 @@ def embed(ctx, attribution, label_filter, exname, data, overwrite, modify, eigva
 @click.option('--clusters', type=csints, default='2,3,4,5')
 @click.pass_context
 def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clusters):
+    """Compute k-means clustering"""
     fout = data if output is None else output
 
     if not path.exists(fout) or modify:
         LOGGER.info('Computing clustering: %s', fout)
         if computed and ('ev' in ctx.obj):
-            ev = ctx.obj.ev
+            eigvec = ctx.obj.ev
         else:
             try:
                 with h5py.File(data, 'r') as fd:
                     subfd = fd.require_group(exname)
-                    ev = subfd['eigenvector'][:]
+                    eigvec = subfd['eigenvector'][:]
             except KeyError:
                 LOGGER.error('Embedding must be either computed or already exist in data.')
                 return
@@ -142,7 +144,7 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
         llabels = []
         for k in clusters:
             k_means = KMeans(n_clusters=k, index=(slice(None), slice(-eigvals, None)))
-            lab = k_means(ev)
+            lab = k_means(eigvec)
             # _, lab, _ = k_means(ev[:, -eigvals:], k)
             llabels.append(lab.astype('uint8'))
 
@@ -158,9 +160,9 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
                         continue
                 fdl[key] = lab
                 fdl[key].attrs.create('k', kval, dtype=np.uint8)
-                fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
+                fdl[key].attrs.create('eigenvector', range(eigvec.shape[1] - eigvals, eigvec.shape[1]), dtype=np.uint32)
     else:
-        LOGGER.info('File exists, not overwriting clustering: {}'.format(fout))
+        LOGGER.info('File exists, not overwriting clustering: %s', fout)
 
 
 @main.command()
@@ -173,22 +175,23 @@ def cluster(ctx, data, exname, output, overwrite, modify, computed, eigvals, clu
 @click.option('--eigvals', type=int, default=8)
 @click.pass_context
 def tsne(ctx, data, exname, output, overwrite, modify, computed, eigvals):
+    """Compute T-SNE 2D embedding"""
     fout = data if output is None else output
 
     if not path.exists(fout) or modify:
-        LOGGER.info('Computing TSNE: {}'.format(fout))
+        LOGGER.info('Computing TSNE: %s', fout)
         if computed and ('ev' in ctx.obj):
-            ev = ctx.obj.ev
+            eigvec = ctx.obj.ev
         else:
             try:
                 with h5py.File(data, 'r') as fd:
                     subfd = fd.require_group(exname)
-                    ev = subfd['eigenvector'][:]
+                    eigvec = subfd['eigenvector'][:]
             except KeyError:
                 LOGGER.error('Embedding must be either computed or already exist in data.')
                 return
 
-        tsne = TSNE().fit_transform(ev[:, -eigvals:])
+        tsne = TSNE().fit_transform(eigvec[:, -eigvals:])
 
         with h5py.File(fout, 'a') as fd:
             fdl = fd.require_group(exname + '/visualization')
@@ -197,12 +200,12 @@ def tsne(ctx, data, exname, output, overwrite, modify, computed, eigvals):
                 if overwrite:
                     del fdl[key]
                 else:
-                    LOGGER.error('Key already exists and overwrite is disabled: %s' % key)
+                    LOGGER.error('Key already exists and overwrite is disabled: %s', key)
                     return
             fdl[key] = tsne.astype(np.float32)
-            fdl[key].attrs.create('eigenvector', range(ev.shape[1] - eigvals, ev.shape[1]), dtype=np.uint32)
+            fdl[key].attrs.create('eigenvector', range(eigvec.shape[1] - eigvals, eigvec.shape[1]), dtype=np.uint32)
     else:
-        LOGGER.info('File exists, not overwriting TSNE: {}'.format(fout))
+        LOGGER.info('File exists, not overwriting TSNE: %s', fout)
 
 
 if __name__ == '__main__':

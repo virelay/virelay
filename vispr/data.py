@@ -10,6 +10,7 @@ from PIL import Image
 
 LOGGER = logging.getLogger(__name__)
 
+
 def crop(image, top, left, height, width):
     """
     Crops the specified image to the specified dimensions.
@@ -35,6 +36,7 @@ def crop(image, top, left, height, width):
 
     return image.crop((left, top, left + width, top + height))
 
+
 def center_crop(image, output_size):
     """
     Crops the specified image to the specified size using the central region of the image.
@@ -57,6 +59,7 @@ def center_crop(image, output_size):
     left = int(round((width - target_width) / 2.0))
 
     return crop(image, top, left, target_height, target_width)
+
 
 class AttrImage:
     """Represents a image with attributions."""
@@ -110,6 +113,7 @@ class AttrImage:
         with h5py.File(self._atpath, 'r') as fd:
             length = len(fd['attribution'])
         return length
+
 
 class OrigImage:
     """Represents an original image."""

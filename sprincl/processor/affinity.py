@@ -78,12 +78,12 @@ class RadialBasisFunction(Affinity):
     """
     sigma = Param(float, 1.0)
 
-    def function(self, distance):
+    def function(self, data):
         """Compute Radial Basis Function affinity matrix.
 
         Parameters
         ----------
-        distance : :obj:`numpy.ndarray`
+        data : :obj:`numpy.ndarray`
             Distance matrix used to compute affinity matrix.
 
         Returns
@@ -93,5 +93,5 @@ class RadialBasisFunction(Affinity):
 
         """
         sigma = self.sigma
-        affinity = np.exp(-distance / (2 * sigma ** 2))
+        affinity = np.exp(-data / (2 * sigma ** 2))
         return affinity

@@ -43,11 +43,11 @@ def import_or_stub(name, subname=None):
             module = [dummy_from_module_import(name) for _ in subnames]
         else:
             module = []
-            for subname in subnames:
+            for model_attribute in subnames:
                 try:
-                    attr = getattr(tmp, subname)
+                    attr = getattr(tmp, model_attribute)
                 except AttributeError as err:
-                    message = "cannot import name '{}' from '{}' ({})".format(subname, name, tmp.__file__)
+                    message = "cannot import name '{}' from '{}' ({})".format(model_attribute, name, tmp.__file__)
                     raise ImportError(message) from err
                 else:
                     module.append(attr)

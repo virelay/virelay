@@ -51,6 +51,7 @@ class EigenDecomposition(Embedding):
         data and return one minus the eigenvalue.
 
         """
+        # pylint: disable=not-a-mapping
         eigval, eigvec = eigsh(data, k=self.n_eigval, which=self.which, **self.kwargs)
         eigval = 1. - eigval
 
@@ -67,6 +68,7 @@ class TSNEEmbedding(Embedding):
     metric = Param(str, default='euclidean')
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         tsne = TSNE(n_components=self.n_components, metric=self.metric, **self.kwargs)
         emb = tsne.fit_transform(data)
         return emb
@@ -80,6 +82,7 @@ class PCAEmbedding(Embedding):
     whiten = Param(bool, default=False)
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         pca = PCA(n_components=self.n_components, whiten=self.whiten, **self.kwargs)
         emb = pca.fit_transform(data)
         return emb
@@ -93,6 +96,7 @@ class LLEEmbedding(Embedding):
     n_neighbors = Param(int, default=5)
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         lle = LocallyLinearEmbedding(n_neighbors=self.n_neighbors, n_components=self.n_components,
                                      **self.kwargs)
         emb = lle.fit_transform(data)

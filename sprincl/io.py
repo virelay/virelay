@@ -16,6 +16,8 @@ from .plugboard import Plugboard
 
 class NoDataSource(Exception):
     """Raise when no data source available."""
+    # Following is not useless, since message becomes optional
+    # pylint: disable=useless-super-delegation
     def __init__(self, message='No Data Source available.'):
         super().__init__(message)
 

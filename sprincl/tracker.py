@@ -28,6 +28,7 @@ class MetaTracker(ABCMeta):
 
     """
     @classmethod
+    # pylint: disable=bad-mcs-classmethod-argument,unused-argument
     def __prepare__(metacls, name, bases):
         """Prepare the class dict to be an `OrderedDict`.
 
@@ -41,6 +42,7 @@ class MetaTracker(ABCMeta):
         """
         return PublicOrderedDict()
 
+    # pylint: disable=arguments-differ
     def __new__(cls, classname, bases, class_dict):
         """Instantiate a meta class, resulting in a class.
 
@@ -69,9 +71,41 @@ class MetaTracker(ABCMeta):
 
 
 class Tracker(metaclass=MetaTracker):
+    """Tracks all class attributes not enclosed with double underscores in order, and makes them available as
+    its __tracked__ attribute using MetaTracker.
+
+    """
     @classmethod
     def collect(cls, dtype):
+        """Return all tracked class attributes of a certain type.
+
+        Parameters
+        ----------
+        dtype : type or tuple of type
+            Type(s) of the class attributes to collect.
+
+        Returns
+        -------
+        OrderedDict
+            An OrderedDict, with the attribute names as keys and their corresponding values.
+
+        """
+        # pylint: disable=no-member
         return OrderedDict((key, val) for key, val in cls.__tracked__.items() if isinstance(val, dtype))
 
     def collect_attr(self, dtype):
+        """Return all instance attributes, corresponding to tracked class attributes of a certain type.
+
+        Parameters
+        ----------
+        dtype : type or tuple of type
+            Type(s) of the class attributes to collect.
+
+        Returns
+        -------
+        OrderedDict
+            An OrderedDict, with the attribute names as keys and the corresponding instance attribute values.
+
+        """
+        # pylint: disable=no-member
         return OrderedDict((key, getattr(self, key)) for key, val in self.__tracked__.items() if isinstance(val, dtype))

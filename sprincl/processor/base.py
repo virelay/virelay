@@ -79,10 +79,12 @@ class Processor(Plugboard):
 
         """
         try:
+            # pylint: disable=no-member
             out = self.io.read()
         except NoDataSource:
             out = self.function(data)
             try:
+                # pylint: disable=no-member
                 self.io.write(out)
             except NoDataTarget:
                 pass

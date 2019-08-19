@@ -99,6 +99,7 @@ class DataStorageBase(Plugboard):
 
 
 class NoStorage(DataStorageBase):
+    """Stub class when no Storage is used."""
     def __bool__(self):
         return False
 

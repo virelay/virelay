@@ -45,6 +45,7 @@ class Histogram(PreProcessor):
         n, c, h, w = data.shape
         # channel-wise range
         trange = zip(data.min((0, 2, 3), data.max(0, 2, 3)))
+        # pylint: disable=no-member
         hist = np.histogramdd(data.reshape(n * c, h * w),
                               bins=self.bins, range=trange, density=True).reshape(n, c, self._bins)
         return hist
@@ -111,9 +112,10 @@ class Resize(ImagePreProcessor):
         """
         if self.channels_first:
             data = np.moveaxis(data, 1, -1)
+        # pylint: disable=not-a-mapping
         out = np.stack([skimage.transform.resize(x, output_shape=(self.height, self.width), order=self.filter,
                                                  **self.kwargs)
-                       for x in data])
+                        for x in data])
         if self.channels_first:
             out = np.moveaxis(out, -1, 1)
         return out
@@ -159,6 +161,7 @@ class Rescale(ImagePreProcessor):
         multichannel = len(data.shape) > 3
         if self.channels_first:
             data = np.moveaxis(data, 1, -1)
+        # pylint: disable=not-a-mapping
         out = np.stack([skimage.transform.rescale(x, self.scale, order=self.filter, multichannel=multichannel,
                                                   **self.kwargs) for x in data])
         if self.channels_first:
@@ -183,4 +186,5 @@ class Pooling(PreProcessor):
     pooling_function = Param(FunctionType, np.sum)
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         return skimage.measure.block_reduce(data, self.stride, self.pooling_function, **self.kwargs)

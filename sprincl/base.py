@@ -1,3 +1,4 @@
+"""Module containing basic Sprincl classes, such as Param"""
 from .plugboard import Slot
 
 

@@ -44,6 +44,7 @@ class KMeans(Clustering):
     index = Param(tuple, (slice(None),))
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         return sklearn.cluster.KMeans(n_clusters=self.n_clusters, **self.kwargs).fit_predict(data[self.index])
 
 
@@ -72,6 +73,7 @@ class HDBSCAN(Clustering):
     metric = Param(str, 'euclidean')
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         clustering = hdbscan.HDBSCAN(min_cluster_size=self.n_clusters, metric=self.metric, **self.kwargs)
         return clustering.fit_predict(data)
 
@@ -100,6 +102,7 @@ class DBSCAN(Clustering):
     min_samples = Param(int, 5)
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         clustering = sklearn.cluster.DBSCAN(eps=self.eps, min_samples=self.min_samples, metric=self.metric,
                                             **self.kwargs)
         return clustering.fit_predict(data)
@@ -129,6 +132,7 @@ class AgglomerativeClustering(Clustering):
     linkage = Param(str, 'ward')
 
     def function(self, data):
+        # pylint: disable=not-a-mapping
         clustering = sklearn.cluster.AgglomerativeClustering(n_clusters=self.n_clusters, affinity=self.metric,
                                                              linkage=self.linkage, **self.kwargs)
         return clustering.fit_predict(data)

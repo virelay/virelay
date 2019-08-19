@@ -23,6 +23,7 @@ def data():
 
     """
     digits = load_digits(2)  # shape 360 x 64
+    # pylint: disable=no-member
     return digits.data
 
 

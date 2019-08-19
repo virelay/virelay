@@ -32,6 +32,11 @@ class Slot(EmptyInit):
     optional : bool
         Non-mutuable. True, if Slot has a non-None default value, e.g. is optional.
 
+    See Also
+    --------
+    :obj:`Plugboard`
+    :obj:`Plug`
+
     """
     def __init__(self, dtype=object, default=None, **kwargs):
         """Configure type and default value of slot. A consistency check is performed.
@@ -248,6 +253,11 @@ class Plug(EmptyInit):
     optional : bool
         Whether default or fallback is not None.
 
+    See Also
+    --------
+    :obj:`Slot`
+    :obj:`Plugboard`
+
     """
     def __init__(self, slot, obj=None, default=None, **kwargs):
         """Initialize container and check for consistency.
@@ -365,6 +375,12 @@ class SlotDefaultAccess:
     """A proxy-object descriptor class to access Plug default values of the owning class, since Plug-instances can not
     be returned except by accessing a classes' __dict__.
 
+    See Also
+    --------
+    :obj:`Slot`
+    :obj:`Plugboard`
+    :obj:`Plug`
+
     """
     def __init__(self, instance=None):
         """Initialize associated instance reference.
@@ -440,9 +456,33 @@ class SlotDefaultAccess:
 
 
 class Plugboard(Tracker, EmptyInit):
+    """Optional Manager class for Slots. Uses SlotDefaultAccess to access Plug default values. Also intializes Plug
+    container object values during instatiation by keywords.
+
+    Parameters
+    ----------
+    default : :obj:`SlotDefaultAccess`
+        Proxy object to access instance's Plug's default values by attribute.
+
+    See Also
+    --------
+    :obj:`Slot`
+    :obj:`SlotDefaultAcces`
+    :obj:`Plug`
+
+    """
     default = SlotDefaultAccess()
 
     def __init__(self, **kwargs):
+        """Initialize Plug container object values by keyword arguments.
+
+        Parameters
+        ----------
+        **kwargs :
+            Keyword arguements to initialize Slots. Only keyword arguments which correspond to class' Slot attribute
+            names are processed. All other keyword arguements are passed to the next class' __init__ method in the MRO.
+
+        """
         slots = self.collect(Slot)
         non_slot_kwargs = {key: val for key, val in kwargs.items() if key not in slots}
         # also pass responsibility to raise Exception on wrong kwargs to super-class
@@ -451,9 +491,14 @@ class Plugboard(Tracker, EmptyInit):
             setattr(self, key, val)
 
     def reset_defaults(self):
+        """Delete default values of all Plugs of this instance."""
         for key in self.collect(Slot):
             delattr(self.default, key)
 
     def update_defaults(self, **kwargs):
+        """Update default values of Plugs of this instance by providing their name and a new value as keyword
+        arguments.
+
+        """
         for key, val in kwargs.items():
             setattr(self.default, key, val)

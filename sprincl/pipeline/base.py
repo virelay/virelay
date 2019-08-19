@@ -16,16 +16,20 @@ class TaskPlug(Plug):
             obj = ensure_processor(obj)
         super().__init__(slot, obj=obj, default=default, **kwargs)
 
+    # pylint: disable=no-member
     @Plug.obj.setter
     def obj(self, value):
         if value is not None:
             value = ensure_processor(value)
+        # pylint: disable=no-member
         Plug.obj.fset(self, value)
 
+    # pylint: disable=no-member
     @Plug.default.setter
     def default(self, value):
         if value is not None:
             value = ensure_processor(value)
+        # pylint: disable=no-member
         Plug.default.fset(self, value)
 
 
@@ -69,10 +73,12 @@ class Task(Slot):
             default = ensure_processor(default, **kwargs)
         super().__init__(dtype=proc_type, default=default)
 
+    # pylint: disable=no-member
     @Slot.default.setter
     def default(self, value):
         if value is not None:
             value = ensure_processor(value)
+        # pylint: disable=no-member
         Task.default.fset(self, value)
 
     def __call__(self, obj=None, default=None):
@@ -90,22 +96,6 @@ class Pipeline(Processor):
         OrderedDict of the :obj:`Processor`s that filled the `task_scheme`.
 
     """
-    def __init__(self, **kwargs):
-        """Configure :obj:`Pipeline` instance
-
-        Parameters
-        ----------
-        **kwargs :
-            Keyword arguments with keys named identical to the pipeline tasks, and values of type :obj:`Processor` to
-            fill these :obj:`Task`s.
-
-        Raises
-        ------
-        TypeError
-            If some :obj:`Processor` does not have a matching type of the :obj:`Task` it has be assigned to.
-
-        """
-        super().__init__(**kwargs)
 
     def checkpoint_processes(self):
         """Find the checkpoint :obj:`Processor` closest to output and return an
@@ -128,7 +118,7 @@ class Pipeline(Processor):
             checkpoint_process_list.append((key, proc))
             if proc.is_checkpoint:
                 break
-        if not proc.is_checkpoint:
+        if checkpoint_process_list and not checkpoint_process_list[-1][1].is_checkpoint:
             raise RuntimeError("No checkpoint defined!")
         checkpoint_processes = OrderedDict(checkpoint_process_list[::-1])
         return checkpoint_processes

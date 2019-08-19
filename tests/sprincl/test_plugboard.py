@@ -5,6 +5,7 @@ from sprincl.plugboard import Slot, Plug, Plugboard
 
 
 class TestSlot:
+    """Test class for Slot"""
     @staticmethod
     def test_init():
         """Slot should successfully instatiate in any case"""
@@ -31,6 +32,7 @@ class TestSlot:
     def test_init_class_name():
         """When instatiated in a class, the __name__ parameter of Slot should be set accordingly"""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot()
         assert SlotHolder.my_slot.__name__ == 'my_slot'
 
@@ -40,6 +42,7 @@ class TestSlot:
         returned.
         """
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(default=42)
         slot_holder = SlotHolder()
         assert slot_holder.my_slot == 42
@@ -48,6 +51,7 @@ class TestSlot:
     def test_instance_get():
         """Getting a value after setting it should succeed."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int)
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
@@ -59,15 +63,18 @@ class TestSlot:
         raise a TypeError.
         """
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot()
         slot_holder = SlotHolder()
         with pytest.raises(TypeError):
+            # pylint: disable=pointless-statement
             slot_holder.my_slot
 
     @staticmethod
     def test_instance_set():
         """Setting a value without a default value afterwards should succeed."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int)
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
@@ -76,6 +83,7 @@ class TestSlot:
     def test_instance_set_wrong_dtype():
         """Setting a default value afterwards with a wrong dtype should not succeed."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(str)
         slot_holder = SlotHolder()
         with pytest.raises(TypeError):
@@ -85,6 +93,7 @@ class TestSlot:
     def test_instance_delete_unchanged():
         """Setting a value and deleting it afterwards with a set default value should return the default value"""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(int, 42)
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
@@ -95,6 +104,7 @@ class TestSlot:
     def test_instance_delete_without_default():
         """Setting a value and deleting it afterwards with a set default value should raise an Exception."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(int)
         slot_holder = SlotHolder()
         slot_holder.my_slot = 15
@@ -105,6 +115,7 @@ class TestSlot:
     def test_class_set_dtype():
         """Setting a consistent dtype should succeed."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=object, default=15)
         SlotHolder.dtype = int
 
@@ -112,6 +123,7 @@ class TestSlot:
     def test_class_set_dtype_inconsistent():
         """Setting an inconsistent dtype should fail."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=object, default=15)
         with pytest.raises(TypeError):
             SlotHolder.my_slot.dtype = str
@@ -120,6 +132,7 @@ class TestSlot:
     def test_class_optional():
         """Slots with default values should be optional."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int, default=15)
         assert SlotHolder.my_slot.optional
 
@@ -127,6 +140,7 @@ class TestSlot:
     def test_class_not_optional():
         """Slots without default values should not be optional."""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int)
         assert not SlotHolder.my_slot.optional
 
@@ -134,6 +148,7 @@ class TestSlot:
     def test_class_call():
         """Calling a Slot should yield a Plug associated with the Slot"""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int, default=15)
         assert SlotHolder.my_slot is SlotHolder.my_slot().slot
 
@@ -141,6 +156,7 @@ class TestSlot:
     def test_class_call_obj():
         """Calling a Slot with obj-argument should yield a Plug with that obj set"""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int)
         assert SlotHolder.my_slot(obj=15).obj == 15
 
@@ -148,11 +164,13 @@ class TestSlot:
     def test_class_call_default():
         """Calling a Slot with default-argument should yield a Plug with that default set"""
         class SlotHolder:
+            """Holds a single Slot"""
             my_slot = Slot(dtype=int)
         assert SlotHolder.my_slot(default=15).default == 15
 
 
 class TestPlug:
+    """Test class for Plug"""
     @staticmethod
     def test_init_with_slot_default():
         """Instatiating a Plug with a slot's default value should succeed."""
@@ -371,6 +389,7 @@ class TestPlug:
 
 
 class TestPlugboard:
+    """Test class for Plugboard"""
     @staticmethod
     def test_init():
         """Instatiating a Plugboard without anything set should suceed."""
@@ -386,12 +405,14 @@ class TestPlugboard:
     def test_init_args():
         """Instatiating a Plugboard with any positional args should fail."""
         with pytest.raises(TypeError):
+            # pylint: disable=too-many-function-args
             Plugboard(19)
 
     @staticmethod
     def test_init_assign():
         """Instatiating a Plugboard with kwargs identifying Slots should set those."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard(my_slot=19)
         assert plugboard.my_slot == 19
@@ -400,6 +421,7 @@ class TestPlugboard:
     def test_default_get():
         """Accessing a Plugboard's Slot default values with an explicit obj value should succeed."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard(my_slot=19)
         assert plugboard.default.my_slot == 15
@@ -408,6 +430,7 @@ class TestPlugboard:
     def test_default_set():
         """Setting a Plugboard's Slot default values should succeed."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard()
         plugboard.default.my_slot = 17
@@ -417,6 +440,7 @@ class TestPlugboard:
     def test_default_set_dict():
         """Setting a Plugboard's Slot default values using a dict should succeed."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard()
         plugboard.default = dict(my_slot=17)
@@ -426,6 +450,7 @@ class TestPlugboard:
     def test_default_set_dict_wrong():
         """Setting a Plugboard's Slot default values using anything but a dict should fail."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard()
         with pytest.raises(TypeError):
@@ -434,9 +459,10 @@ class TestPlugboard:
     @staticmethod
     def test_default_del():
         """Deleting a plugboard's slot default values should succeed."""
-        class myplugboard(Plugboard):
+        class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
-        plugboard = myplugboard()
+        plugboard = MyPlugboard()
         plugboard.default.my_slot = 17
         del plugboard.default.my_slot
         assert plugboard.my_slot == 15
@@ -445,6 +471,7 @@ class TestPlugboard:
     def test_default_set_influence_obj():
         """Setting a Plugboard's Slot default values should not influence the Plug obj value."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard(my_slot=19)
         plugboard.default.my_slot = 17
@@ -454,6 +481,7 @@ class TestPlugboard:
     def test_default_dir():
         """The default __dir__ should contain all Slots"""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard()
         assert set(plugboard.collect(Slot)) == set(dir(plugboard.default))
@@ -462,6 +490,7 @@ class TestPlugboard:
     def test_update_defaults():
         """Setting a Plugboard's Slot default values using update_defaults should succeed."""
         class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
         plugboard = MyPlugboard()
         plugboard.update_defaults(my_slot=17)
@@ -470,9 +499,10 @@ class TestPlugboard:
     @staticmethod
     def test_reset_defaults():
         """Resetting a plugboard's slot default values should succeed."""
-        class myplugboard(Plugboard):
+        class MyPlugboard(Plugboard):
+            """Custom Plugboard"""
             my_slot = Slot(dtype=int, default=15)
-        plugboard = myplugboard()
+        plugboard = MyPlugboard()
         plugboard.default.my_slot = 17
         plugboard.reset_defaults()
         assert plugboard.my_slot == 15

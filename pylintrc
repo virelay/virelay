@@ -146,6 +146,8 @@ disable=print-statement,
         too-few-public-methods,
         too-many-statements,
         redefined-outer-name,
+        abstract-method,
+        too-many-public-methods,
 
 
 
@@ -270,6 +272,7 @@ good-names=i,
            re,
            at,
            dc,
+           v0,
 
 
 # Include a hint for the correct naming format with invalid-name.

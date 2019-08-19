@@ -19,7 +19,15 @@ from sprincl.processor.clustering import KMeans
 
 
 @pytest.fixture(scope='module')
-def spiral_data(n=150):      # n = samples per class of the two classes
+def spiral_data(n=150):
+    """Sample some double spiral data points
+
+    Parameters
+    ----------
+    n : int
+        samples per class of the two classes
+
+    """
     np.random.seed(1345123)  # fix seed for data
     _ = np.random.uniform(size=(2, 100)).T  # "part of the seed"
 
@@ -39,38 +47,45 @@ def spiral_data(n=150):      # n = samples per class of the two classes
 
 @pytest.fixture(scope='module')
 def k_knn(spiral_data):
+    """Choose k for KNN"""
     return int(np.log(spiral_data.shape[0]))
 
 
 @pytest.fixture(scope='module')
 def k_eig():
+    """Number for eigen values"""
     return 8
 
 
 @pytest.fixture(scope='module')
 def k_clusters():
+    """Number of clusters"""
     return 4
 
 
-class TestSpectral(object):
-
-    def test_spectral_embedding_instatiation(self):
-        # test whether we can instantiate a spectral embedding instance successfully
+class TestSpectral:
+    """Test class for SpectralClustering"""
+    @staticmethod
+    def test_spectral_embedding_instatiation():
+        """test whether we can instantiate a spectral embedding instance successfully"""
         SpectralEmbedding()
 
-    def test_spectral_clustering_instatiation(self):
-        # test whether we can instantiate a spectral clustering instance successfully
+    @staticmethod
+    def test_spectral_clustering_instatiation():
+        """test whether we can instantiate a spectral clustering instance successfully"""
         SpectralClustering()
 
-    def test_data_generation(self, spiral_data):
-        # sanity check. make sure the data looks as expected (from the outside)
+    @staticmethod
+    def test_data_generation(spiral_data):
+        """sanity check. make sure the data looks as expected (from the outside)"""
         assert isinstance(spiral_data, np.ndarray), 'Expected numpy.ndarray type, got {}'.format(type(spiral_data))
         assert spiral_data.shape == (300, 2), 'Expected spiral_data shape (300, 2), got {}'.format(spiral_data.shape)
 
-    def test_spectral_embedding_default_params(self, spiral_data):
-        # test wheter the SE operates on data all the way through, using its default parameters.
-        se = SpectralEmbedding()
-        output = se(spiral_data)
+    @staticmethod
+    def test_spectral_embedding_default_params(spiral_data):
+        """test wheter the SE operates on data all the way through, using its default parameters."""
+        pipeline = SpectralEmbedding()
+        output = pipeline(spiral_data)
         assert isinstance(output, tuple), 'Expected tuple type output, got {}'.format(type(output))
         assert len(output) == 2, 'Expected output length of 2, got {}'.format(len(output))
 
@@ -84,10 +99,11 @@ class TestSpectral(object):
             'Expected dim of eigenvectors {} be be identical to the number of reported eigenvalues {}'\
             .format(eigvec.shape[1], eigval.size)
 
-    def test_spectral_clustering_default_params(self, spiral_data):
-        # test wheter the SC operates on data all the way through, using its default parameters.
-        sc = SpectralClustering()
-        output = sc(spiral_data)
+    @staticmethod
+    def test_spectral_clustering_default_params(spiral_data):
+        """test wheter the SC operates on data all the way through, using its default parameters."""
+        pipeline = SpectralClustering()
+        output = pipeline(spiral_data)
         assert isinstance(output, tuple), 'Expected tuple type output, got {}'.format(type(output))
         assert len(output) == 2, 'Expected output lenght of 2, got {}'.format(len(output))
 
@@ -114,14 +130,17 @@ class TestSpectral(object):
 
         assert labels.ndim == 1, 'Expected labels to be flat array, but was shaped {}'.format(labels.shape)
 
-    def test_spectral_clustering_step_by_step_custom_params(self, spiral_data, k_knn, k_eig, k_clusters):
-        # this test manually compares the pipelines working order against manually
-        # executed steps with custom parameters attuned to the spiral data
+    @staticmethod
+    def test_spectral_clustering_step_by_step_custom_params(spiral_data, k_knn, k_eig, k_clusters):
+        """this test manually compares the pipelines working order against manually
+        executed steps with custom parameters attuned to the spiral data
 
-        # first, separately prepare processors for customized pipeline
-        # customizations:
-        #   1) parameters, as passed to the test function
-        #   2) all processors (affected by changed parameters) produce outputs this time for later comparison
+        first, separately prepare processors for customized pipeline
+        customizations:
+          1) parameters, as passed to the test function
+          2) all processors (affected by changed parameters) produce outputs this time for later comparison
+
+        """
 
         knn = SparseKNN(n_neighbors=k_knn, symmetric=True, is_output=True)
         lap = SymmetricNormalLaplacian(is_output=True)

@@ -36,7 +36,7 @@ class Application:
         for project_path in arguments.project:
             self.workspace.add_project(project_path)
 
-        sample = self.workspace.get_current_project().dataset.get_sample(12)
+        sample = self.workspace.get_current_project().dataset.get_sample('n03933933_12374')
         print(sample.labels)
 
         # When application exits, the workspace is closed

@@ -1,11 +1,14 @@
 """Contains the data model abstraction."""
 
 import os
+import re
 import json
+import glob
 
 import yaml
 import h5py
 import numpy
+from PIL import Image
 
 
 class Project:
@@ -40,13 +43,22 @@ class Project:
                 project = yaml.safe_load(project_file)['project']
                 self.name = project['name']
                 dataset_type = project['dataset']['type']
-                dataset_is_multi_label = project['dataset']['is_multi_label']
                 dataset_path = os.path.join(working_directory, project['dataset']['path'])
                 dataset_label_map_path = os.path.join(working_directory, project['dataset']['label_map'])
                 if dataset_type == 'hdf5':
-                    self.dataset = Hdf5Dataset(dataset_path, dataset_label_map_path, dataset_is_multi_label)
+                    is_multi_label = project['dataset']['is_multi_label']
+                    self.dataset = Hdf5Dataset(dataset_path, dataset_label_map_path, is_multi_label)
                 elif dataset_type == 'image_directory':
-                    self.dataset = ImageDirectoryDataset(dataset_path, dataset_label_map_path, dataset_is_multi_label)
+                    sample_file_glob = project['dataset']['sample_file_glob']
+                    label_index_regex = project['dataset']['label_index_regex']
+                    label_word_net_id_regex = project['dataset']['label_word_net_id_regex']
+                    self.dataset = ImageDirectoryDataset(
+                        dataset_path,
+                        dataset_label_map_path,
+                        sample_file_glob,
+                        label_index_regex,
+                        label_word_net_id_regex
+                    )
                 else:
                     raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
                 self.sources = []
@@ -158,6 +170,10 @@ class Hdf5Dataset:
                 Returns the sample at the specified index.
         """
 
+        # Checks if the dataset is already closed
+        if self.is_closed:
+            raise ValueError('The dataset is already closed.')
+
         # Checks if the index is out of range
         if index >= len(self.dataset_file['index']):
             raise IndexError()
@@ -194,7 +210,14 @@ class ImageDirectoryDataset:
     represent the labels of the images.
     """
 
-    def __init__(self, path, label_map_path, is_multi_label):
+    def __init__(
+            self,
+            path,
+            label_map_path,
+            sample_file_glob,
+            label_index_regex,
+            label_word_net_id_regex
+    ):
         """
         Initializes a new ImageDirectoryDataset instance.
 
@@ -206,19 +229,81 @@ class ImageDirectoryDataset:
             label_map_path: str
                 The path to the JSON file that contains a mapping between the index of the labels and their
                 human-readable names.
-            is_multi_label: bool
-                Determines whether the samples of the dataset can have multiple labels.
+            sample_file_glob: str
+                A glob pattern that is used to retrieve an image from the dataset directory by index. The placeholder
+                '{index}' can be used to specify where the sample index should be placed.
+            label_index_regex: str
+                A regular expression, which is used to parse the path of a sample for the label index. The sample index
+                must be captured in the first group. Can be None, but either label_index_regex or
+                label_word_net_id_regex must be specified.
+            label_word_net_id_regex: str
+                A regular expression, which is used to parse the path of a sample for the WordNet ID. The sample index
+                must be captured in the first group. Can be None, but either label_index_regex or
+                label_word_net_id_regex must be specified.
         """
 
         # Stores the arguments for later reference
         self.path = path
-        self.is_multi_label = is_multi_label
+        self.label_map_path = label_map_path
+        self.sample_file_glob = sample_file_glob
+        self.label_index_regex = label_index_regex
+        self.label_word_net_id_regex = label_word_net_id_regex
 
         # Initializes some class members
         self.is_closed = False
 
         # Loads the label map
         self.label_map = LabelMap(label_map_path)
+
+    def get_sample(self, index):
+        """
+        Gets the sample at the specified index.
+
+        Parameters:
+        -----------
+            index: int
+                The index of the sample that is to be retrieved.
+
+        Exceptions:
+        -----------
+            IndexError:
+                When the specified index is out of range, a IndexError is raised.
+
+        Returns:
+        --------
+            Sample:
+                Returns the sample at the specified index.
+        """
+
+        # Checks if the dataset is already closed
+        if self.is_closed:
+            raise ValueError('The dataset is already closed.')
+
+        # Finds the path to the file that contains the sample
+        glob_pattern = self.sample_file_glob.replace('{index}', str(index))
+        sample_path_candidates = glob.glob(os.path.join(self.path, glob_pattern))
+        if len(sample_path_candidates) != 1:
+            raise IndexError()
+        sample_path = sample_path_candidates[0]
+
+        # Determines the label of the sample by parsing the path
+        if self.label_index_regex is not None:
+            match = re.match(self.label_index_regex, sample_path)
+            if match:
+                label_index = match.groups()[0]
+                label = self.label_map.get_label_by_index(label_index)
+        else:
+            match = re.match(self.label_word_net_id_regex, sample_path)
+            if match:
+                word_net_id = match.groups()[0]
+                label = self.label_map.get_label_by_word_net_id(word_net_id)
+
+        # Loads the image from file
+        image = Image.open(sample_path)
+        image = numpy.array(image)
+
+        # Returns the sample
+        return Sample(index, image, label)
 
     def close(self):
         """Closes the dataset."""

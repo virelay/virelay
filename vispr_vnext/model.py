@@ -107,10 +107,16 @@ class Source:
         self.attribution_path = attribution_path
         self.analysis_path = analysis_path
 
+        # Loads the attribution and analysis files
+        self.attribution_file = h5py.File(self.attribution_path)
+        self.analysis_file = h5py.File(self.analysis_path)
+
     def close(self):
         """Closes the source."""
 
         if not self.is_closed:
+            self.attribution_file.close()
+            self.analysis_file.close()
             self.is_closed = True
 
     def __del__(self):

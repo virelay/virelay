@@ -46,8 +46,7 @@ class Project:
                 dataset_path = os.path.join(working_directory, project['dataset']['path'])
                 dataset_label_map_path = os.path.join(working_directory, project['dataset']['label_map'])
                 if dataset_type == 'hdf5':
-                    is_multi_label = project['dataset']['is_multi_label']
-                    self.dataset = Hdf5Dataset(dataset_path, dataset_label_map_path, is_multi_label)
+                    self.dataset = Hdf5Dataset(dataset_path, dataset_label_map_path)
                 elif dataset_type == 'image_directory':
                     sample_file_glob = project['dataset']['sample_file_glob']
                     label_index_regex = project['dataset']['label_index_regex']
@@ -128,7 +127,7 @@ class Source:
 class Hdf5Dataset:
     """Represents a dataset that is stored in an HDF5 database."""
 
-    def __init__(self, path, label_map_path, is_multi_label):
+    def __init__(self, path, label_map_path):
         """
         Initializes a new Hdf5Dataset instance.
 
@@ -139,13 +138,10 @@ class Hdf5Dataset:
             label_map_path: str
                 The path to the JSON file that contains a mapping between the index of the labels and their
                 human-readable names.
-            is_multi_label: bool
-                Determines whether the samples of the dataset can have multiple labels.
         """
 
         # Stores the arguments for later reference
         self.path = path
-        self.is_multi_label = is_multi_label
 
         # Initializes some class members
         self.is_closed = False
@@ -155,6 +151,12 @@ class Hdf5Dataset:
 
         # Loads the dataset itself
         self.dataset_file = h5py.File(self.path)
+
+        # Determines if the dataset is allows multiple labels or only single labels (when the dataset is multi-label,
+        # then the labels are stored as a boolean NumPy array where the index is the label index and the value
+        # determines whether the sample has the label, when the dataset is single-label, then the label is just a scalar
+        # value containing the index of the label)
+        self.is_multi_label = self.dataset_file['label'][0].dtype == numpy.bool
 
     def get_sample(self, index):
         """
@@ -260,6 +262,10 @@ class ImageDirectoryDataset:
 
         # Loads the label map
         self.label_map = LabelMap(label_map_path)
+
+        image_files = sorted(glob.glob(os.path.join(self.path, self.sample_file_glob), recursive=True))
+        print(len(image_files))
+        exit()
 
     def get_sample(self, index):
         """

@@ -18,14 +18,14 @@ class Project:
         """
         Initializes a new Project instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             path: str
                 The path to the YAML file that contains the project definition.
 
-        Exceptions:
-        -----------
-            ValueError:
+        Raises
+        ------
+            ValueError
                 If the project file is incorrect or corrupted, a ValueError is raised.
                 If the specified dataset type is unknown, then a ValueError is raised.
         """
@@ -89,8 +89,8 @@ class Source:
         """
         Initializes a new Source instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             attribution_path: str
                 The path to the file that contains the attribution database.
             analysis_path: str
@@ -129,8 +129,8 @@ class Hdf5Dataset:
         """
         Initializes a new Hdf5Dataset instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             path: str
                 The path to the HDF5 file that contains the dataset.
             label_map_path: str
@@ -160,19 +160,19 @@ class Hdf5Dataset:
         """
         Gets the sample at the specified index.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             index: int
                 The index of the sample that is to be retrieved.
 
-        Exceptions:
-        -----------
-            IndexError:
+        Raises
+        ------
+            IndexError
                 When the specified index is out of range, a IndexError is raised.
 
-        Returns:
-        --------
-            Sample:
+        Returns
+        -------
+            Sample
                 Returns the sample at the specified index.
         """
 
@@ -196,6 +196,50 @@ class Hdf5Dataset:
 
         # Wraps the sample in an object and returns it
         return Sample(index, sample_data, sample_labels)
+
+    def __getitem__(self, key):
+        """
+        Gets the specified sample(s). This implements the Python interface for the []-indexer.
+
+        Parameters
+        ----------
+            key: int | slice | range | list | tuple | numpy.ndarray
+                The key of the sample/samples that are to be retrieved.
+
+        Raises
+        ------
+            IndexError
+                When the specified index is out of range, a IndexError is raised.
+
+        Returns
+        -------
+            Sample
+                Returns the sample at the specified index.
+        """
+
+        # Checks if the key is a slice, in that case it is converted to a range
+        if isinstance(key, slice):
+            key = range(*key.indices(len(self)))
+
+        # Checks if the key contains multiple indices, in that case all samples for the specified list of indices are
+        # retrieved
+        if isinstance(key, (range, list, tuple, numpy.ndarray)):
+            return [self.get_sample(index) for index in key]
+
+        # If the key is just a single index, the sample is directly retrieved
+        return self.get_sample(key)
+
+    def __len__(self):
+        """
+        Retrieves the number of samples in the dataset. This implements the Python interface for the len() built-in.
+
+        Returns
+        -------
+            int
+                Returns the number of samples in the datasets.
+        """
+
+        return len(self.dataset_file['index'])
 
     def close(self):
         """Closes the dataset."""
@@ -226,8 +270,8 @@ class ImageDirectoryDataset:
         """
         Initializes a new ImageDirectoryDataset instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             path: str
                 The path to the directory that contains the directories for the labels, which in turn contain the images
                 that belong to the respective label.
@@ -264,19 +308,19 @@ class ImageDirectoryDataset:
         """
         Gets the sample at the specified index.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             index: int
                 The index of the sample that is to be retrieved.
 
-        Exceptions:
-        -----------
-            IndexError:
+        Raises
+        ------
+            IndexError
                 When the specified index is out of range, a IndexError is raised.
 
-        Returns:
-        --------
-            Sample:
+        Returns
+        -------
+            Sample
                 Returns the sample at the specified index.
         """
 
@@ -306,6 +350,50 @@ class ImageDirectoryDataset:
         # Returns the sample
         return Sample(index, image, label)
 
+    def __getitem__(self, key):
+        """
+        Gets the specified sample(s). This implements the Python interface for the []-indexer.
+
+        Parameters
+        ----------
+            key: int | slice | range | list | tuple | numpy.ndarray
+                The key of the sample/samples that are to be retrieved.
+
+        Raises
+        ------
+            IndexError
+                When the specified index is out of range, a IndexError is raised.
+
+        Returns
+        -------
+            Sample
+                Returns the sample at the specified index.
+        """
+
+        # Checks if the key is a slice, in that case it is converted to a range
+        if isinstance(key, slice):
+            key = range(*key.indices(len(self)))
+
+        # Checks if the key contains multiple indices, in that case all samples for the specified list of indices are
+        # retrieved
+        if isinstance(key, (range, list, tuple, numpy.ndarray)):
+            return [self.get_sample(index) for index in key]
+
+        # If the key is just a single index, the sample is directly retrieved
+        return self.get_sample(key)
+
+    def __len__(self):
+        """
+        Retrieves the number of samples in the dataset. This implements the Python interface for the len() built-in.
+
+        Returns
+        -------
+            int
+                Returns the number of samples in the datasets.
+        """
+
+        return len(self.sample_paths)
+
     def close(self):
         """Closes the dataset."""
 
@@ -325,8 +413,8 @@ class Sample:
         """
         Initializes a new Sample instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             index: int
                 The index of the sample within the dataset.
             data: numpy.ndarray
@@ -348,8 +436,8 @@ class LabelMap:
         """
         Initializes a new LabelMap instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             path: str
                 The path to the label map JSON file.
         """
@@ -367,19 +455,19 @@ class LabelMap:
         """
         Retrieves the human-readable name of the label with the specified index.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             index: int
                 The index of the label.
 
-        Exception:
-        ----------
-            ValueError:
+        Raises
+        ------
+            ValueError
                 If the specified index does not exist, then a ValueError is raised.
 
-        Returns:
-        --------
-            str:
+        Returns
+        -------
+            str
                 Returns the human-readable name of the label.
         """
 
@@ -392,19 +480,19 @@ class LabelMap:
         """
         Retrieves the human-readable name of the label with the specified WordNet ID.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             word_net_id: str
                 The WordNet ID of the label.
 
-        Exception:
-        ----------
-            ValueError:
+        Raises
+        ------
+            ValueError
                 If the specified WordNet ID does not exist, then a ValueError is raised.
 
-        Returns:
-        --------
-            str:
+        Returns
+        -------
+            str
                 Returns the human-readable name of the label.
         """
 
@@ -421,8 +509,8 @@ class Label:
         """
         Initializes a new Label instance.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             index: int
                 The index of the output neuron that corresponds to the label.
             word_net_id: str
@@ -451,14 +539,14 @@ class Workspace:
         """
         Adds a new project to the workspace.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             path: str
                 The path to the project YAML file.
 
-        Exceptions:
-        -----------
-            ValueError:
+        Raises
+        ------
+            ValueError
                 If the workspace is already closed, a ValueError is raised.
         """
 
@@ -473,14 +561,14 @@ class Workspace:
         """
         Retrieves the names of all the loaded projects.
 
-        Returns:
-        --------
+        Returns
+        -------
             list
                 Returns a list of the names of all loaded projects.
 
-        Exceptions:
-        -----------
-            ValueError:
+        Raises
+        ------
+            ValueError
                 If the workspace is already closed, a ValueError is raised.
         """
 
@@ -494,19 +582,19 @@ class Workspace:
         """
         Selects the current project by name.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
             name: str
                 The name of the project that is to be selected as the current project.
 
-        Exceptions:
-        -----------
-            ValueError:
+        Raises
+        ------
+            ValueError
                 If the workspace is already closed, a ValueError is raised.
                 If the project with the specified name could not be found, then a ValueError is raised.
 
-        Returns:
-        --------
+        Returns
+        -------
             Project
                 Returns the selected project.
         """
@@ -528,8 +616,8 @@ class Workspace:
         """
         Retrieves the current selected project.
 
-        Returns:
-        --------
+        Returns
+        -------
             Project
                 Returns the currently selected project.
         """

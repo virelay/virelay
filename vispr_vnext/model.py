@@ -48,13 +48,11 @@ class Project:
                 if dataset_type == 'hdf5':
                     self.dataset = Hdf5Dataset(dataset_path, dataset_label_map_path)
                 elif dataset_type == 'image_directory':
-                    sample_file_glob = project['dataset']['sample_file_glob']
                     label_index_regex = project['dataset']['label_index_regex']
                     label_word_net_id_regex = project['dataset']['label_word_net_id_regex']
                     self.dataset = ImageDirectoryDataset(
                         dataset_path,
                         dataset_label_map_path,
-                        sample_file_glob,
                         label_index_regex,
                         label_word_net_id_regex
                     )
@@ -222,7 +220,6 @@ class ImageDirectoryDataset:
             self,
             path,
             label_map_path,
-            sample_file_glob,
             label_index_regex,
             label_word_net_id_regex
     ):
@@ -237,9 +234,6 @@ class ImageDirectoryDataset:
             label_map_path: str
                 The path to the JSON file that contains a mapping between the index of the labels and their
                 human-readable names.
-            sample_file_glob: str
-                A glob pattern that is used to retrieve an image from the dataset directory by index. The placeholder
-                '{index}' can be used to specify where the sample index should be placed.
             label_index_regex: str
                 A regular expression, which is used to parse the path of a sample for the label index. The sample index
                 must be captured in the first group. Can be None, but either label_index_regex or
@@ -253,7 +247,6 @@ class ImageDirectoryDataset:
         # Stores the arguments for later reference
         self.path = path
         self.label_map_path = label_map_path
-        self.sample_file_glob = sample_file_glob
         self.label_index_regex = label_index_regex
         self.label_word_net_id_regex = label_word_net_id_regex
 
@@ -263,9 +256,9 @@ class ImageDirectoryDataset:
         # Loads the label map
         self.label_map = LabelMap(label_map_path)
 
-        image_files = sorted(glob.glob(os.path.join(self.path, self.sample_file_glob), recursive=True))
-        print(len(image_files))
-        exit()
+        # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
+        # paths corresponds to the sample index that has to be specified in the get_sample method)
+        self.sample_paths = sorted(glob.glob(os.path.join(self.path, '**/*.*'), recursive=True))
 
     def get_sample(self, index):
         """
@@ -291,12 +284,8 @@ class ImageDirectoryDataset:
         if self.is_closed:
             raise ValueError('The dataset is already closed.')
 
-        # Finds the path to the file that contains the sample
-        glob_pattern = self.sample_file_glob.replace('{index}', str(index))
-        sample_path_candidates = glob.glob(os.path.join(self.path, glob_pattern))
-        if len(sample_path_candidates) != 1:
-            raise IndexError()
-        sample_path = sample_path_candidates[0]
+        # Gets the path to the sample file
+        sample_path = self.sample_paths[index]
 
         # Determines the label of the sample by parsing the path
         if self.label_index_regex is not None:

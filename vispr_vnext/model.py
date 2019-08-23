@@ -32,6 +32,8 @@ class Project:
 
         # Initializes some class members
         self.is_closed = False
+        self.dataset = None
+        self.sources = []
 
         # Stores the path for later reference
         self.path = path
@@ -66,7 +68,6 @@ class Project:
                     raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
 
                 # Loads the sources of the project
-                self.sources = []
                 for source in project['sources']:
                     self.sources.append(Source(
                         os.path.join(working_directory, source['attribution']),
@@ -82,7 +83,8 @@ class Project:
         """Closes the project, its dataset, and all of its sources."""
 
         if not self.is_closed:
-            self.dataset.close()
+            if self.dataset is not None:
+                self.dataset.close()
             for source in self.sources:
                 source.close()
             self.is_closed = True
@@ -125,6 +127,11 @@ class Source:
                 If the specified analysis method is unknown, a ValueError is raised.
         """
 
+        # Initializes some class members
+        self.is_closed = False
+        self.attribution_file = None
+        self.analysis_file = None
+
         # Validates the arguments
         if attribution_method not in ['lrp_composite_flat']:
             raise ValueError('The specified attribution method {0} is unknown'.format(attribution_method))
@@ -140,9 +147,6 @@ class Source:
         self.analysis_path = analysis_path
         self.analysis_method = analysis_method
 
-        # Initializes some class members
-        self.is_closed = False
-
         # Loads the attribution and analysis files
         self.attribution_file = h5py.File(self.attribution_path)
         self.analysis_file = h5py.File(self.analysis_path)
@@ -151,8 +155,10 @@ class Source:
         """Closes the source."""
 
         if not self.is_closed:
-            self.attribution_file.close()
-            self.analysis_file.close()
+            if self.attribution_file is not None:
+                self.attribution_file.close()
+            if self.analysis_file is not None:
+                self.analysis_file.close()
             self.is_closed = True
 
     def __del__(self):
@@ -179,12 +185,13 @@ class Hdf5Dataset:
                 human-readable names.
         """
 
+        # Initializes some class members
+        self.is_closed = False
+        self.dataset_file = None
+
         # Stores the arguments for later reference
         self.name = name
         self.path = path
-
-        # Initializes some class members
-        self.is_closed = False
 
         # Loads the label map
         self.label_map = LabelMap(label_map_path)
@@ -245,7 +252,7 @@ class Hdf5Dataset:
 
         Parameters
         ----------
-            key: int | slice | range | list | tuple | numpy.ndarray
+            key: int or slice or range or list or tuple or numpy.ndarray
                 The key of the sample/samples that are to be retrieved.
 
         Raises
@@ -287,7 +294,8 @@ class Hdf5Dataset:
         """Closes the dataset."""
 
         if not self.is_closed:
-            self.dataset_file.close()
+            if self.dataset_file is not None:
+                self.dataset_file.close()
             self.is_closed = True
 
     def __del__(self):
@@ -333,15 +341,15 @@ class ImageDirectoryDataset:
                 label_word_net_id_regex must be specified.
         """
 
+        # Initializes some class members
+        self.is_closed = False
+
         # Stores the arguments for later reference
         self.name = name
         self.path = path
         self.label_map_path = label_map_path
         self.label_index_regex = label_index_regex
         self.label_word_net_id_regex = label_word_net_id_regex
-
-        # Initializes some class members
-        self.is_closed = False
 
         # Loads the label map
         self.label_map = LabelMap(label_map_path)
@@ -402,7 +410,7 @@ class ImageDirectoryDataset:
 
         Parameters
         ----------
-            key: int | slice | range | list | tuple | numpy.ndarray
+            key: int or slice or range or list or tuple or numpy.ndarray
                 The key of the sample/samples that are to be retrieved.
 
         Raises
@@ -577,9 +585,9 @@ class Workspace:
     def __init__(self):
         """Initializes a new Workspace instance."""
 
+        self.is_closed = False
         self.projects = []
         self.current_project = None
-        self.is_closed = False
 
     def add_project(self, path):
         """

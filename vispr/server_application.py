@@ -1,7 +1,6 @@
 """Bokeh plotting handler."""
 
 import os
-import re
 import json
 import random
 import sqlite3
@@ -375,6 +374,15 @@ class ServerApplication:
 
     @property
     def class_ids(self):
+        """
+        Gets the class IDs for all categories.
+
+        Returns
+        -------
+            list
+                Returns a list with all the class IDs.
+        """
+
         class_ids = []
         if self._multiple_analysis_files:
             for cat in self.categories:

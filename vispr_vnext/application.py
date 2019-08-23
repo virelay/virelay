@@ -36,9 +36,5 @@ class Application:
         for project_path in arguments.project:
             self.workspace.add_project(project_path)
 
-        print(self.workspace.get_current_project().dataset[0])
-        print(self.workspace.get_current_project().dataset[3:5])
-        print(self.workspace.get_current_project().dataset[(0, 4, 5)])
-
         # When application exits, the workspace is closed
         self.workspace.close()

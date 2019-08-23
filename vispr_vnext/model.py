@@ -40,29 +40,40 @@ class Project:
         working_directory = os.path.dirname(self.path)
         with open(self.path, 'r') as project_file:
             try:
+
+                # Loads the project and extracts some general information
                 project = yaml.safe_load(project_file)['project']
                 self.name = project['name']
+                self.model = project['model']
+
+                # Loads the dataset of the project
                 dataset_type = project['dataset']['type']
-                dataset_path = os.path.join(working_directory, project['dataset']['path'])
-                dataset_label_map_path = os.path.join(working_directory, project['dataset']['label_map'])
                 if dataset_type == 'hdf5':
-                    self.dataset = Hdf5Dataset(dataset_path, dataset_label_map_path)
+                    self.dataset = Hdf5Dataset(
+                        project['dataset']['name'],
+                        os.path.join(working_directory, project['dataset']['path']),
+                        os.path.join(working_directory, project['dataset']['label_map'])
+                    )
                 elif dataset_type == 'image_directory':
-                    label_index_regex = project['dataset']['label_index_regex']
-                    label_word_net_id_regex = project['dataset']['label_word_net_id_regex']
                     self.dataset = ImageDirectoryDataset(
-                        dataset_path,
-                        dataset_label_map_path,
-                        label_index_regex,
-                        label_word_net_id_regex
+                        project['dataset']['name'],
+                        os.path.join(working_directory, project['dataset']['path']),
+                        os.path.join(working_directory, project['dataset']['label_map']),
+                        project['dataset']['label_index_regex'],
+                        project['dataset']['label_word_net_id_regex']
                     )
                 else:
                     raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
+
+                # Loads the sources of the project
                 self.sources = []
                 for source in project['sources']:
                     self.sources.append(Source(
                         os.path.join(working_directory, source['attribution']),
-                        os.path.join(working_directory, source['analysis'])
+                        source['attribution_method'],
+                        source['attribution_strategy'],
+                        os.path.join(working_directory, source['analysis']),
+                        source['analysis_method']
                     ))
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
@@ -85,7 +96,7 @@ class Project:
 class Source:
     """Represents a combination of an attribution database and an analysis database."""
 
-    def __init__(self, attribution_path, analysis_path):
+    def __init__(self, attribution_path, attribution_method, attribution_strategy, analysis_path, analysis_method):
         """
         Initializes a new Source instance.
 
@@ -93,16 +104,44 @@ class Source:
         ----------
             attribution_path: str
                 The path to the file that contains the attribution database.
+            attribution_method: str
+                The name of the method that was used to calculate the attribution. Currently only 'lrp_composite_flat'
+                for LRP Composite + flat is supported.
+            attribution_strategy: str
+                The strategy that was employed for the attribution. This can either be 'true_label' (the attribution was
+                performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
+                predicted by the model), or a class index (this is the class index of the class for which the
+                attribution was performed.
             analysis_path: str
                 The path to the file that contains the analysis database.
+            analysis_method: str
+                The method that was used for the analysis. Currently only 'spectral_analysis' is supported.
+
+        Raises
+        ------
+            ValueError
+                If the specified attribution method is unknown, a ValueError is raised.
+                If the specified attribution strategy is unknown, a ValueError is raised.
+                If the specified analysis method is unknown, a ValueError is raised.
         """
+
+        # Validates the arguments
+        if attribution_method not in ['lrp_composite_flat']:
+            raise ValueError('The specified attribution method {0} is unknown'.format(attribution_method))
+        if attribution_strategy not in ['true_label', 'predicted_label'] and not isinstance(attribution_strategy, int):
+            raise ValueError('The specified attribution strategy {0} is unknown.'.format(attribution_strategy))
+        if analysis_method not in ['spectral_analysis']:
+            raise ValueError('The specified attribution method {0} is unknown'.format(analysis_method))
+
+        # Stores the arguments for later reference
+        self.attribution_path = attribution_path
+        self.attribution_method = attribution_method
+        self.attribution_strategy = attribution_strategy
+        self.analysis_path = analysis_path
+        self.analysis_method = analysis_method
 
         # Initializes some class members
         self.is_closed = False
-
-        # Stores the paths to the attribution and analysis files for later reference
-        self.attribution_path = attribution_path
-        self.analysis_path = analysis_path
 
         # Loads the attribution and analysis files
         self.attribution_file = h5py.File(self.attribution_path)
@@ -125,12 +164,14 @@ class Source:
 class Hdf5Dataset:
     """Represents a dataset that is stored in an HDF5 database."""
 
-    def __init__(self, path, label_map_path):
+    def __init__(self, name, path, label_map_path):
         """
         Initializes a new Hdf5Dataset instance.
 
         Parameters
         ----------
+            name: str
+                The human-readable name of the dataset.
             path: str
                 The path to the HDF5 file that contains the dataset.
             label_map_path: str
@@ -139,6 +180,7 @@ class Hdf5Dataset:
         """
 
         # Stores the arguments for later reference
+        self.name = name
         self.path = path
 
         # Initializes some class members
@@ -262,6 +304,7 @@ class ImageDirectoryDataset:
 
     def __init__(
             self,
+            name,
             path,
             label_map_path,
             label_index_regex,
@@ -272,6 +315,8 @@ class ImageDirectoryDataset:
 
         Parameters
         ----------
+            path: str
+                The path to the HDF5 file that contains the dataset.
             path: str
                 The path to the directory that contains the directories for the labels, which in turn contain the images
                 that belong to the respective label.
@@ -289,6 +334,7 @@ class ImageDirectoryDataset:
         """
 
         # Stores the arguments for later reference
+        self.name = name
         self.path = path
         self.label_map_path = label_map_path
         self.label_index_regex = label_index_regex

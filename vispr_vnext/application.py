@@ -9,7 +9,7 @@ class Application:
     """Represents the command line interface for the VISPR application."""
 
     def __init__(self):
-        """Initializes a new application."""
+        """Initializes a new Application instance."""
 
         # Initializes the command line argument parser
         self.argument_parser = argparse.ArgumentParser(

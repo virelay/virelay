@@ -49,6 +49,10 @@ class Project:
                 self.name = project['name']
                 self.model = project['model']
 
+                # Loads the label map, which is used to get the human-readable names of the labels referenced in the
+                # dataset as well as in the attributions and analyses databases
+                self.label_map = LabelMap(os.path.join(working_directory, project['label_map']))
+
                 # Loads the dataset of the project
                 if project['dataset'] is not None:
                     dataset_type = project['dataset']['type']
@@ -56,13 +60,13 @@ class Project:
                         self.dataset = Hdf5Dataset(
                             project['dataset']['name'],
                             os.path.join(working_directory, project['dataset']['path']),
-                            os.path.join(working_directory, project['dataset']['label_map'])
+                            self.label_map
                         )
                     elif dataset_type == 'image_directory':
                         self.dataset = ImageDirectoryDataset(
                             project['dataset']['name'],
                             os.path.join(working_directory, project['dataset']['path']),
-                            os.path.join(working_directory, project['dataset']['label_map']),
+                            self.label_map,
                             project['dataset']['label_index_regex'],
                             project['dataset']['label_word_net_id_regex']
                         )
@@ -75,7 +79,8 @@ class Project:
                         self.attributions.append(Attribution(
                             os.path.join(working_directory, attribution['attribution']),
                             attribution['attribution_method'],
-                            attribution['attribution_strategy']
+                            attribution['attribution_strategy'],
+                            self.label_map
                         ))
 
                 # Loads the analyses of the project
@@ -83,7 +88,8 @@ class Project:
                     for analysis in project['analyses']:
                         self.analyses.append(Analysis(
                             os.path.join(working_directory, analysis['analysis']),
-                            analysis['analysis_method']
+                            analysis['analysis_method'],
+                            self.label_map
                         ))
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
@@ -109,7 +115,7 @@ class Project:
 class Attribution:
     """Represents a single attribution database, which contains the attributions for the dataset samples."""
 
-    def __init__(self, attribution_path, attribution_method, attribution_strategy):
+    def __init__(self, attribution_path, attribution_method, attribution_strategy, label_map):
         """
         Initializes a new Attribution instance.
 
@@ -125,6 +131,8 @@ class Attribution:
                 performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
                 predicted by the model), or a class index (this is the class index of the class for which the
                 attribution was performed.
+            label_map: LabelMap
+                The label map, which contains a mapping between the index of the labels and their human-readable names.
 
         Raises
         ------
@@ -147,6 +155,7 @@ class Attribution:
         self.attribution_path = attribution_path
         self.attribution_method = attribution_method
         self.attribution_strategy = attribution_strategy
+        self.label_map = label_map
 
         # Loads the attribution files
         self.attribution_file = h5py.File(self.attribution_path)
@@ -168,7 +177,7 @@ class Attribution:
 class Analysis:
     """Represents a single analysis database, which contains the analysis of attributions."""
 
-    def __init__(self, analysis_path, analysis_method):
+    def __init__(self, analysis_path, analysis_method, label_map):
         """
         Initializes a new Analysis instance.
 
@@ -178,6 +187,8 @@ class Analysis:
                 The path to the file that contains the analysis database.
             analysis_method: str
                 The method that was used for the analysis. Currently only 'spectral_analysis' is supported.
+            label_map: LabelMap
+                The label map, which contains a mapping between the index of the labels and their human-readable names.
 
         Raises
         ------
@@ -196,6 +207,7 @@ class Analysis:
         # Stores the arguments for later reference
         self.analysis_path = analysis_path
         self.analysis_method = analysis_method
+        self.label_map = label_map
 
         # Loads the analysis file
         self.analysis_file = h5py.File(self.analysis_path)
@@ -217,7 +229,7 @@ class Analysis:
 class Hdf5Dataset:
     """Represents a dataset that is stored in an HDF5 database."""
 
-    def __init__(self, name, path, label_map_path):
+    def __init__(self, name, path, label_map):
         """
         Initializes a new Hdf5Dataset instance.
 
@@ -227,9 +239,8 @@ class Hdf5Dataset:
                 The human-readable name of the dataset.
             path: str
                 The path to the HDF5 file that contains the dataset.
-            label_map_path: str
-                The path to the JSON file that contains a mapping between the index of the labels and their
-                human-readable names.
+            label_map: LabelMap
+                The label map, which contains a mapping between the index of the labels and their human-readable names.
         """
 
         # Initializes some class members
@@ -239,9 +250,7 @@ class Hdf5Dataset:
         # Stores the arguments for later reference
         self.name = name
         self.path = path
-
-        # Loads the label map
-        self.label_map = LabelMap(label_map_path)
+        self.label_map = label_map
 
         # Loads the dataset itself
         self.dataset_file = h5py.File(self.path)
@@ -283,12 +292,10 @@ class Hdf5Dataset:
         # Extracts the information about the sample from the dataset
         sample_data = self.dataset_file['data'][index]
         sample_label_reference = self.dataset_file['label'][index]
-        sample_labels = []
         if self.is_multi_label:
-            for index in numpy.argwhere(sample_label_reference):
-                sample_labels.append(self.label_map.get_label_by_index(index[0]))
+            sample_labels = self.label_map.get_label_from_n_hot_vector(sample_label_reference)
         else:
-            sample_labels.append(self.label_map.get_label_by_index(sample_label_reference))
+            sample_labels = [self.label_map.get_label_from_index(sample_label_reference)]
 
         # Wraps the sample in an object and returns it
         return Sample(index, sample_data, sample_labels)
@@ -361,7 +368,7 @@ class ImageDirectoryDataset:
             self,
             name,
             path,
-            label_map_path,
+            label_map,
             label_index_regex,
             label_word_net_id_regex
     ):
@@ -375,9 +382,8 @@ class ImageDirectoryDataset:
             path: str
                 The path to the directory that contains the directories for the labels, which in turn contain the images
                 that belong to the respective label.
-            label_map_path: str
-                The path to the JSON file that contains a mapping between the index of the labels and their
-                human-readable names.
+            label_map: LabelMap
+                The label map, which contains a mapping between the index of the labels and their human-readable names.
             label_index_regex: str
                 A regular expression, which is used to parse the path of a sample for the label index. The sample index
                 must be captured in the first group. Can be None, but either label_index_regex or
@@ -394,12 +400,9 @@ class ImageDirectoryDataset:
         # Stores the arguments for later reference
         self.name = name
         self.path = path
-        self.label_map_path = label_map_path
+        self.label_map = label_map
         self.label_index_regex = label_index_regex
         self.label_word_net_id_regex = label_word_net_id_regex
-
-        # Loads the label map
-        self.label_map = LabelMap(label_map_path)
 
         # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
         # paths corresponds to the sample index that has to be specified in the get_sample method)
@@ -437,12 +440,12 @@ class ImageDirectoryDataset:
             match = re.match(self.label_index_regex, sample_path)
             if match:
                 label_index = match.groups()[0]
-                label = self.label_map.get_label_by_index(label_index)
+                label = self.label_map.get_label_from_index(label_index)
         else:
             match = re.match(self.label_word_net_id_regex, sample_path)
             if match:
                 word_net_id = match.groups()[0]
-                label = self.label_map.get_label_by_word_net_id(word_net_id)
+                label = self.label_map.get_label_from_word_net_id(word_net_id)
 
         # Loads the image from file
         image = Image.open(sample_path)
@@ -579,7 +582,7 @@ class LabelMap:
             for label in json.load(label_map_file):
                 self.labels.append(Label(label['index'], label['word_net_id'], label['name']))
 
-    def get_label_by_index(self, index):
+    def get_label_from_index(self, index):
         """
         Retrieves the human-readable name of the label with the specified index.
 
@@ -604,7 +607,26 @@ class LabelMap:
                 return label.name
         raise ValueError('No label with the specified index {0} could be found.'.format(index))
 
-    def get_label_by_word_net_id(self, word_net_id):
+    def get_label_from_n_hot_vector(self, n_hot_vector):
+        """
+        Retrieves the human-readable names of the labels that are specified by the n-hot encoded vector.
+
+        Parameters
+        ----------
+            n_hot_vector: numpy.ndarray
+                A n-hot encoded vector, where the indices are the label indices and the values are True/1 when the label
+                is present and False/0 when the label is not present.
+
+        Returns
+        -------
+            list
+                Returns a list of all the labels that are specified by the n-hot encoded vector.
+        """
+
+        for index in numpy.argwhere(n_hot_vector):
+            yield self.get_label_from_index(index[0])
+
+    def get_label_from_word_net_id(self, word_net_id):
         """
         Retrieves the human-readable name of the label with the specified WordNet ID.
 

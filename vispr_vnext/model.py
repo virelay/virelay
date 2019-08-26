@@ -527,6 +527,32 @@ class Sample:
         self.data = data
         self.labels = labels
 
+        # Images may come from different sources, e.g. in PyTorch the ordering of the axes is Channels x Width x Height,
+        # while in other sources, the ordering is Width x Height x Channel, this code tries to guess which axis
+        # represents the RGB channels, and puts them in the order Width x Height x Channel
+        if numpy.argmax(self.data.shape) == 2:
+            self.data = numpy.moveaxis(self.data, [0, 1, 2], [2, 0, 1])
+
+        # The pixel values of the image may be in three different value ranges: [-1.0, 1.0], [0.0, 1.0], and [0, 255],
+        # this code tries to find out which it is and de-normalizes it to the value range of [0, 255], unfortunately, it
+        # is not guaranteed that the actual value range of the images has exactly these bounds, because not all images
+        # contain pure black or pure white pixels, therefore, a heuristic is used, where the L1 distance between the
+        # actual pixel value range and the three value ranges is computed
+        actual_pixel_value_range = numpy.array([numpy.min(self.data), numpy.max(self.data)])
+        distances = numpy.array([[-1.0, 1.0], [0.0, 1.0], [0.0, 255.0]]) - actual_pixel_value_range
+        distances = numpy.abs(numpy.sum(distances, axis=1))
+        detected_pixel_value_range_index = numpy.argmin(distances)
+        if detected_pixel_value_range_index == 0:
+            self.data += 1
+            self.data *= 255.0 / 2.0
+        elif detected_pixel_value_range_index == 1:
+            self.data *= 255.0
+
+        # Finally, the pixel values may be saved as floats and not as integers, so the data type is changed to unsigned
+        # 8-bit integers, which is standard for viewing images
+        if self.data.dtype != numpy.uint8:
+            self.data = self.data.astype(numpy.uint8)
+
 
 class LabelMap:
     """Represents a map between output neuron indices and their respective human-readable label name."""

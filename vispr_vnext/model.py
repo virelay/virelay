@@ -115,8 +115,8 @@ class Attribution:
             attribution_path: str
                 The path to the file that contains the attribution database.
             attribution_method: str
-                The name of the method that was used to calculate the attribution. Currently only 'lrp_composite_flat'
-                for LRP Composite + flat is supported.
+                The name of the method that was used to calculate the attribution. Currently 'lrp_composite' for LRP
+                Composite and 'lrp_composite_flat' for LRP Composite + flat are supported.
             attribution_strategy: str
                 The strategy that was employed for the attribution. This can either be 'true_label' (the attribution was
                 performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
@@ -135,7 +135,7 @@ class Attribution:
         self.attribution_file = None
 
         # Validates the arguments
-        if attribution_method not in ['lrp_composite_flat']:
+        if attribution_method not in ['lrp_composite', 'lrp_composite_flat']:
             raise ValueError('The specified attribution method {0} is unknown'.format(attribution_method))
         if attribution_strategy not in ['true_label', 'predicted_label'] and not isinstance(attribution_strategy, int):
             raise ValueError('The specified attribution strategy {0} is unknown.'.format(attribution_strategy))
@@ -522,6 +522,7 @@ class Sample:
                 element).
         """
 
+        # Stores the arguments for later use
         self.index = index
         self.data = data
         self.labels = labels

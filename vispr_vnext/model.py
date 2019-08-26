@@ -533,7 +533,7 @@ class Sample:
         # Images may come from different sources, e.g. in PyTorch the ordering of the axes is Channels x Width x Height,
         # while in other sources, the ordering is Width x Height x Channel, this code tries to guess which axis
         # represents the RGB channels, and puts them in the order Width x Height x Channel
-        if numpy.argmax(self.data.shape) == 2:
+        if numpy.argmin(self.data.shape) == 0:
             self.data = numpy.moveaxis(self.data, [0, 1, 2], [2, 0, 1])
 
         # The pixel values of the image may be in three different value ranges: [-1.0, 1.0], [0.0, 1.0], and [0, 255],

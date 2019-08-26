@@ -50,38 +50,41 @@ class Project:
                 self.model = project['model']
 
                 # Loads the dataset of the project
-                dataset_type = project['dataset']['type']
-                if dataset_type == 'hdf5':
-                    self.dataset = Hdf5Dataset(
-                        project['dataset']['name'],
-                        os.path.join(working_directory, project['dataset']['path']),
-                        os.path.join(working_directory, project['dataset']['label_map'])
-                    )
-                elif dataset_type == 'image_directory':
-                    self.dataset = ImageDirectoryDataset(
-                        project['dataset']['name'],
-                        os.path.join(working_directory, project['dataset']['path']),
-                        os.path.join(working_directory, project['dataset']['label_map']),
-                        project['dataset']['label_index_regex'],
-                        project['dataset']['label_word_net_id_regex']
-                    )
-                else:
-                    raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
+                if project['dataset'] is not None:
+                    dataset_type = project['dataset']['type']
+                    if dataset_type == 'hdf5':
+                        self.dataset = Hdf5Dataset(
+                            project['dataset']['name'],
+                            os.path.join(working_directory, project['dataset']['path']),
+                            os.path.join(working_directory, project['dataset']['label_map'])
+                        )
+                    elif dataset_type == 'image_directory':
+                        self.dataset = ImageDirectoryDataset(
+                            project['dataset']['name'],
+                            os.path.join(working_directory, project['dataset']['path']),
+                            os.path.join(working_directory, project['dataset']['label_map']),
+                            project['dataset']['label_index_regex'],
+                            project['dataset']['label_word_net_id_regex']
+                        )
+                    else:
+                        raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
 
                 # Loads the attributions of the project
-                for attribution in project['attributions']:
-                    self.attributions.append(Attribution(
-                        os.path.join(working_directory, attribution['attribution']),
-                        attribution['attribution_method'],
-                        attribution['attribution_strategy']
-                    ))
+                if project['attributions'] is not None:
+                    for attribution in project['attributions']:
+                        self.attributions.append(Attribution(
+                            os.path.join(working_directory, attribution['attribution']),
+                            attribution['attribution_method'],
+                            attribution['attribution_strategy']
+                        ))
 
                 # Loads the analyses of the project
-                for analysis in project['analyses']:
-                    self.analyses.append(Analysis(
-                        os.path.join(working_directory, analysis['analysis']),
-                        analysis['analysis_method']
-                    ))
+                if project['analyses'] is not None:
+                    for analysis in project['analyses']:
+                        self.analyses.append(Analysis(
+                            os.path.join(working_directory, analysis['analysis']),
+                            analysis['analysis_method']
+                        ))
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
 

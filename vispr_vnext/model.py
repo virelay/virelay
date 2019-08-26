@@ -33,7 +33,8 @@ class Project:
         # Initializes some class members
         self.is_closed = False
         self.dataset = None
-        self.sources = []
+        self.attributions = []
+        self.analyses = []
 
         # Stores the path for later reference
         self.path = path
@@ -67,14 +68,19 @@ class Project:
                 else:
                     raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
 
-                # Loads the sources of the project
-                for source in project['sources']:
-                    self.sources.append(Source(
-                        os.path.join(working_directory, source['attribution']),
-                        source['attribution_method'],
-                        source['attribution_strategy'],
-                        os.path.join(working_directory, source['analysis']),
-                        source['analysis_method']
+                # Loads the attributions of the project
+                for attribution in project['attributions']:
+                    self.attributions.append(Attribution(
+                        os.path.join(working_directory, attribution['attribution']),
+                        attribution['attribution_method'],
+                        attribution['attribution_strategy']
+                    ))
+
+                # Loads the analyses of the project
+                for analysis in project['analyses']:
+                    self.analyses.append(Analysis(
+                        os.path.join(working_directory, analysis['analysis']),
+                        analysis['analysis_method']
                     ))
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
@@ -85,8 +91,10 @@ class Project:
         if not self.is_closed:
             if self.dataset is not None:
                 self.dataset.close()
-            for source in self.sources:
-                source.close()
+            for attribution in self.attributions:
+                attribution.close()
+            for analysis in self.analyses:
+                analysis.close()
             self.is_closed = True
 
     def __del__(self):
@@ -95,12 +103,12 @@ class Project:
         self.close()
 
 
-class Source:
-    """Represents a combination of an attribution database and an analysis database."""
+class Attribution:
+    """Represents a single attribution database, which contains the attributions for the dataset samples."""
 
-    def __init__(self, attribution_path, attribution_method, attribution_strategy, analysis_path, analysis_method):
+    def __init__(self, attribution_path, attribution_method, attribution_strategy):
         """
-        Initializes a new Source instance.
+        Initializes a new Attribution instance.
 
         Parameters
         ----------
@@ -114,6 +122,55 @@ class Source:
                 performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
                 predicted by the model), or a class index (this is the class index of the class for which the
                 attribution was performed.
+
+        Raises
+        ------
+            ValueError
+                If the specified attribution method is unknown, a ValueError is raised.
+                If the specified attribution strategy is unknown, a ValueError is raised.
+        """
+
+        # Initializes some class members
+        self.is_closed = False
+        self.attribution_file = None
+
+        # Validates the arguments
+        if attribution_method not in ['lrp_composite_flat']:
+            raise ValueError('The specified attribution method {0} is unknown'.format(attribution_method))
+        if attribution_strategy not in ['true_label', 'predicted_label'] and not isinstance(attribution_strategy, int):
+            raise ValueError('The specified attribution strategy {0} is unknown.'.format(attribution_strategy))
+
+        # Stores the arguments for later reference
+        self.attribution_path = attribution_path
+        self.attribution_method = attribution_method
+        self.attribution_strategy = attribution_strategy
+
+        # Loads the attribution files
+        self.attribution_file = h5py.File(self.attribution_path)
+
+    def close(self):
+        """Closes the attribution database."""
+
+        if not self.is_closed:
+            if self.attribution_file is not None:
+                self.attribution_file.close()
+            self.is_closed = True
+
+    def __del__(self):
+        """Destructs the attribution database."""
+
+        self.close()
+
+
+class Analysis:
+    """Represents a single analysis database, which contains the analysis of attributions."""
+
+    def __init__(self, analysis_path, analysis_method):
+        """
+        Initializes a new Analysis instance.
+
+        Parameters
+        ----------
             analysis_path: str
                 The path to the file that contains the analysis database.
             analysis_method: str
@@ -122,47 +179,34 @@ class Source:
         Raises
         ------
             ValueError
-                If the specified attribution method is unknown, a ValueError is raised.
-                If the specified attribution strategy is unknown, a ValueError is raised.
                 If the specified analysis method is unknown, a ValueError is raised.
         """
 
         # Initializes some class members
         self.is_closed = False
-        self.attribution_file = None
         self.analysis_file = None
 
         # Validates the arguments
-        if attribution_method not in ['lrp_composite_flat']:
-            raise ValueError('The specified attribution method {0} is unknown'.format(attribution_method))
-        if attribution_strategy not in ['true_label', 'predicted_label'] and not isinstance(attribution_strategy, int):
-            raise ValueError('The specified attribution strategy {0} is unknown.'.format(attribution_strategy))
         if analysis_method not in ['spectral_analysis']:
             raise ValueError('The specified attribution method {0} is unknown'.format(analysis_method))
 
         # Stores the arguments for later reference
-        self.attribution_path = attribution_path
-        self.attribution_method = attribution_method
-        self.attribution_strategy = attribution_strategy
         self.analysis_path = analysis_path
         self.analysis_method = analysis_method
 
-        # Loads the attribution and analysis files
-        self.attribution_file = h5py.File(self.attribution_path)
+        # Loads the analysis file
         self.analysis_file = h5py.File(self.analysis_path)
 
     def close(self):
-        """Closes the source."""
+        """Closes the analysis database."""
 
         if not self.is_closed:
-            if self.attribution_file is not None:
-                self.attribution_file.close()
             if self.analysis_file is not None:
                 self.analysis_file.close()
             self.is_closed = True
 
     def __del__(self):
-        """Destructs the source."""
+        """Destructs the analysis database."""
 
         self.close()
 

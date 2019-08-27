@@ -36,7 +36,7 @@ class Project:
         self.is_closed = False
         self.dataset = None
         self.attributions = []
-        self.analyses = []
+        self.analyses = {}
 
         # Stores the path for later reference
         self.path = path
@@ -77,22 +77,25 @@ class Project:
 
                 # Loads the attributions of the project
                 if project['attributions'] is not None:
-                    for attribution in project['attributions']:
+                    self.attribution_method = project['attributions']['attribution_method']
+                    self.attribution_strategy = project['attributions']['attribution_strategy']
+                    for attribution_database in project['attributions']['sources']:
                         self.attributions.append(AttributionDatabase(
-                            os.path.join(working_directory, attribution['attribution']),
-                            attribution['attribution_method'],
-                            attribution['attribution_strategy'],
+                            os.path.join(working_directory, attribution_database),
                             self.label_map
                         ))
 
                 # Loads the analyses of the project
                 if project['analyses'] is not None:
                     for analysis in project['analyses']:
-                        self.analyses.append(AnalysisDatabase(
-                            os.path.join(working_directory, analysis['analysis']),
-                            analysis['analysis_method'],
-                            self.label_map
-                        ))
+                        analysis_method = analysis['analysis_method']
+                        if analysis_method not in self.analyses:
+                            self.analyses[analysis_method] = []
+                        for analysis_database in analysis['sources']:
+                            self.analyses[analysis_method].append(AnalysisDatabase(
+                                os.path.join(working_directory, analysis_database),
+                                self.label_map
+                            ))
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
 
@@ -104,8 +107,9 @@ class Project:
                 self.dataset.close()
             for attribution in self.attributions:
                 attribution.close()
-            for analysis in self.analyses:
-                analysis.close()
+            for analysis_method in self.analyses:
+                for analysis in analysis_method:
+                    analysis.close()
             self.is_closed = True
 
     def __del__(self):
@@ -117,7 +121,7 @@ class Project:
 class AttributionDatabase:
     """Represents a single attribution database, which contains the attributions for the dataset samples."""
 
-    def __init__(self, attribution_path, attribution_method, attribution_strategy, label_map):
+    def __init__(self, attribution_path, label_map):
         """
         Initializes a new AttributionDatabase instance.
 
@@ -125,38 +129,16 @@ class AttributionDatabase:
         ----------
             attribution_path: str
                 The path to the file that contains the attribution database.
-            attribution_method: str
-                The name of the method that was used to calculate the attribution. Currently 'lrp_composite' for LRP
-                Composite and 'lrp_composite_flat' for LRP Composite + flat are supported.
-            attribution_strategy: str
-                The strategy that was employed for the attribution. This can either be 'true_label' (the attribution was
-                performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
-                predicted by the model), or a class index (this is the class index of the class for which the
-                attribution was performed.
             label_map: LabelMap
                 The label map, which contains a mapping between the index of the labels and their human-readable names.
-
-        Raises
-        ------
-            ValueError
-                If the specified attribution method is unknown, a ValueError is raised.
-                If the specified attribution strategy is unknown, a ValueError is raised.
         """
 
         # Initializes some class members
         self.is_closed = False
         self.attribution_file = None
 
-        # Validates the arguments
-        if attribution_method not in ['lrp_composite', 'lrp_composite_flat']:
-            raise ValueError('The specified attribution method {0} is unknown'.format(attribution_method))
-        if attribution_strategy not in ['true_label', 'predicted_label'] and not isinstance(attribution_strategy, int):
-            raise ValueError('The specified attribution strategy {0} is unknown.'.format(attribution_strategy))
-
         # Stores the arguments for later reference
         self.attribution_path = attribution_path
-        self.attribution_method = attribution_method
-        self.attribution_strategy = attribution_strategy
         self.label_map = label_map
 
         # Loads the attribution files
@@ -237,9 +219,7 @@ class AttributionDatabase:
             index,
             attribution_data,
             attribution_labels,
-            attribution_prediction,
-            self.attribution_method,
-            self.attribution_strategy
+            attribution_prediction
         )
 
     def close(self):
@@ -259,7 +239,7 @@ class AttributionDatabase:
 class Attribution:
     """Represents a single attribution from an attribution database."""
 
-    def __init__(self, index, data, labels, prediction, attribution_method, attribution_strategy):
+    def __init__(self, index, data, labels, prediction):
         """
         Initializes a new Attribution instance.
 
@@ -273,14 +253,6 @@ class Attribution:
                 A list of the ground truth labels of the sample for which the attribution was created.
             prediction: numpy.ndarray
                 The original output of the model.
-            attribution_method: str
-                The name of the method that was used to calculate the attribution. Currently 'lrp_composite' for LRP
-                Composite and 'lrp_composite_flat' for LRP Composite + flat are supported.
-            attribution_strategy: str
-                The strategy that was employed for the attribution. This can either be 'true_label' (the attribution was
-                performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
-                predicted by the model), or a class index (this is the class index of the class for which the
-                attribution was performed.
         """
 
         # Stores the parameters for later use
@@ -288,8 +260,6 @@ class Attribution:
         self.data = data
         self.labels = labels
         self.prediction = prediction
-        self.attribution_method = attribution_method
-        self.attribution_strategy = attribution_strategy
 
         # Heatmaps (the attribution data) may come from different sources, e.g. in PyTorch the ordering of the axes is
         # Channels x Width x Height, while in other sources, the ordering is Width x Height x Channel, this code tries
@@ -575,7 +545,7 @@ class Attribution:
 class AnalysisDatabase:
     """Represents a single analysis database, which contains the analysis of attributions."""
 
-    def __init__(self, analysis_path, analysis_method, label_map):
+    def __init__(self, analysis_path, label_map):
         """
         Initializes a new AnalysisDatabase instance.
 
@@ -583,8 +553,6 @@ class AnalysisDatabase:
         ----------
             analysis_path: str
                 The path to the file that contains the analysis database.
-            analysis_method: str
-                The method that was used for the analysis. Currently only 'spectral_analysis' is supported.
             label_map: LabelMap
                 The label map, which contains a mapping between the index of the labels and their human-readable names.
 
@@ -598,13 +566,8 @@ class AnalysisDatabase:
         self.is_closed = False
         self.analysis_file = None
 
-        # Validates the arguments
-        if analysis_method not in ['spectral_analysis']:
-            raise ValueError('The specified attribution method {0} is unknown'.format(analysis_method))
-
         # Stores the arguments for later reference
         self.analysis_path = analysis_path
-        self.analysis_method = analysis_method
         self.label_map = label_map
 
         # Loads the analysis file

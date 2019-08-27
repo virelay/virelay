@@ -1,4 +1,5 @@
 """Contains the data model abstraction."""
+# pylint: disable=too-many-lines
 
 import os
 import re
@@ -8,6 +9,7 @@ import glob
 import yaml
 import h5py
 import numpy
+import matplotlib.cm
 from PIL import Image
 
 
@@ -66,9 +68,9 @@ class Project:
                         self.dataset = ImageDirectoryDataset(
                             project['dataset']['name'],
                             os.path.join(working_directory, project['dataset']['path']),
-                            self.label_map,
                             project['dataset']['label_index_regex'],
-                            project['dataset']['label_word_net_id_regex']
+                            project['dataset']['label_word_net_id_regex'],
+                            self.label_map
                         )
                     else:
                         raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
@@ -76,7 +78,7 @@ class Project:
                 # Loads the attributions of the project
                 if project['attributions'] is not None:
                     for attribution in project['attributions']:
-                        self.attributions.append(Attribution(
+                        self.attributions.append(AttributionDatabase(
                             os.path.join(working_directory, attribution['attribution']),
                             attribution['attribution_method'],
                             attribution['attribution_strategy'],
@@ -86,7 +88,7 @@ class Project:
                 # Loads the analyses of the project
                 if project['analyses'] is not None:
                     for analysis in project['analyses']:
-                        self.analyses.append(Analysis(
+                        self.analyses.append(AnalysisDatabase(
                             os.path.join(working_directory, analysis['analysis']),
                             analysis['analysis_method'],
                             self.label_map
@@ -112,12 +114,12 @@ class Project:
         self.close()
 
 
-class Attribution:
+class AttributionDatabase:
     """Represents a single attribution database, which contains the attributions for the dataset samples."""
 
     def __init__(self, attribution_path, attribution_method, attribution_strategy, label_map):
         """
-        Initializes a new Attribution instance.
+        Initializes a new AttributionDatabase instance.
 
         Parameters
         ----------
@@ -160,6 +162,86 @@ class Attribution:
         # Loads the attribution files
         self.attribution_file = h5py.File(self.attribution_path)
 
+        # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then
+        # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
+        # whether the sample has the label, when the dataset is single-label, then the label is just a scalar value
+        # containing the index of the label)
+        self.is_multi_label = self.attribution_file['label'][0].dtype == numpy.bool
+
+    def has_attribution(self, index):
+        """
+        Determines whether the attribution database contains the attribution with the specified index.
+
+        Parameters
+        ----------
+            index: int
+                The index that is to be checked.
+
+        Raises
+        ------
+            ValueError
+                If the attribution database has already been closed, then a ValueError is raised.
+
+        Returns
+        -------
+            bool
+                Returns True if the database contains the attribution with the specified index and False otherwise.
+        """
+
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        return index in self.attribution_file['index']
+
+    def get_attribution(self, index):
+        """
+        Gets the attribution with the specified index.
+
+        Parameters
+        ----------
+            index: int
+                The index of the attribution that is to be retrieved.
+
+        Raises
+        ------
+            ValueError
+                If the attribution database has already been closed, then a ValueError is raised.
+            IndexError
+                When the no attribution with the specified index exists, then an IndexError is raised.
+
+        Returns
+        -------
+            Attribution
+                Returns the attribution with the specified index.
+        """
+
+        # Checks if the attribution database has already been closed, if so, a ValueError is raised
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        # Checks if the specified attribution exists, if not, then an IndexError is raised
+        if not self.has_attribution(index):
+            raise IndexError()
+
+        # Extracts the information about the sample from the dataset
+        attribution_data = self.attribution_file['attribution'][index]
+        attribution_label_reference = self.attribution_file['label'][index]
+        if self.is_multi_label:
+            attribution_labels = self.label_map.get_labels_from_n_hot_vector(attribution_label_reference)
+        else:
+            attribution_labels = [self.label_map.get_label_from_index(attribution_label_reference)]
+        attribution_prediction = self.attribution_file['prediction'][index]
+
+        # Wraps the attribution in an object and returns it
+        return Attribution(
+            index,
+            attribution_data,
+            attribution_labels,
+            attribution_prediction,
+            self.attribution_method,
+            self.attribution_strategy
+        )
+
     def close(self):
         """Closes the attribution database."""
 
@@ -174,12 +256,328 @@ class Attribution:
         self.close()
 
 
-class Analysis:
+class Attribution:
+    """Represents a single attribution from an attribution database."""
+
+    def __init__(self, index, data, labels, prediction, attribution_method, attribution_strategy):
+        """
+        Initializes a new Attribution instance.
+
+        Parameters
+        ----------
+            index: int
+                The index of the attribution, which is the index of the sample for which the attribution was created.
+            data: numpy.ndarray
+                The attribution data, which is a raw heatmap.
+            labels: list
+                A list of the ground truth labels of the sample for which the attribution was created.
+            prediction: numpy.ndarray
+                The original output of the model.
+            attribution_method: str
+                The name of the method that was used to calculate the attribution. Currently 'lrp_composite' for LRP
+                Composite and 'lrp_composite_flat' for LRP Composite + flat are supported.
+            attribution_strategy: str
+                The strategy that was employed for the attribution. This can either be 'true_label' (the attribution was
+                performed for the ground truth), 'predicted_label' (the attribution was performed for the label that was
+                predicted by the model), or a class index (this is the class index of the class for which the
+                attribution was performed.
+        """
+
+        # Stores the parameters for later use
+        self.index = index
+        self.data = data
+        self.labels = labels
+        self.prediction = prediction
+        self.attribution_method = attribution_method
+        self.attribution_strategy = attribution_strategy
+
+        # Heatmaps (the attribution data) may come from different sources, e.g. in PyTorch the ordering of the axes is
+        # Channels x Width x Height, while in other sources, the ordering is Width x Height x Channel, this code tries
+        # to guess which axis represents the RGB channels, and puts them in the order Width x Height x Channel
+        if numpy.argmin(self.data.shape) == 0:
+            self.data = numpy.moveaxis(self.data, [0, 1, 2], [2, 0, 1])
+
+    def render_heatmap(self, color_map):
+        """
+        Takes the raw attribution data and converts it so that the data can be visualized as a heatmap.
+
+        Parameters
+        ----------
+            color_map: str
+                The name of color map that is to be used to render the heatmap.
+
+        Raises
+        ------
+            ValueError
+                If the specified color map is unknown, then a ValueError is raised.
+        """
+
+        # Creates a dictionary, which maps the name of a custom color map to a method that produces the heatmap image
+        # using that color map
+        custom_color_maps = {
+            'gray-red-1': Attribution.generate_heatmap_image_gray_red_1,
+            'gray-red-2': Attribution.generate_heatmap_image_gray_red_2,
+            'black-green': Attribution.generate_heatmap_image_black_green,
+            'black-fire-red': Attribution.generate_heatmap_image_black_fire_red,
+            'blue-black-yellow': Attribution.generate_heatmap_image_black_yellow
+        }
+
+        # Creates a list of 'fall-back'-color-maps from matplotlib, which can also be used
+        matplotlib_color_maps = {
+            'blue-white-red': 'bwr',
+            'afmhot': 'afmhot',
+            'jet': 'jet',
+            'seismic': 'seismic'
+        }
+
+        # Checks if the raw attribution has more than one channel, in that case the channels are summed up
+        if len(self.data.shape) == 3 and self.data.shape[-1] > 1:
+            data = numpy.sum(self.data, axis=2)
+        else:
+            data = self.data
+
+        # Checks the name of the color map and renders the heatmap image accordingly, if the color map is not supported,
+        # then an exception is raised
+        if color_map in custom_color_maps:
+            return custom_color_maps[color_map](data)
+        elif color_map in matplotlib_color_maps:
+            return Attribution.generate_heatmap_image_using_matplotlib(data, matplotlib_color_maps[color_map])
+        else:
+            raise ValueError('The color map "{0}" is not supported.'.format(color_map))
+
+    @staticmethod
+    def generate_heatmap_image_using_matplotlib(raw_heatmap, color_map_name):
+        """
+        Generates a heatmap image from the specified raw heatmap using the color maps provided by matplotlib.
+
+        Parameters
+        ----------
+            raw_heatmap: numpy.ndarray
+                The raw heatmap, which are to be converted into an image representation.
+            color_map_name: str
+                The name of the color map that is used to produce the image heatmap.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns an array that contains the RGB values of the resulting heatmap image.
+        """
+
+        # Gets the color map specified by the name
+        color_map = getattr(matplotlib.cm, color_map_name)
+
+        # Brings the raw heatmap data into a value range of 0.0 and 1.0
+        raw_heatmap = raw_heatmap / numpy.max(numpy.abs(raw_heatmap))
+        raw_heatmap = (raw_heatmap + 1.0) / 2.0
+
+        # Applies the color map to the raw heatmap
+        heatmap_height, heatmap_width = raw_heatmap.shape
+        heatmap_image = color_map(raw_heatmap.flatten())
+        heatmap_image = heatmap_image[:, 0:3].reshape([heatmap_height, heatmap_width, 3])
+
+        # Returns the created heatmap image
+        return heatmap_image
+
+    @staticmethod
+    def generate_heatmap_image_gray_red_1(raw_heatmap):
+        """
+        Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
+        blue tones are used to visualize negative relevances.
+
+        Parameters
+        ----------
+            raw_heatmap: numpy.ndarray
+                The raw heatmap, which are to be converted into an image representation.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns an array that contains the RGB values of the resulting heatmap image.
+        """
+
+        # Creates the floating point representation of a the base gray color that is used in the heatmap, and creates a
+        # new heatmap image, with that base gray as the background color
+        basegray = 0.8
+        heatmap_image = numpy.ones([raw_heatmap.shape[0], raw_heatmap.shape[1], 3]) * basegray
+
+        # Generates the actual heatmap image
+        absolute_maximum = numpy.max(raw_heatmap)
+        truncated_values = numpy.maximum(numpy.minimum(raw_heatmap / absolute_maximum, 1.0), -1.0)
+        negatives = raw_heatmap < 0
+        heatmap_image[negatives, 0] += truncated_values[negatives] * basegray
+        heatmap_image[negatives, 1] += truncated_values[negatives] * basegray
+        heatmap_image[negatives, 2] += -truncated_values[negatives] * (1 - basegray)
+        positives = raw_heatmap >= 0
+        heatmap_image[positives, 0] += truncated_values[positives] * (1 - basegray)
+        heatmap_image[positives, 1] += -truncated_values[positives] * basegray
+        heatmap_image[positives, 2] += -truncated_values[positives] * basegray
+
+        # Returns the created heatmap image
+        return heatmap_image
+
+    @staticmethod
+    def generate_heatmap_image_gray_red_2(raw_heatmap):
+        """
+        Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
+        blue tones are used to visualize negative relevances.
+
+        Parameters
+        ----------
+            raw_heatmap: numpy.ndarray
+                The raw heatmap, which are to be converted into an image representation.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns an array that contains the RGB values of the resulting heatmap image.
+        """
+
+        # Prepares the raw heatmap
+        variance = numpy.var(raw_heatmap)
+        raw_heatmap[raw_heatmap > 10 * variance] = 0
+        raw_heatmap[raw_heatmap < 0] = 0
+        raw_heatmap = raw_heatmap / numpy.max(raw_heatmap)
+
+        # Applies the heatmap to the positive relevances
+        heatmap_red_positive = 0.9 - numpy.clip(raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.5
+        heatmap_green_positive = \
+            0.9 - numpy.clip(raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
+            0.5 - numpy.clip(raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
+        heatmap_blue_positive = \
+            0.9 - numpy.clip(raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
+            0.5 - numpy.clip(raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
+
+        # Applies the heatmap to the negative relevances
+        heatmap_red_negative = \
+            0.9 - numpy.clip(-raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
+            0.5 - numpy.clip(-raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
+        heatmap_green_negative = \
+            0.9 - numpy.clip(-raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
+            0.5 - numpy.clip(-raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
+        heatmap_blue_negative = 0.9 - numpy.clip(-raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.5
+
+        # Combines the positive and negative relevances
+        heatmap_red = heatmap_red_positive * (raw_heatmap >= 0) + heatmap_red_negative * (raw_heatmap < 0)
+        heatmap_green = heatmap_green_positive * (raw_heatmap >= 0) + heatmap_green_negative * (raw_heatmap < 0)
+        heatmap_blue = heatmap_blue_positive * (raw_heatmap >= 0) + heatmap_blue_negative * (raw_heatmap < 0)
+
+        # Concatenates the individual color channels back together and returns the generated heatmap image
+        return numpy.concatenate([
+            heatmap_red[..., None],
+            heatmap_green[..., None],
+            heatmap_blue[..., None]
+        ], axis=2)
+
+    @staticmethod
+    def generate_heatmap_image_black_green(raw_heatmap):
+        """
+        Generates a heatmap with a black background, where green tones are used to visualize positive relevance values
+        and blue tones are used to visualize negative relevances.
+
+        Parameters
+        ----------
+            raw_heatmap: numpy.ndarray
+                The raw heatmap, which are to be converted into an image representation.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns an array that contains the RGB values of the resulting heatmap image.
+        """
+
+        # Creates the heatmap image with all pixel values set to 0
+        absolute_maximum = numpy.max(raw_heatmap)
+        heatmap_image = numpy.zeros([raw_heatmap.shape[0], raw_heatmap.shape[1], 3])
+
+        # Applies the heatmap to the negative relevances
+        negatives = raw_heatmap < 0
+        heatmap_image[negatives, 2] = -raw_heatmap[negatives] / absolute_maximum
+
+        # Applies the heatmap to the positive relevances
+        positives = raw_heatmap >= 0
+        heatmap_image[positives, 1] = raw_heatmap[positives] / absolute_maximum
+
+        # Returns the generated heatmap image
+        return heatmap_image
+
+    @staticmethod
+    def generate_heatmap_image_black_fire_red(raw_heatmap):
+        """
+        Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
+        blue tones are used to visualize negative relevances.
+
+        Parameters
+        ----------
+            raw_heatmap: numpy.ndarray
+                The raw heatmap, which are to be converted into an image representation.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns an array that contains the RGB values of the resulting heatmap image.
+        """
+
+        # Prepares the raw heatmap
+        raw_heatmap = raw_heatmap / numpy.max(numpy.abs(raw_heatmap))
+
+        # Applies the heatmap to the positive relevances
+        heatmap_red_positive = numpy.clip(raw_heatmap - 0.00, 0, 0.25) / 0.25
+        heatmap_green_positive = numpy.clip(raw_heatmap - 0.25, 0, 0.25) / 0.25
+        heatmap_blue_positive = numpy.clip(raw_heatmap - 0.50, 0, 0.50) / 0.50
+
+        # Applies the heatmap to the negative relevances
+        heatmap_red_negative = numpy.clip(-raw_heatmap - 0.50, 0, 0.50) / 0.50
+        heatmap_green_negative = numpy.clip(-raw_heatmap - 0.25, 0, 0.25) / 0.25
+        heatmap_blue_negative = numpy.clip(-raw_heatmap - 0.00, 0, 0.25) / 0.25
+
+        # Combines the positive and negative relevances, concatenates the individual color channels back together, and
+        # returns the generated heatmap image
+        return numpy.concatenate([
+            (heatmap_red_positive + heatmap_red_negative)[..., None],
+            (heatmap_green_positive + heatmap_green_negative)[..., None],
+            (heatmap_blue_positive + heatmap_blue_negative)[..., None]
+        ], axis=2)
+
+    @staticmethod
+    def generate_heatmap_image_black_yellow(raw_heatmap):
+        """
+        Generates a heatmap with a black background, where yellow tones are used to visualize positive relevance values
+        and blue tones are used to visualize negative relevances.
+
+        Parameters
+        ----------
+            raw_heatmap: numpy.ndarray
+                The raw heatmap, which are to be converted into an image representation.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns an array that contains the RGB values of the resulting heatmap image.
+        """
+
+        # Creates the heatmap image with all pixel values set to 0
+        absolute_maximum = numpy.max(raw_heatmap)
+        heatmap_image = numpy.zeros([raw_heatmap.shape[0], raw_heatmap.shape[1], 3])
+
+        # Applies the heatmap to the negative relevances
+        negatives = raw_heatmap < 0
+        heatmap_image[negatives, 2] = -raw_heatmap[negatives] / absolute_maximum
+
+        # Applies the heatmap to the positive relevances
+        positives = raw_heatmap >= 0
+        heatmap_image[positives, 0] = raw_heatmap[positives] / absolute_maximum
+        heatmap_image[positives, 1] = raw_heatmap[positives] / absolute_maximum
+
+        # Returns the generated heatmap image
+        return heatmap_image
+
+
+class AnalysisDatabase:
     """Represents a single analysis database, which contains the analysis of attributions."""
 
     def __init__(self, analysis_path, analysis_method, label_map):
         """
-        Initializes a new Analysis instance.
+        Initializes a new AnalysisDatabase instance.
 
         Parameters
         ----------
@@ -211,6 +609,31 @@ class Analysis:
 
         # Loads the analysis file
         self.analysis_file = h5py.File(self.analysis_path)
+
+    def has_analysis(self, index):
+        """
+        Determines whether the analysis database contains the analysis with the specified index.
+
+        Parameters
+        ----------
+            index: int
+                The index that is to be checked.
+
+        Raises
+        ------
+            ValueError
+                If the analysis database has already been closed, then a ValueError is raised.
+
+        Returns
+        -------
+            bool
+                Returns True if the database contains the analysis with the specified index and False otherwise.
+        """
+
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        return index in self.analysis_file['index']
 
     def close(self):
         """Closes the analysis database."""
@@ -255,10 +678,10 @@ class Hdf5Dataset:
         # Loads the dataset itself
         self.dataset_file = h5py.File(self.path)
 
-        # Determines if the dataset is allows multiple labels or only single labels (when the dataset is multi-label,
-        # then the labels are stored as a boolean NumPy array where the index is the label index and the value
-        # determines whether the sample has the label, when the dataset is single-label, then the label is just a scalar
-        # value containing the index of the label)
+        # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then
+        # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
+        # whether the sample has the label, when the dataset is single-label, then the label is just a scalar value
+        # containing the index of the label)
         self.is_multi_label = self.dataset_file['label'][0].dtype == numpy.bool
 
     def get_sample(self, index):
@@ -364,14 +787,7 @@ class ImageDirectoryDataset:
     represent the labels of the images.
     """
 
-    def __init__(
-            self,
-            name,
-            path,
-            label_map,
-            label_index_regex,
-            label_word_net_id_regex
-    ):
+    def __init__(self, name, path, label_index_regex, label_word_net_id_regex, label_map):
         """
         Initializes a new ImageDirectoryDataset instance.
 
@@ -382,8 +798,6 @@ class ImageDirectoryDataset:
             path: str
                 The path to the directory that contains the directories for the labels, which in turn contain the images
                 that belong to the respective label.
-            label_map: LabelMap
-                The label map, which contains a mapping between the index of the labels and their human-readable names.
             label_index_regex: str
                 A regular expression, which is used to parse the path of a sample for the label index. The sample index
                 must be captured in the first group. Can be None, but either label_index_regex or
@@ -392,6 +806,8 @@ class ImageDirectoryDataset:
                 A regular expression, which is used to parse the path of a sample for the WordNet ID. The sample index
                 must be captured in the first group. Can be None, but either label_index_regex or
                 label_word_net_id_regex must be specified.
+            label_map: LabelMap
+                The label map, which contains a mapping between the index of the labels and their human-readable names.
         """
 
         # Initializes some class members
@@ -400,9 +816,9 @@ class ImageDirectoryDataset:
         # Stores the arguments for later reference
         self.name = name
         self.path = path
-        self.label_map = label_map
         self.label_index_regex = label_index_regex
         self.label_word_net_id_regex = label_word_net_id_regex
+        self.label_map = label_map
 
         # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
         # paths corresponds to the sample index that has to be specified in the get_sample method)
@@ -607,7 +1023,7 @@ class LabelMap:
                 return label.name
         raise ValueError('No label with the specified index {0} could be found.'.format(index))
 
-    def get_label_from_n_hot_vector(self, n_hot_vector):
+    def get_labels_from_n_hot_vector(self, n_hot_vector):
         """
         Retrieves the human-readable names of the labels that are specified by the n-hot encoded vector.
 

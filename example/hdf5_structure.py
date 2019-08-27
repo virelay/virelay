@@ -55,7 +55,7 @@ def make_group_example():
         for key, pred in zip(a_keys, a_predictions):
             g_prediction[key] = a_predictions.astype(np.float32)
 
-    with h5py.File('grouped-attr_method-ana_topic.analysis.h5') as fd:
+    with h5py.File('grouped-attr_method-ana_topic.analysis.h5', 'w') as fd:
         # one analysis group, we call this analysis 'my first analysis'
         g_analysis = fd.require_group('my_first_analysis')
 

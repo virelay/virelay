@@ -108,7 +108,7 @@ class Project:
             for attribution in self.attributions:
                 attribution.close()
             for analysis_method in self.analyses:
-                for analysis in analysis_method:
+                for analysis in self.analyses[analysis_method]:
                     analysis.close()
             self.is_closed = True
 

@@ -572,6 +572,84 @@ class AnalysisDatabase:
         # Loads the analysis file
         self.analysis_file = h5py.File(self.analysis_path)
 
+    def get_category_names(self):
+        """
+        Retrieves the names of all the categories that are contained in this analysis database. The category names are
+        umbrella terms for the attributions for which the analysis was performed. In most cases this will be the
+        name/index/WordNet ID of the label of the dataset samples of the attributions.
+
+        Raises
+        ------
+            ValueError
+                If the analysis database has already been closed, then a ValueError is raised.
+
+        Returns
+        -------
+            list of str
+                Returns a list containing the names of all the categories that are contained in this analysis database.
+        """
+
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        return list(self.analysis_file.keys())
+
+    def get_clustering_names(self):
+        """
+        Retrieves the names of all the clusterings that are contained in this analysis database. The clustering names
+        are usually the name of the method with which the clustering was generated. Most likely this will be k-means
+        with a specific value for k, e.g. 'kmeans-10'.
+
+        Raises
+        ------
+            ValueError
+                If the analysis database has already been closed, then a ValueError is raised.
+
+        Returns
+        -------
+            list of str
+                Returns a list containing the names of all the clusterings that are contained in this analysis database.
+        """
+
+        # Checks if the database has already been closed, in that case a ValueError is raised
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        # Since every analysis contained in this analysis database has its own set of clusterings, the number and the
+        # names of the clusterings may vary between analyses, as it is not enforced that they all must have the same
+        # clusterings, nevertheless, this assumes that each analysis in a single analysis database has the same
+        # clusterings and therefore the names are only retrieved from the first one
+        first_category_name = self.get_category_names()[0]
+        return list(self.analysis_file[first_category_name]['cluster'])
+
+    def get_embedding_names(self):
+        """
+        Retrieves the names of all the embeddings that are contained in the analysis database. The embedding names are
+        the names of the methods with which the embedding was generated. This will most likely be "spectral" for
+        spectral embeddings and "tsne" for a T-SNE embedding.
+
+        Raises
+        ------
+            ValueError
+                If the analysis database has already been closed, then a ValueError is raised.
+
+        Returns
+        -------
+            list of str
+                Returns a list containing the names of all the embeddings that are contained in this analysis database.
+        """
+
+        # Checks if the database has already been closed, in that case a ValueError is raised
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        # Since every analysis contained in this analysis database has its own set of embeddings, the number and the
+        # names of the embeddings may vary between analyses, as it is not enforced that they all must have the same
+        # embeddings, nevertheless, this assumes that each analysis in a single analysis database has the same
+        # embeddings and therefore the names are only retrieved from the first one
+        first_category_name = self.get_category_names()[0]
+        return list(self.analysis_file[first_category_name]['embedding'])
+
     def has_analysis(self, category_name, clustering_name, embedding_name):
         """
         Determines whether the analysis database contains the analysis with the specified category name (categories can,
@@ -583,14 +661,15 @@ class AnalysisDatabase:
                 The name of the category for which the analysis was performed. Each analysis was performed for a certain
                 subset of the attributions, in most cases this subset will be defined by the label of dataset samples of
                 the attributions. So the category name is the umbrella term for all the attributions that comprise the
-                analysis, which will, in most cases, be the name of the label.
+                analysis, which will, in most cases, be the name/index/WordNet ID of the label.
             clustering_name: str
                 On top of the embedding a clustering is performed. This clustering name is the name of the clustering
                 that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
                 most likely k-means with different k's).
             embedding_name: str
-                The name of the embedding that is to be retrieved. This will most likely be "spectral" for spectral
-                embeddings and "tsne" for a T-SNE embedding.
+                The name of the embedding that is to be retrieved. This is the name of the method that was used to
+                create the embedding. Most likely this will be "spectral" for spectral embeddings and "tsne" for a
+                T-SNE embedding.
 
         Raises
         ------
@@ -629,8 +708,9 @@ class AnalysisDatabase:
                 that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
                 most likely k-means with different k's).
             embedding_name: str
-                The name of the embedding that is to be retrieved. This will most likely be "spectral" for spectral
-                embeddings and "tsne" for a T-SNE embedding.
+                The name of the embedding that is to be retrieved. This is the name of the method that was used to
+                create the embedding. Most likely this will be "spectral" for spectral embeddings and "tsne" for a
+                T-SNE embedding.
 
         Raises
         ------
@@ -700,8 +780,9 @@ class Analysis:
                 The clustering, which is an array that contains for each attribution, that is part of the analysis, the
                 number of the cluster to which is belongs.
             embedding_name: str
-                The name of the embedding that is to be retrieved. This will most likely be "spectral" for spectral
-                embeddings and "tsne" for a T-SNE embedding.
+                The name of the embedding that is to be retrieved. This is the name of the method that was used to
+                create the embedding. Most likely this will be "spectral" for spectral embeddings and "tsne" for a
+                T-SNE embedding.
             embedding: numpy.ndarray
                 The embedding, which contains the embedding vector for all the attributions, that are part of the
                 analysis.

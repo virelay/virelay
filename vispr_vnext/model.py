@@ -199,7 +199,7 @@ class AttributionDatabase:
 
         # Checks if the attribution database has already been closed, if so, a ValueError is raised
         if self.is_closed:
-            raise ValueError('The analysis database has already been closed.')
+            raise ValueError('The attribution database has already been closed.')
 
         # Checks if the specified attribution exists, if not, then an IndexError is raised
         if not self.has_attribution(index):
@@ -310,10 +310,9 @@ class Attribution:
         # then an exception is raised
         if color_map in custom_color_maps:
             return custom_color_maps[color_map](data)
-        elif color_map in matplotlib_color_maps:
+        if color_map in matplotlib_color_maps:
             return Attribution.generate_heatmap_image_using_matplotlib(data, matplotlib_color_maps[color_map])
-        else:
-            raise ValueError('The color map "{0}" is not supported.'.format(color_map))
+        raise ValueError('The color map "{0}" is not supported.'.format(color_map))
 
     @staticmethod
     def generate_heatmap_image_using_matplotlib(raw_heatmap, color_map_name):
@@ -573,14 +572,25 @@ class AnalysisDatabase:
         # Loads the analysis file
         self.analysis_file = h5py.File(self.analysis_path)
 
-    def has_analysis(self, index):
+    def has_analysis(self, category_name, clustering_name, embedding_name):
         """
-        Determines whether the analysis database contains the analysis with the specified index.
+        Determines whether the analysis database contains the analysis with the specified category name (categories can,
+        for example, be classes for which the analysis was performed).
 
         Parameters
         ----------
-            index: int
-                The index that is to be checked.
+            category_name: str
+                The name of the category for which the analysis was performed. Each analysis was performed for a certain
+                subset of the attributions, in most cases this subset will be defined by the label of dataset samples of
+                the attributions. So the category name is the umbrella term for all the attributions that comprise the
+                analysis, which will, in most cases, be the name of the label.
+            clustering_name: str
+                On top of the embedding a clustering is performed. This clustering name is the name of the clustering
+                that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
+                most likely k-means with different k's).
+            embedding_name: str
+                The name of the embedding that is to be retrieved. This will most likely be "spectral" for spectral
+                embeddings and "tsne" for a T-SNE embedding.
 
         Raises
         ------
@@ -590,13 +600,69 @@ class AnalysisDatabase:
         Returns
         -------
             bool
-                Returns True if the database contains the analysis with the specified index and False otherwise.
+                Returns True if the database contains the analysis with the specified name and False otherwise.
         """
 
         if self.is_closed:
             raise ValueError('The analysis database has already been closed.')
 
-        return index in self.analysis_file['index']
+        if category_name not in self.analysis_file.keys():
+            return False
+        if clustering_name not in self.analysis_file[category_name]['cluster'].keys():
+            return False
+        return embedding_name in self.analysis_file[category_name]['embedding'].keys()
+
+    def get_analysis(self, category_name, clustering_name, embedding_name):
+        """
+        Gets the analysis for the specified name (names can be, for example, classes for which the analysis was
+        performed).
+
+        Parameters
+        ----------
+            category_name: str
+                The name of the category for which the analysis was performed. Each analysis was performed for a certain
+                subset of the attributions, in most cases this subset will be defined by the label of dataset samples of
+                the attributions. So the category name is the umbrella term for all the attributions that comprise the
+                analysis, which will, in most cases, be the name of the label.
+            clustering_name: str
+                On top of the embedding a clustering is performed. This clustering name is the name of the clustering
+                that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
+                most likely k-means with different k's).
+            embedding_name: str
+                The name of the embedding that is to be retrieved. This will most likely be "spectral" for spectral
+                embeddings and "tsne" for a T-SNE embedding.
+
+        Raises
+        ------
+            ValueError
+                If the analysis database has already been closed, then a ValueError is raised.
+            IndexError
+                When the analysis for the specified category name could not be found, then an IndexError is raised.
+                When the clustering with the specified name could not be found, then an IndexError is raised.
+                When the embedding with the specified name could not be found, then an IndexError is raised.
+
+        Returns
+        -------
+            Analysis
+                Returns the analysis for the specified name.
+        """
+
+        # Checks if the analysis database has already been closed, if so, a ValueError is raised
+        if self.is_closed:
+            raise ValueError('The analysis database has already been closed.')
+
+        # Checks if the specified analysis exists, if not, then an IndexError is raised
+        if not self.has_analysis(category_name, clustering_name, embedding_name):
+            raise IndexError()
+
+        # Gets the analysis for the specified name, cluster, and embedding
+        analysis = self.analysis_file[category_name]
+        clustering = analysis['cluster'][clustering_name]
+        embedding = analysis['embedding'][embedding_name]
+        indices = analysis['index']
+
+        # Wraps the information of the analysis in an object and returns it
+        return Analysis(category_name, clustering_name, clustering, embedding_name, embedding, indices)
 
     def close(self):
         """Closes the analysis database."""
@@ -610,6 +676,45 @@ class AnalysisDatabase:
         """Destructs the analysis database."""
 
         self.close()
+
+
+class Analysis:
+    """Represents an analysis of multiple attributions."""
+
+    def __init__(self, category_name, clustering_name, clustering, embedding_name, embedding, indices):
+        """
+        Initializes a new Analysis instance.
+
+        Parameters
+        ----------
+            category_name: str
+                The name of the category for which the analysis was performed. Each analysis was performed for a certain
+                subset of the attributions, in most cases this subset will be defined by the label of dataset samples of
+                the attributions. So the category name is the umbrella term for all the attributions that comprise the
+                analysis, which will, in most cases, be the name of the label.
+            clustering_name: str
+                On top of the embedding a clustering is performed. This clustering name is the name of the clustering
+                that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
+                most likely k-means with different k's).
+            clustering: numpy.ndarray
+                The clustering, which is an array that contains for each attribution, that is part of the analysis, the
+                number of the cluster to which is belongs.
+            embedding_name: str
+                The name of the embedding that is to be retrieved. This will most likely be "spectral" for spectral
+                embeddings and "tsne" for a T-SNE embedding.
+            embedding: numpy.ndarray
+                The embedding, which contains the embedding vector for all the attributions, that are part of the
+                analysis.
+            indices: numpy.ndarray
+                Contains a list of the indices of the attributions that correspond to the embeddings and cluster points.
+        """
+
+        self.category_name = category_name
+        self.clustering_name = clustering_name
+        self.clustering = clustering
+        self.embedding_name = embedding_name
+        self.embedding = embedding
+        self.indices = indices
 
 
 class Hdf5Dataset:

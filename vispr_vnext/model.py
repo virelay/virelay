@@ -188,8 +188,8 @@ class AttributionDatabase:
         ------
             ValueError
                 If the attribution database has already been closed, then a ValueError is raised.
-            IndexError
-                When the no attribution with the specified index exists, then an IndexError is raised.
+            LookupError
+                When the no attribution with the specified index exists, then an LookupError is raised.
 
         Returns
         -------
@@ -201,17 +201,14 @@ class AttributionDatabase:
         if self.is_closed:
             raise ValueError('The attribution database has already been closed.')
 
-        # Checks if the specified attribution exists, if not, then an IndexError is raised
+        # Checks if the specified attribution exists, if not, then an LookupError is raised
         if not self.has_attribution(index):
-            raise IndexError()
+            raise LookupError('No attribution with the index {0} could be found.'.format(index))
 
         # Extracts the information about the sample from the dataset
         attribution_data = self.attribution_file['attribution'][index]
         attribution_label_reference = self.attribution_file['label'][index]
-        if self.is_multi_label:
-            attribution_labels = self.label_map.get_labels_from_n_hot_vector(attribution_label_reference)
-        else:
-            attribution_labels = [self.label_map.get_label_from_index(attribution_label_reference)]
+        attribution_labels = self.label_map.get_labels(attribution_label_reference)
         attribution_prediction = self.attribution_file['prediction'][index]
 
         # Wraps the attribution in an object and returns it
@@ -249,8 +246,9 @@ class Attribution:
                 The index of the attribution, which is the index of the sample for which the attribution was created.
             data: numpy.ndarray
                 The attribution data, which is a raw heatmap.
-            labels: list
-                A list of the ground truth labels of the sample for which the attribution was created.
+            labels: str or list
+                The ground truth label or a list of the ground truth labels of the sample for which the attribution was
+                created.
             prediction: numpy.ndarray
                 The original output of the model.
         """
@@ -258,6 +256,8 @@ class Attribution:
         # Stores the parameters for later use
         self.index = index
         self.data = data
+        if not isinstance(labels, list):
+            labels = [labels]
         self.labels = labels
         self.prediction = prediction
 
@@ -554,11 +554,6 @@ class AnalysisDatabase:
                 The path to the file that contains the analysis database.
             label_map: LabelMap
                 The label map, which contains a mapping between the index of the labels and their human-readable names.
-
-        Raises
-        ------
-            ValueError
-                If the specified analysis method is unknown, a ValueError is raised.
         """
 
         # Initializes some class members
@@ -716,10 +711,9 @@ class AnalysisDatabase:
         ------
             ValueError
                 If the analysis database has already been closed, then a ValueError is raised.
-            IndexError
-                When the analysis for the specified category name could not be found, then an IndexError is raised.
-                When the clustering with the specified name could not be found, then an IndexError is raised.
-                When the embedding with the specified name could not be found, then an IndexError is raised.
+            LookupError
+                When the analysis for the specified category name, clustering name, and embedding name could not be
+                found, then a LookupError is raised.
 
         Returns
         -------
@@ -731,9 +725,15 @@ class AnalysisDatabase:
         if self.is_closed:
             raise ValueError('The analysis database has already been closed.')
 
-        # Checks if the specified analysis exists, if not, then an IndexError is raised
+        # Checks if the specified analysis exists, if not, then an LookupError is raised
         if not self.has_analysis(category_name, clustering_name, embedding_name):
-            raise IndexError()
+            raise LookupError(
+                'No analysis for category "{0}", clustering "{1}", and embedding "{2}" could be found.'.format(
+                    category_name,
+                    clustering_name,
+                    embedding_name
+                )
+            )
 
         # Gets the analysis for the specified name, cluster, and embedding
         analysis = self.analysis_file[category_name]
@@ -844,8 +844,10 @@ class Hdf5Dataset:
 
         Raises
         ------
-            IndexError
-                When the specified index is out of range, a IndexError is raised.
+            ValueError
+                When the dataset has already been closed, then a ValueError is raised.
+            LookupError
+                When the specified index is out of range, a LookupError is raised.
 
         Returns
         -------
@@ -859,15 +861,12 @@ class Hdf5Dataset:
 
         # Checks if the index is out of range
         if index >= len(self.dataset_file['index']):
-            raise IndexError()
+            raise LookupError('No sample with the index {0} could be found.'.format(index))
 
         # Extracts the information about the sample from the dataset
         sample_data = self.dataset_file['data'][index]
         sample_label_reference = self.dataset_file['label'][index]
-        if self.is_multi_label:
-            sample_labels = self.label_map.get_label_from_n_hot_vector(sample_label_reference)
-        else:
-            sample_labels = [self.label_map.get_label_from_index(sample_label_reference)]
+        sample_labels = self.label_map.get_labels(sample_label_reference)
 
         # Wraps the sample in an object and returns it
         return Sample(index, sample_data, sample_labels)
@@ -883,8 +882,8 @@ class Hdf5Dataset:
 
         Raises
         ------
-            IndexError
-                When the specified index is out of range, a IndexError is raised.
+            LookupError
+                When the specified index is out of range, a LookupError is raised.
 
         Returns
         -------
@@ -984,8 +983,12 @@ class ImageDirectoryDataset:
 
         Raises
         ------
-            IndexError
-                When the specified index is out of range, a IndexError is raised.
+            ValueError
+                If the dataset has already been closed, then a ValueError is raised.
+            LookupError
+                When the specified index is out of range, a LookupError is raised.
+                If the label for the retrieved sample could not be determined from the label lookup, then a LookupError
+                is raised
 
         Returns
         -------
@@ -998,19 +1001,23 @@ class ImageDirectoryDataset:
             raise ValueError('The dataset is already closed.')
 
         # Gets the path to the sample file
+        if index >= len(self.sample_paths):
+            raise LookupError('No sample with the index {0} could be found.'.format(index))
         sample_path = self.sample_paths[index]
 
         # Determines the label of the sample by parsing the path
+        label_reference = None
         if self.label_index_regex is not None:
             match = re.match(self.label_index_regex, sample_path)
             if match:
-                label_index = match.groups()[0]
-                label = self.label_map.get_label_from_index(label_index)
+                label_reference = match.groups()[0]
         else:
             match = re.match(self.label_word_net_id_regex, sample_path)
             if match:
-                word_net_id = match.groups()[0]
-                label = self.label_map.get_label_from_word_net_id(word_net_id)
+                label_reference = match.groups()[0]
+        if label_reference is None:
+            raise LookupError('The label for the sample could not be determined based on the label map.')
+        label = self.label_map.get_labels(label_reference)
 
         # Loads the image from file
         image = Image.open(sample_path)
@@ -1030,8 +1037,8 @@ class ImageDirectoryDataset:
 
         Raises
         ------
-            IndexError
-                When the specified index is out of range, a IndexError is raised.
+            LookupError
+                When the specified index is out of range, a LookupError is raised.
 
         Returns
         -------
@@ -1088,14 +1095,15 @@ class Sample:
                 The index of the sample within the dataset.
             data: numpy.ndarray
                 The data that represents the sample.
-            labels: list
-                A list of all the labels that the sample has (in a single-label scenario, this list always contains one
-                element).
+            labels: str or list
+                The label or a list of all the labels that the sample has.
         """
 
         # Stores the arguments for later use
         self.index = index
         self.data = data
+        if not isinstance(labels, list):
+            labels = [labels]
         self.labels = labels
 
         # Images may come from different sources, e.g. in PyTorch the ordering of the axes is Channels x Width x Height,
@@ -1147,6 +1155,39 @@ class LabelMap:
             for label in json.load(label_map_file):
                 self.labels.append(Label(label['index'], label['word_net_id'], label['name']))
 
+    def get_labels(self, reference):
+        """
+        Retrieves the human-readable names of the labels that match the specified reference. The reference may either be
+        an index, a n-hot encoded vector, or a WordNet ID, the method will figure out which it is and retrieve the
+        correct labels.
+
+        Parameters
+        ----------
+            reference: int or str or numpy.ndarray
+                The reference for which all matching labels are to be retrieved. This can either be an index, a n-hot
+                encoded vector, or a WordNet ID.
+
+        Raises
+        ------
+            LookupError
+                When no labels for the specified reference could be found (or one or more in case of a n-hot vector),
+                then a LookupError is raised.
+
+        Returns
+        -------
+            str or list of str
+                Returns the human-readable name or a list of all the human-readable names of the labels that matched the
+                specified reference.
+        """
+
+        if isinstance(reference, numpy.ndarray):
+            return self.get_labels_from_n_hot_vector(reference)
+        if isinstance(reference, int):
+            return self.get_label_from_index(reference)
+        if isinstance(reference, str):
+            return self.get_label_from_word_net_id(reference)
+        raise LookupError('No labels for the specified reference "{0}" could be found.'.format(reference))
+
     def get_label_from_index(self, index):
         """
         Retrieves the human-readable name of the label with the specified index.
@@ -1158,8 +1199,8 @@ class LabelMap:
 
         Raises
         ------
-            ValueError
-                If the specified index does not exist, then a ValueError is raised.
+            LookupError
+                If the specified index does not exist, then a LookupError is raised.
 
         Returns
         -------
@@ -1170,7 +1211,7 @@ class LabelMap:
         for label in self.labels:
             if label.index == index:
                 return label.name
-        raise ValueError('No label with the specified index {0} could be found.'.format(index))
+        raise LookupError('No label with the specified index {0} could be found.'.format(index))
 
     def get_labels_from_n_hot_vector(self, n_hot_vector):
         """
@@ -1182,14 +1223,23 @@ class LabelMap:
                 A n-hot encoded vector, where the indices are the label indices and the values are True/1 when the label
                 is present and False/0 when the label is not present.
 
+        Raises
+        ------
+            LookupError
+                If the length of the n-hot encoded vector is greater than the number of labels (that is there are
+                indices for which there are no labels), then a LookupError is raised.
+
         Returns
         -------
-            list
+            list of str
                 Returns a list of all the labels that are specified by the n-hot encoded vector.
         """
 
-        for index in numpy.argwhere(n_hot_vector):
-            yield self.get_label_from_index(index[0])
+        try:
+            for index in numpy.argwhere(n_hot_vector):
+                yield self.get_label_from_index(index[0])
+        except LookupError:
+            raise LookupError('One or more labels for the n-hot encoded vector do not exist.')
 
     def get_label_from_word_net_id(self, word_net_id):
         """
@@ -1202,8 +1252,8 @@ class LabelMap:
 
         Raises
         ------
-            ValueError
-                If the specified WordNet ID does not exist, then a ValueError is raised.
+            LookupError
+                If the specified WordNet ID does not exist, then a LookupError is raised.
 
         Returns
         -------
@@ -1214,7 +1264,7 @@ class LabelMap:
         for label in self.labels:
             if label.word_net_id == word_net_id:
                 return label.name
-        raise ValueError('No label with the specified WordNet ID {0} could be found.'.format(word_net_id))
+        raise LookupError('No label with the specified WordNet ID "{0}" could be found.'.format(word_net_id))
 
 
 class Label:

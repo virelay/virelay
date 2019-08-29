@@ -1298,7 +1298,6 @@ class Workspace:
 
         self.is_closed = False
         self.projects = []
-        self.current_project = None
 
     def add_project(self, path):
         """
@@ -1319,8 +1318,6 @@ class Workspace:
             raise ValueError('The workspace is already closed.')
 
         self.projects.append(Project(path))
-        if self.current_project is None:
-            self.current_project = self.projects[0]
 
     def get_project_names(self):
         """
@@ -1343,51 +1340,40 @@ class Workspace:
         for project in self.projects:
             yield project.name
 
-    def select_project(self, name):
+    def get_project(self, name):
         """
-        Selects the current project by name.
+        Retrieves the project with the specified name
 
         Parameters
         ----------
             name: str
-                The name of the project that is to be selected as the current project.
+                The name of the project that is to be retrieved.
 
         Raises
         ------
             ValueError
                 If the workspace is already closed, a ValueError is raised.
-                If the project with the specified name could not be found, then a ValueError is raised.
+            LookupError
+                If the project with the specified name could not be found, then a LookupError is raised.
 
         Returns
         -------
             Project
-                Returns the selected project.
+                Returns the project with the specified name.
         """
 
-        # If the workspace is closed, then no projects can be selected
+        # If the workspace is closed, then a ValueError is raised
         if self.is_closed:
             raise ValueError('The workspace is already closed.')
 
-        # Searches for the project that is to be selected and selects it
+        # Searches for the project with the specified name and returns it if it was found
         for project in self.projects:
             if project.name == name:
                 self.current_project = project
                 return project
 
-        # If a project with the specified name could not be found, then an exception is raised
-        raise ValueError('The project with the name "{0}" could not be found.'.format(name))
-
-    def get_current_project(self):
-        """
-        Retrieves the current selected project.
-
-        Returns
-        -------
-            Project
-                Returns the currently selected project.
-        """
-
-        return self.current_project
+        # If no project with the specified name could not be found, then an exception is raised
+        raise LookupError('The project with the name "{0}" could not be found.'.format(name))
 
     def close(self):
         """Closes the workspace and all projects within it."""
@@ -1395,7 +1381,6 @@ class Workspace:
         if not self.is_closed:
             for project in self.projects:
                 project.close()
-            self.current_project = None
             self.is_closed = True
 
     def __del__(self):

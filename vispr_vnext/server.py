@@ -1,5 +1,8 @@
 """Represents the server of VISPR, which serves the website and contains the RESTful API."""
 
+import os
+import logging
+
 import flask
 
 
@@ -39,6 +42,13 @@ class Server:
                 Determines whether the application should run in debug mode or not. Defaults to False.
         """
 
+        # If the application is not run in debug mode, then all FLASK and Werkzeug logs are suppressed to make the
+        # console output a lot cleaner
+        if not debug:
+            logging.getLogger('werkzeug').disabled = True
+            os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+
+        # Starts the FLASK application
         self.app.run(host, port, debug)
 
     def get_projects(self):

@@ -24,6 +24,29 @@ class Application:
             nargs='+',
             help='The project file that is to be loaded into the workspace. Multiple project files can be specified.'
         )
+        self.argument_parser.add_argument(
+            '-H',
+            '--host',
+            dest='host',
+            type=str,
+            default='localhost',
+            help='The name or IP address at which the server should run. Defaults to "localhost".'
+        )
+        self.argument_parser.add_argument(
+            '-p',
+            '--port',
+            dest='port',
+            type=int,
+            default=8080,
+            help='The port at which the server should run. Defaults to 8080.'
+        )
+        self.argument_parser.add_argument(
+            '-d',
+            '--debug',
+            dest='debug',
+            action='store_true',
+            help='Determines whether the application is run in debug mode.'
+        )
 
         # Initializes the workspace, which will contain all the loaded projects
         self.workspace = Workspace()
@@ -45,7 +68,7 @@ class Application:
 
         # Creates the FLASK server, which serves the frontend website as well as the RESTful API
         server = Server(self.workspace)
-        server.run()
+        server.run(arguments.host, arguments.port, arguments.debug)
 
     def shutdown(self):
         """Is invoked, when the application is shut down. Cleans up all resources acquired."""

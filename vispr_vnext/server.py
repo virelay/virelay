@@ -26,7 +26,7 @@ class Server:
         self.app = flask.Flask('VISPR')
 
         # Registers the routes with the FLASK application
-        self.app.add_url_rule('/api/projects', 'get_projects', self.get_projects)
+        self.app.add_url_rule('/api/workspace', 'get_workspace', self.get_workspace)
 
     def run(self, host='localhost', port=8080, debug=False):
         """
@@ -51,9 +51,9 @@ class Server:
         # Starts the FLASK application
         self.app.run(host, port, debug)
 
-    def get_projects(self):
+    def get_workspace(self):
         """
-        Retrieves the projects of the workspace.
+        Retrieves all the projects and their respective information from the workspace.
 
         Returns
         -------
@@ -63,9 +63,22 @@ class Server:
 
         projects = []
         for project_id, project_name in enumerate(self.workspace.get_project_names()):
-            projects.append({
+            project = self.workspace.get_project(project_name)
+            project_data = {
                 'id': project_id,
-                'name': project_name
-            })
+                'name': project_name,
+                'model': project.model,
+                'dataset': project.dataset.name,
+                'analysisMethods': []
+            }
+            for analysis_method_id, analysis_method_name in enumerate(project.get_analysis_methods()):
+                project_data['analysisMethods'].append({
+                    'id': analysis_method_id,
+                    'name': analysis_method_name,
+                    'categories': project.get_category_names_of_analysis_method(analysis_method_name),
+                    'clusterings': project.get_clustering_names_from_analysis_method(analysis_method_name),
+                    'embeddings': project.get_embedding_names_from_analysis_method(analysis_method_name)
+                })
+            projects.append(project_data)
 
         return flask.jsonify(projects)

@@ -99,6 +99,99 @@ class Project:
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
 
+    def get_analysis_methods(self):
+        """
+        Retrieves the names of all the analysis methods that are in this project.
+
+        Returns
+        -------
+            list of str
+                Returns a list of the names of the all the analysis methods in this project.
+        """
+
+        return list(self.analyses.keys())
+
+    def get_category_names_of_analysis_method(self, analysis_method):
+        """
+        Retrieves the names of the categories that are in the analyses of the specified analysis method.
+
+        Parameter
+        ---------
+            analysis_method: str
+                The name of the analysis method for which the categories are to be retrieved.
+
+        Raises
+        ------
+            LookupError
+                If the specified analysis method does not exist, then a LookupError is raised.
+
+        Returns
+        -------
+            list of str
+                Returns a list of the names of the categories.
+        """
+
+        if analysis_method not in self.analyses:
+            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+
+        categories = []
+        for analysis in self.analyses[analysis_method]:
+            for category_name in analysis.get_category_names():
+                if category_name not in categories:
+                    categories.append(category_name)
+
+        return categories
+
+    def get_clustering_names_from_analysis_method(self, analysis_method):
+        """
+        Retrieves the names of the clustering methods that are in the analyses of the specified analysis method.
+
+        Parameter
+        ---------
+            analysis_method: str
+                The name of the analysis method for which the clusterings are to be retrieved.
+
+        Raises
+        ------
+            LookupError
+                If the specified analysis method does not exist, then a LookupError is raised.
+
+        Returns
+        -------
+            list of str
+                Returns a list of the names of the clusterings.
+        """
+
+        if analysis_method not in self.analyses:
+            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+
+        return self.analyses[analysis_method][0].get_clustering_names()
+
+    def get_embedding_names_from_analysis_method(self, analysis_method):
+        """
+        Retrieves the names of the embedding methods that are in the analyses of the specified analysis method.
+
+        Parameter
+        ---------
+            analysis_method: str
+                The name of the analysis method for which the embeddings are to be retrieved.
+
+        Raises
+        ------
+            LookupError
+                If the specified analysis method does not exist, then a LookupError is raised.
+
+        Returns
+        -------
+            list of str
+                Returns a list of the names of the embeddings.
+        """
+
+        if analysis_method not in self.analyses:
+            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+
+        return self.analyses[analysis_method][0].get_embedding_names()
+
     def close(self):
         """Closes the project, its dataset, and all of its sources."""
 
@@ -1369,7 +1462,6 @@ class Workspace:
         # Searches for the project with the specified name and returns it if it was found
         for project in self.projects:
             if project.name == name:
-                self.current_project = project
                 return project
 
         # If no project with the specified name could not be found, then an exception is raised

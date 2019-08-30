@@ -99,6 +99,54 @@ class Project:
             except yaml.YAMLError:
                 raise ValueError('An error occurred while loading the project file.')
 
+    def get_sample(self, index):
+        """
+        Retrieves the sample from the dataset with the specified index.
+
+        Parameters
+        ----------
+            index: int
+                The index of the dataset sample.
+
+        Raises
+        ------
+            LookupError
+                If no dataset sample with the specified index could be found, then a LookupError is raised.
+
+        Returns
+        -------
+            Sample
+                Returns the dataset sample with the specified index.
+        """
+
+        return self.dataset.get_sample(index)
+
+    def get_attribution(self, index):
+        """
+        Retrieves the attribution for the specified index.
+
+        Parameters
+        ----------
+            index: int
+                The index of the attribution.
+
+        Raises
+        ------
+            LookupError
+                If no attribution with the specified index could be found, then a LookupError is raised
+
+        Returns
+        -------
+            Attribution
+                Returns the attribution with the specified index.
+        """
+
+        for attribution_database in self.attributions:
+            if attribution_database.has_attribution(index):
+                return attribution_database.get_attribution(index)
+
+        raise LookupError('Not attribution with the specified index {0} could be found.'.format(index))
+
     def get_analysis_methods(self):
         """
         Retrieves the names of all the analysis methods that are in this project.
@@ -317,7 +365,9 @@ class AttributionDatabase:
         if self.is_closed:
             raise ValueError('The analysis database has already been closed.')
 
-        return index in self.attribution_file['index']
+        if 'index' in self.attribution_file.keys():
+            return index in self.attribution_file['index']
+        return index <= self.attribution_file['attribution'].shape[0]
 
     def get_attribution(self, index):
         """
@@ -1354,6 +1404,8 @@ class LabelMap:
             return self.get_labels_from_n_hot_vector(reference)
         if isinstance(reference, int):
             return self.get_label_from_index(reference)
+        if numpy.issubdtype(type(reference), numpy.integer):
+            return self.get_label_from_index(reference.item())
         if isinstance(reference, str):
             return self.get_label_from_word_net_id(reference)
         raise LookupError('No labels for the specified reference "{0}" could be found.'.format(reference))

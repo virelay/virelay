@@ -41,6 +41,16 @@ class Server:
             'get_analysis',
             self.get_analysis
         )
+        self.app.add_url_rule(
+            '/api/projects/<int:project_id>/attributions/<int:attribution_index>',
+            'get_attribution',
+            self.get_attribution
+        )
+        self.app.add_url_rule(
+            '/api/projects/<int:project_id>/dataset/<int:sample_index>',
+            'get_sample',
+            self.get_sample
+        )
 
     def run(self, host='localhost', port=8080):
         """
@@ -97,6 +107,78 @@ class Server:
             projects.append(project_data)
 
         return self.http_ok(projects)
+
+    def get_sample(self, project_id, sample_index):
+        """
+        Retrieves the dataset sample with the specified index from the specified project.
+
+        Parameters
+        ----------
+            project_id: int
+                The ID of the project from which the dataset sample is to be retrieved.
+            sample_index: int
+                The index of the dataset sample that is to be retrieved.
+
+        Returns
+        -------
+            Returns an HTTP 200 OK response with a JSON string as content, which contains the data of the dataset
+            sample.
+            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+            If the specified dataset sample does not exist, then an HTTP 404 Not Found response is returned.
+        """
+
+        # Checks if a project with the specified ID exists
+        if project_id >= len(self.workspace.projects):
+            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+        project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
+
+        # Retrieves the dataset sample with the specified index
+        try:
+            sample = project.get_sample(sample_index)
+        except LookupError as error:
+            return self.http_not_found(error)
+
+        # Returns the retrieved dataset sample
+        return self.http_ok({
+            'index': sample.index,
+            'labels': sample.labels
+        })
+
+    def get_attribution(self, project_id, attribution_index):
+        """
+        Retrieves the attribution with the specified index from the specified project.
+
+        Parameters
+        ----------
+            project_id: int
+                The ID of the project from which the attribution is to be retrieved.
+            attribution_index: int
+                The index of the attribution that is to be retrieved.
+
+        Returns
+        -------
+            Returns an HTTP 200 OK response with a JSON string as content, which contains the data of the attribution.
+            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+            If the specified attribution does not exist, then an HTTP 404 Not Found response is returned.
+        """
+
+        # Checks if a project with the specified ID exists
+        if project_id >= len(self.workspace.projects):
+            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+        project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
+
+        # Retrieves the attribution with the specified index
+        try:
+            attribution = project.get_attribution(attribution_index)
+        except LookupError as error:
+            return self.http_not_found(error)
+
+        # Returns the retrieved attribution
+        return self.http_ok({
+            'index': attribution.index,
+            'labels': attribution.labels,
+            'prediction': numpy.array(attribution.prediction).tolist()
+        })
 
     def get_analysis(self, project_id, analysis_method_name):
         """

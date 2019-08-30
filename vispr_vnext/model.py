@@ -926,7 +926,7 @@ class Analysis:
             embedding_name,
             embedding,
             indices
-        ):
+    ):
         """
         Initializes a new Analysis instance.
 

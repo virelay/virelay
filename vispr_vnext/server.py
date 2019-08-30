@@ -122,16 +122,19 @@ class Server:
                 HTTP 400 Bad Request response is returned.
         """
 
+        # Checks if a project with the specified ID exists
         if project_id >= len(self.workspace.projects):
             return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
         project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
 
+        # Checks if the specified analysis method exists
         analysis_method_name = analysis_method_name.replace('-', '_')
         if analysis_method_name not in project.get_analysis_methods():
             return self.http_not_found('The specified analysis method "{0}" could not be found.'.format(
                 analysis_method_name.replace('_', '-')
             ))
 
+        # Retrieves the other parameters from the URL, if one is missing, an HTTP Bad Request response is returned
         category_name = flask.request.args.get('category')
         if category_name is None:
             return self.http_bad_request('No category was specified.')
@@ -142,11 +145,16 @@ class Server:
         if embedding_name is None:
             return self.http_bad_request('No embedding was specified.')
 
+        # Gets the specified analysis
         try:
             analysis = project.get_analysis(analysis_method_name, category_name, clustering_name, embedding_name)
         except LookupError as error:
             return self.http_not_found(error)
 
+        # The analysis consists mainly of three lists: one that contains the embedding array, one that contains the
+        # index of the attribution to which the analysis belongs, and one that contains the cluster of the embeddings,
+        # this may be convenient in Python, but it is not in JavaScript, so these three lists are combined into a single
+        # list containing the embeddings as objects
         clustering = numpy.array(analysis.clustering).tolist()
         embedding = numpy.array(analysis.embedding).tolist()
         indices = numpy.array(analysis.indices).tolist()
@@ -154,10 +162,11 @@ class Server:
         for index, sample_embedding in enumerate(embedding):
             zipped_embedding.append({
                 'cluster': clustering[index],
-                'sampleIndex': indices[index],
-                'sampleEmbedding': sample_embedding
+                'attributionIndex': indices[index],
+                'value': sample_embedding
             })
 
+        # Returns the retrieved analysis
         return self.http_ok({
             'categoryName': analysis.category_name,
             'humanReadableCategoryName': analysis.human_readable_category_name,

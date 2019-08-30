@@ -42,8 +42,8 @@ class Application:
         )
         self.argument_parser.add_argument(
             '-d',
-            '--debug',
-            dest='debug',
+            '--debug-mode',
+            dest='debug_mode',
             action='store_true',
             help='Determines whether the application is run in debug mode.'
         )
@@ -67,8 +67,8 @@ class Application:
         atexit.register(self.shutdown)
 
         # Creates the FLASK server, which serves the frontend website as well as the RESTful API
-        server = Server(self.workspace)
-        server.run(arguments.host, arguments.port, arguments.debug)
+        server = Server(self.workspace, arguments.debug_mode)
+        server.run(arguments.host, arguments.port)
 
     def shutdown(self):
         """Is invoked, when the application is shut down. Cleans up all resources acquired."""

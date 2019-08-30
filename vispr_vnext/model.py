@@ -111,7 +111,7 @@ class Project:
 
         return list(self.analyses.keys())
 
-    def get_category_names_of_analysis_method(self, analysis_method):
+    def get_analysis_category_names(self, analysis_method):
         """
         Retrieves the names of the categories that are in the analyses of the specified analysis method.
 
@@ -142,7 +142,7 @@ class Project:
 
         return categories
 
-    def get_clustering_names_from_analysis_method(self, analysis_method):
+    def get_analysis_clustering_names(self, analysis_method):
         """
         Retrieves the names of the clustering methods that are in the analyses of the specified analysis method.
 
@@ -167,7 +167,7 @@ class Project:
 
         return self.analyses[analysis_method][0].get_clustering_names()
 
-    def get_embedding_names_from_analysis_method(self, analysis_method):
+    def get_analysis_embedding_names(self, analysis_method):
         """
         Retrieves the names of the embedding methods that are in the analyses of the specified analysis method.
 
@@ -191,6 +191,57 @@ class Project:
             raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
 
         return self.analyses[analysis_method][0].get_embedding_names()
+
+    def get_analysis(self, analysis_method, category_name, clustering_name, embedding_name):
+        """
+        Retrieves a complete analysis.
+
+        Parameters
+        ----------
+            analysis_method: str
+                The name of the analysis method from which the analysis is to be retrieved.
+            category_name: str
+                The name of the category for which the analysis was performed. Each analysis was performed for a certain
+                subset of the attributions, in most cases this subset will be defined by the label of dataset samples of
+                the attributions. So the category name is the umbrella term for all the attributions that comprise the
+                analysis, which will, in most cases, be the name of the label.
+            clustering_name: str
+                On top of the embedding a clustering is performed. This clustering name is the name of the clustering
+                that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
+                most likely k-means with different k's).
+            embedding_name: str
+                The name of the embedding that is to be retrieved. This is the name of the method that was used to
+                create the embedding. Most likely this will be "spectral" for spectral embeddings and "tsne" for a
+                T-SNE embedding.
+
+        Raises
+        ------
+            ValueError
+                If the analysis database has already been closed, then a ValueError is raised.
+            LookupError
+                When the analysis for the specified analysis method, category name, clustering name, and embedding name
+                could not be found, then a LookupError is raised.
+
+        Returns
+        -------
+            Analysis
+                Returns the analysis for the specified name.
+        """
+
+        if analysis_method not in self.analyses:
+            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+
+        for analysis_database in self.analyses[analysis_method]:
+            if analysis_database.has_analysis(category_name, clustering_name, embedding_name):
+                return analysis_database.get_analysis(category_name, clustering_name, embedding_name)
+
+        raise LookupError(
+            'No analysis in the category "{0}" with the clustering "{1}" and embedding "{2}" could be found.'.format(
+                category_name,
+                clustering_name,
+                embedding_name
+            )
+        )
 
     def close(self):
         """Closes the project, its dataset, and all of its sources."""
@@ -235,7 +286,7 @@ class AttributionDatabase:
         self.label_map = label_map
 
         # Loads the attribution files
-        self.attribution_file = h5py.File(self.attribution_path)
+        self.attribution_file = h5py.File(self.attribution_path, 'r')
 
         # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then
         # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
@@ -658,7 +709,7 @@ class AnalysisDatabase:
         self.label_map = label_map
 
         # Loads the analysis file
-        self.analysis_file = h5py.File(self.analysis_path)
+        self.analysis_file = h5py.File(self.analysis_path, 'r')
 
     def get_category_names(self):
         """
@@ -918,7 +969,7 @@ class Hdf5Dataset:
         self.label_map = label_map
 
         # Loads the dataset itself
-        self.dataset_file = h5py.File(self.path)
+        self.dataset_file = h5py.File(self.path, 'r')
 
         # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then
         # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
@@ -1329,8 +1380,10 @@ class LabelMap:
         """
 
         try:
+            labels = []
             for index in numpy.argwhere(n_hot_vector):
-                yield self.get_label_from_index(index[0])
+                labels.append(self.get_label_from_index(index[0]))
+            return labels
         except LookupError:
             raise LookupError('One or more labels for the n-hot encoded vector do not exist.')
 
@@ -1430,8 +1483,10 @@ class Workspace:
         if self.is_closed:
             raise ValueError('The workspace is already closed.')
 
+        project_names = []
         for project in self.projects:
-            yield project.name
+            project_names.append(project.name)
+        return project_names
 
     def get_project(self, name):
         """

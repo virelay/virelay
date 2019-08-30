@@ -147,13 +147,23 @@ class Server:
         except LookupError as error:
             return self.http_not_found(error)
 
+        clustering = numpy.array(analysis.clustering).tolist()
+        embedding = numpy.array(analysis.embedding).tolist()
+        indices = numpy.array(analysis.indices).tolist()
+        zipped_embedding = []
+        for index, sample_embedding in enumerate(embedding):
+            zipped_embedding.append({
+                'cluster': clustering[index],
+                'sampleIndex': indices[index],
+                'sampleEmbedding': sample_embedding
+            })
+
         return self.http_ok({
             'categoryName': analysis.category_name,
+            'humanReadableCategoryName': analysis.human_readable_category_name,
             'clusteringName': analysis.clustering_name,
-            'clustering': numpy.array(analysis.clustering).tolist(),
             'embeddingName': analysis.embedding_name,
-            'embedding': numpy.array(analysis.embedding).tolist(),
-            'indices': numpy.array(analysis.indices).tolist()
+            'embedding': zipped_embedding
         })
 
     def http_ok(self, content):

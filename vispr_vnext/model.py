@@ -886,7 +886,19 @@ class AnalysisDatabase:
         indices = analysis['index']
 
         # Wraps the information of the analysis in an object and returns it
-        return Analysis(category_name, clustering_name, clustering, embedding_name, embedding, indices)
+        try:
+            human_readable_category_name = self.label_map.get_labels(category_name)
+        except LookupError:
+            human_readable_category_name = category_name
+        return Analysis(
+            category_name,
+            human_readable_category_name,
+            clustering_name,
+            clustering,
+            embedding_name,
+            embedding,
+            indices
+        )
 
     def close(self):
         """Closes the analysis database."""
@@ -905,7 +917,16 @@ class AnalysisDatabase:
 class Analysis:
     """Represents an analysis of multiple attributions."""
 
-    def __init__(self, category_name, clustering_name, clustering, embedding_name, embedding, indices):
+    def __init__(
+            self,
+            category_name,
+            human_readable_category_name,
+            clustering_name,
+            clustering,
+            embedding_name,
+            embedding,
+            indices
+        ):
         """
         Initializes a new Analysis instance.
 
@@ -916,6 +937,10 @@ class Analysis:
                 subset of the attributions, in most cases this subset will be defined by the label of dataset samples of
                 the attributions. So the category name is the umbrella term for all the attributions that comprise the
                 analysis, which will, in most cases, be the name of the label.
+            human_readable_category_name: str
+                A human readable version of the category name (since category names are usually label, this can be
+                the human-readable name of the label, if the category name is not a label, then the human-readable name
+                should be set to the category name itself).
             clustering_name: str
                 On top of the embedding a clustering is performed. This clustering name is the name of the clustering
                 that is to be retrieved (because usually the analysis contains multiple different clusterings, which are
@@ -935,6 +960,7 @@ class Analysis:
         """
 
         self.category_name = category_name
+        self.human_readable_category_name = human_readable_category_name
         self.clustering_name = clustering_name
         self.clustering = clustering
         self.embedding_name = embedding_name

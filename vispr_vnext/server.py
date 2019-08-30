@@ -253,8 +253,12 @@ class Server:
         except LookupError as error:
             return self.http_not_found(error)
 
+        # Gets the color map that is to be used to convert the raw attribution to a heatmap from the URL parameters, if
+        # none was specified, then it defaults to Black Fire-Red
+        color_map_name = flask.request.args.get('colorMap', 'black-fire-red')
+
         # Renders the heatmap and returns it
-        heatmap = attribution.render_heatmap('gray-red-1')
+        heatmap = attribution.render_heatmap(color_map_name)
         return self.send_image_file(heatmap)
 
     def get_analysis(self, project_id, analysis_method_name):

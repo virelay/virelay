@@ -418,7 +418,7 @@ class Server:
 
         image = Image.fromarray(image)
         in_memory_image_file = io.BytesIO()
-        image.save(in_memory_image_file, format='JPEG', quality=90)
+        image.save(in_memory_image_file, format='JPEG', quality=70)
         in_memory_image_file.seek(0)
         return flask.send_file(in_memory_image_file, mimetype='image/jpeg')
 

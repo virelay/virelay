@@ -39,16 +39,6 @@ class Server:
             self.get_workspace
         )
         self.app.add_url_rule(
-            '/api/projects/<int:project_id>/analyses/<string:analysis_method_name>',
-            'get_analysis',
-            self.get_analysis
-        )
-        self.app.add_url_rule(
-            '/api/projects/<int:project_id>/attributions/<int:attribution_index>',
-            'get_attribution',
-            self.get_attribution
-        )
-        self.app.add_url_rule(
             '/api/projects/<int:project_id>/dataset/<int:sample_index>',
             'get_sample',
             self.get_sample
@@ -57,6 +47,21 @@ class Server:
             '/api/projects/<int:project_id>/dataset/<int:sample_index>/image',
             'get_sample_image',
             self.get_sample_image
+        )
+        self.app.add_url_rule(
+            '/api/projects/<int:project_id>/attributions/<int:attribution_index>',
+            'get_attribution',
+            self.get_attribution
+        )
+        self.app.add_url_rule(
+            '/api/projects/<int:project_id>/attributions/<int:attribution_index>/heatmap',
+            'get_attribution_heatmap',
+            self.get_attribution_heatmap
+        )
+        self.app.add_url_rule(
+            '/api/projects/<int:project_id>/analyses/<string:analysis_method_name>',
+            'get_analysis',
+            self.get_analysis
         )
 
     def run(self, host='localhost', port=8080):
@@ -158,7 +163,7 @@ class Server:
         Parameters
         ----------
             project_id: int
-                The ID of the project from which the dataset sample for which the image is to be retrieved.
+                The ID of the project from which the dataset sample is to be retrieved.
             sample_index: int
                 The index of the dataset sample for which the image is to be retrieved.
 
@@ -181,11 +186,7 @@ class Server:
             return self.http_not_found(error)
 
         # Converts the NumPy array with the image data to a PIL image, encodes it as JPEG and returns it
-        image = Image.fromarray(sample.data)
-        in_memory_image_file = io.BytesIO()
-        image.save(in_memory_image_file, format='JPEG', quality=90)
-        in_memory_image_file.seek(0)
-        return flask.send_file(in_memory_image_file, mimetype='image/jpeg')
+        return self.send_image_file(sample.data)
 
     def get_attribution(self, project_id, attribution_index):
         """
@@ -222,6 +223,39 @@ class Server:
             'labels': attribution.labels,
             'prediction': numpy.array(attribution.prediction).tolist()
         })
+
+    def get_attribution_heatmap(self, project_id, attribution_index):
+        """
+        Renders a heatmap from the attribution with the specified index from the specified project.
+
+        Parameters
+        ----------
+            project_id: int
+                The ID of the project from which the attribution is to be retrieved.
+            attribution_index: int
+                The index of the attribution for which the heatmap is to be rendered.
+
+        Returns
+        -------
+            Returns an HTTP 200 OK response with the rendered heatmap image.
+            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+            If the specified attribution does not exist, then an HTTP 404 Not Found response is returned.
+        """
+
+        # Checks if a project with the specified ID exists
+        if project_id >= len(self.workspace.projects):
+            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+        project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
+
+        # Retrieves the attribution with the specified index
+        try:
+            attribution = project.get_attribution(attribution_index)
+        except LookupError as error:
+            return self.http_not_found(error)
+
+        # Renders the heatmap and returns it
+        heatmap = attribution.render_heatmap('gray-red-1')
+        return self.send_image_file(heatmap)
 
     def get_analysis(self, project_id, analysis_method_name):
         """
@@ -362,6 +396,27 @@ class Server:
         response = flask.jsonify({'errorMessage': str(error_message)})
         response.status_code = 404
         return response
+
+    def send_image_file(self, image):
+        """
+        Converts the image to a JPEG image and generates a response which sends the image to the client.
+
+        Parameters
+        ----------
+            image: numpy.ndarray
+                The image as a NumPy array that is to be send to the client.
+
+        Returns
+        -------
+            flask.Response
+                Returns a response, which contains the specified image as a JPEG encoded image file.
+        """
+
+        image = Image.fromarray(image)
+        in_memory_image_file = io.BytesIO()
+        image.save(in_memory_image_file, format='JPEG', quality=90)
+        in_memory_image_file.seek(0)
+        return flask.send_file(in_memory_image_file, mimetype='image/jpeg')
 
     def format_exception(self, exception):
         """

@@ -503,10 +503,14 @@ class Attribution:
         # Checks the name of the color map and renders the heatmap image accordingly, if the color map is not supported,
         # then an exception is raised
         if color_map in custom_color_maps:
-            return custom_color_maps[color_map](data)
-        if color_map in matplotlib_color_maps:
-            return Attribution.generate_heatmap_image_using_matplotlib(data, matplotlib_color_maps[color_map])
-        raise ValueError('The color map "{0}" is not supported.'.format(color_map))
+            heatmap_image = custom_color_maps[color_map](data)
+        elif color_map in matplotlib_color_maps:
+            heatmap_image = Attribution.generate_heatmap_image_using_matplotlib(data, matplotlib_color_maps[color_map])
+        else:
+            raise ValueError('The color map "{0}" is not supported.'.format(color_map))
+        heatmap_image *= 255.0
+        heatmap_image = heatmap_image.astype(numpy.uint8)
+        return heatmap_image
 
     @staticmethod
     def generate_heatmap_image_using_matplotlib(raw_heatmap, color_map_name):

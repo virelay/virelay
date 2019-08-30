@@ -3,6 +3,7 @@
 
 import os
 import re
+import math
 import json
 import glob
 
@@ -70,6 +71,10 @@ class Project:
                             os.path.join(working_directory, project['dataset']['path']),
                             project['dataset']['label_index_regex'],
                             project['dataset']['label_word_net_id_regex'],
+                            project['dataset']['input_width'],
+                            project['dataset']['input_height'],
+                            project['dataset']['down_sampling_method'],
+                            project['dataset']['up_sampling_method'],
                             self.label_map
                         )
                     else:
@@ -1159,7 +1164,18 @@ class ImageDirectoryDataset:
     represent the labels of the images.
     """
 
-    def __init__(self, name, path, label_index_regex, label_word_net_id_regex, label_map):
+    def __init__(
+            self,
+            name,
+            path,
+            label_index_regex,
+            label_word_net_id_regex,
+            input_width,
+            input_height,
+            down_sampling_method,
+            up_sampling_method,
+            label_map
+    ):
         """
         Initializes a new ImageDirectoryDataset instance.
 
@@ -1178,6 +1194,18 @@ class ImageDirectoryDataset:
                 A regular expression, which is used to parse the path of a sample for the WordNet ID. The sample index
                 must be captured in the first group. Can be None, but either label_index_regex or
                 label_word_net_id_regex must be specified.
+            input_width: int
+                The width of the input to the model. This is used to resize the dataset samples to the same size as the
+                the model expects its inputs to be.
+            input_height: int
+                The height of the input to the model. This is used to resize the dataset samples to the same size as the
+                the model expects its inputs to be.
+            down_sampling_method: str
+                The method that is to be used to down-sample images from the dataset that are larger than the input to
+                the model.
+            up_sampling_method: str
+                The method that is to be used to up-sample images from the dataset that are smaller than the input to
+                the model.
             label_map: LabelMap
                 The label map, which contains a mapping between the index of the labels and their human-readable names.
         """
@@ -1185,11 +1213,21 @@ class ImageDirectoryDataset:
         # Initializes some class members
         self.is_closed = False
 
+        # Validates the arguments
+        if down_sampling_method not in ['center_crop']:
+            raise ValueError('The down-sampling method "{0}" is not supported.'.format(down_sampling_method))
+        if up_sampling_method not in ['edge_repeat']:
+            raise ValueError('The up-sampling method "{0}" is not supported.'.format(up_sampling_method))
+
         # Stores the arguments for later reference
         self.name = name
         self.path = path
         self.label_index_regex = label_index_regex
         self.label_word_net_id_regex = label_word_net_id_regex
+        self.input_width = input_width
+        self.input_height = input_height
+        self.down_sampling_method = down_sampling_method
+        self.up_sampling_method = up_sampling_method
         self.label_map = label_map
 
         # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
@@ -1243,12 +1281,58 @@ class ImageDirectoryDataset:
             raise LookupError('The label for the sample could not be determined based on the label map.')
         label = self.label_map.get_labels(label_reference)
 
-        # Loads the image from file
+        # Loads the image from file and converts to a NumPy array
         image = Image.open(sample_path)
         image = numpy.array(image)
 
+        # Performs the re-sampling of the image (depending on whether it is smaller or larger than the target input
+        # size, different methods are used, which are specified in the project file)
+        image = self.re_sample_image(image)
+
         # Returns the sample
         return Sample(index, image, label)
+
+    def re_sample_image(self, image):
+        """
+        Re-samples an image based on the specified up-sampling and down-sampling methods.
+
+        Parameters
+        ----------
+            image: numpy.ndarray
+                The image that is to be re-sampled.
+
+        Returns
+        -------
+            numpy.ndarray
+                Returns the re-sampled image.
+        """
+
+        # If at least one of the image dimensions is smaller than the target size, then the image is first up-sampled
+        # (if for example the width is smaller than the target width but the height is larger, then the image is first
+        # up-sampled so that the width matched the target width, in the next step, the image will be down-sampled, so
+        # that the height also matches the target width)
+        width, height, _ = image.shape
+        if width < self.input_width or height < self.input_height:
+            horizontal_padding = max(0, self.input_width - width)
+            vertical_padding = max(0, self.input_height - height)
+            left_padding = math.ceil(float(horizontal_padding) / 2.0)
+            right_padding = math.floor(float(horizontal_padding) / 2.0)
+            top_padding = math.ceil(float(vertical_padding) / 2.0)
+            bottom_padding = math.floor(float(vertical_padding) / 2.0)
+            image = numpy.pad(image, ((left_padding, right_padding), (top_padding, bottom_padding), (0, 0)), 'edge')
+
+        # If at least one of the image dimensions is greater than the target size, then the image is down-sampled
+        if width > self.input_width or height > self.input_height:
+            horizontal_crop = max(0, width - self.input_width)
+            vertical_crop = max(0, height - self.input_height)
+            left_crop = math.ceil(float(horizontal_crop) / 2.0)
+            right_crop = math.floor(float(horizontal_crop) / 2.0)
+            top_crop = math.ceil(float(vertical_crop) / 2.0)
+            bottom_crop = math.floor(float(vertical_crop) / 2.0)
+            image = image[left_crop:self.input_width + right_crop, top_crop:self.input_height + bottom_crop, :]
+
+        # Returns the re-sampled image
+        return image
 
     def __getitem__(self, key):
         """

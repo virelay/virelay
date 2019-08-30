@@ -1,11 +1,13 @@
 """Represents the server of VISPR, which serves the website and contains the RESTful API."""
 
+import io
 import os
 import logging
 import traceback
 
 import numpy
 import flask
+from PIL import Image
 
 
 class Server:
@@ -50,6 +52,11 @@ class Server:
             '/api/projects/<int:project_id>/dataset/<int:sample_index>',
             'get_sample',
             self.get_sample
+        )
+        self.app.add_url_rule(
+            '/api/projects/<int:project_id>/dataset/<int:sample_index>/image',
+            'get_sample_image',
+            self.get_sample_image
         )
 
     def run(self, host='localhost', port=8080):
@@ -143,6 +150,42 @@ class Server:
             'index': sample.index,
             'labels': sample.labels
         })
+
+    def get_sample_image(self, project_id, sample_index):
+        """
+        Retrieves the image of the dataset with the specified index from the specified project.
+
+        Parameters
+        ----------
+            project_id: int
+                The ID of the project from which the dataset sample for which the image is to be retrieved.
+            sample_index: int
+                The index of the dataset sample for which the image is to be retrieved.
+
+        Returns
+        -------
+            Returns an HTTP 200 OK response with the image of the specified dataset sample as content.
+            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+            If the specified dataset sample does not exist, then an HTTP 404 Not Found response is returned.
+        """
+
+        # Checks if a project with the specified ID exists
+        if project_id >= len(self.workspace.projects):
+            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+        project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
+
+        # Retrieves the dataset sample with the specified index
+        try:
+            sample = project.get_sample(sample_index)
+        except LookupError as error:
+            return self.http_not_found(error)
+
+        # Converts the NumPy array with the image data to a PIL image, encodes it as JPEG and returns it
+        image = Image.fromarray(sample.data)
+        in_memory_image_file = io.BytesIO()
+        image.save(in_memory_image_file, format='JPEG', quality=90)
+        in_memory_image_file.seek(0)
+        return flask.send_file(in_memory_image_file, mimetype='image/jpeg')
 
     def get_attribution(self, project_id, attribution_index):
         """

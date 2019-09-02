@@ -4,9 +4,12 @@ import io
 import os
 import logging
 import traceback
+import threading
+import webbrowser
 
 import numpy
 import flask
+import flask_cors
 from PIL import Image
 
 from .image_processing import render_heatmap
@@ -27,9 +30,11 @@ class Server:
                 Determines whether the application should run in debug mode or not. Defaults to False. When the
                 application is in debug mode, then all FLASK and Werkzeug logs are printed to stdout, FLASK debugging is
                 activated (FLASK will print out the debugger PIN for attaching the debugger), and the automatic
-                reloading, when the Python files change is activated. Otherwise all these things will be deactivated. If
-                the application is to be debugged using Visual Studio Code (or any other IDE for that matter), then the
-                application must not be started in debug mode, because Visual Studio will create its own debugger.
+                reloading, when the Python files change is activated. Furthermore, the frontend of the application will
+                not be served via the. Otherwise all these things will be deactivated and the frontend of the
+                application is served via the FLASK server. If the application is to be debugged using Visual Studio
+                Code (or any other IDE for that matter), then the application must not be started in debug mode, because
+                Visual Studio will create its own debugger.
         """
 
         # Stores the arguments for later reference
@@ -52,7 +57,7 @@ class Server:
         # Creates the FLASK application
         self.app = flask.Flask('VISPR')
 
-        # Registers the routes with the FLASK application
+        # Registers the routes of the RESTful API with the FLASK application
         self.app.add_url_rule(
             '/api/workspace',
             'get_workspace',
@@ -94,6 +99,26 @@ class Server:
             self.get_color_map_preview
         )
 
+        # When the application is not in debug mode, then the Angular frontend is served via the static file serving
+        # feature in FLASK
+        if not self.is_in_debug_mode:
+            frontend_path = os.path.join(os.path.dirname(__file__), 'frontend/distribution')
+            self.app.add_url_rule(
+                '/',
+                'serve_frontend_index',
+                lambda: flask.send_file(os.path.join(frontend_path, 'index.html'))
+            )
+            self.app.add_url_rule(
+                '/favicon.ico',
+                'serve_frontend_favicon',
+                lambda: flask.send_file(os.path.join(frontend_path, 'favicon.ico'))
+            )
+            self.app.add_url_rule(
+                '/<string:file_name>.js',
+                'serve_frontend_javascript',
+                lambda file_name: flask.send_file(os.path.join(frontend_path, '{0}.js').format(file_name))
+            )
+
     def run(self, host='localhost', port=8080):
         """
         Starts the FLASK server and returns when the application has finished.
@@ -111,6 +136,18 @@ class Server:
         if not self.is_in_debug_mode:
             logging.getLogger('werkzeug').disabled = True
             os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+
+        # When the application is not in debug mode, then the browser is automatically opened upon application startup
+        # (the problem is, that the FLASK app run() method is blocking, so we cannot start the browser when the app is
+        # run, so we have to set a timer, which will run on a different thread and start the thread after the server,
+        # hopefully, has started)
+        if not self.is_in_debug_mode:
+            threading.Timer(1, lambda: webbrowser.open_new_tab('http://localhost:8080')).start()
+
+        # When the application is started in debug mode, then the frontend is not served from the same host and port,
+        # therefore CORS must be activated
+        if self.is_in_debug_mode:
+            flask_cors.CORS(self.app)
 
         # Starts the FLASK application
         self.app.auto_reload = self.is_in_debug_mode

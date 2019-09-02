@@ -9,6 +9,8 @@ import numpy
 import flask
 from PIL import Image
 
+from .image_processing import render_heatmap
+
 
 class Server:
     """Represents the server of VISPR, which encapsulates the website and the RESTful API."""
@@ -33,6 +35,19 @@ class Server:
         # Stores the arguments for later reference
         self.workspace = workspace
         self.is_in_debug_mode = is_in_debug_mode
+
+        # Initializes the class members
+        self.color_maps = {
+            'gray-red-1': 'Gray Red',
+            'gray-red-2': 'Gray Red 2',
+            'black-green': 'Black Green',
+            'black-fire-red': 'Black Fire-Red',
+            'blue-black-yellow': 'Blue Black Yellow',
+            'blue-white-red': 'Blue White Red',
+            'afmhot': 'AFM Hot',
+            'jet': 'Jet',
+            'seismic': 'Seismic'
+        }
 
         # Creates the FLASK application
         self.app = flask.Flask('VISPR')
@@ -67,6 +82,16 @@ class Server:
             '/api/projects/<int:project_id>/analyses/<string:analysis_method_name>',
             'get_analysis',
             self.get_analysis
+        )
+        self.app.add_url_rule(
+            '/api/color-maps',
+            'get_color_maps',
+            self.get_color_maps
+        )
+        self.app.add_url_rule(
+            '/api/color-maps/<string:color_map>',
+            'get_color_map_preview',
+            self.get_color_map_preview
         )
 
     def run(self, host='localhost', port=8080):
@@ -232,18 +257,7 @@ class Server:
             'url': flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
             'urls': {}
         }
-        color_maps = [
-            'gray-red-1',
-            'gray-red-2',
-            'black-green',
-            'black-fire-red',
-            'blue-black-yellow',
-            'blue-white-red',
-            'afmhot',
-            'jet',
-            'seismic'
-        ]
-        for color_map in color_maps:
+        for color_map in self.color_maps.keys():
             attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}'.format(
                 flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
                 color_map
@@ -374,6 +388,46 @@ class Server:
 
         # Returns the retrieved analysis
         return self.http_ok(embedding_dictionary)
+
+    def get_color_maps(self):
+        """
+        Retrieves the names of all the color maps that are supported.
+
+        Returns
+        -------
+            flask.Response
+                Returns an HTTP 200 OK response with a list of all the supported color maps as content.
+        """
+
+        return self.http_ok(self.color_maps)
+
+    def get_color_map_preview(self, color_map):
+        """
+        Renders a preview of a color map with a value gradient. Using the URL parameters 'width' and 'height', the size
+        of the preview can be specified. The size defaults to 200x20.
+
+        Parameters
+        ----------
+            color_map: str
+                The name of the color map for which the preview is to be rendered.
+
+        Returns
+        -------
+            Returns an HTTP 200 OK response with the rendered heatmap preview.
+            If the specified color map is unknown, then an HTTP 400 Bad Request response is returned.
+        """
+
+        if color_map not in self.color_maps.keys():
+            return self.http_bad_request('The color map "{0}" is not supported.'.format(color_map))
+
+        width = int(flask.request.args.get('width', 200))
+        height = int(flask.request.args.get('height', 20))
+
+        heatmap = numpy.linspace(0.0, 1.0, num=width)
+        heatmap = numpy.repeat([heatmap], height, axis=0)
+        heatmap = render_heatmap(heatmap, color_map)
+
+        return self.send_image_file(heatmap)
 
     def http_ok(self, content):
         """

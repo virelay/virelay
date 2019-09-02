@@ -119,7 +119,7 @@ def render_heatmap(data, color_map):
     # Creates a list of 'fall-back'-color-maps from matplotlib, which can also be used
     matplotlib_color_maps = {
         'blue-white-red': 'bwr',
-        'afmhot': 'afmhot',
+        'afm-hot': 'afmhot',
         'jet': 'jet',
         'seismic': 'seismic'
     }

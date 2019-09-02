@@ -44,7 +44,7 @@ class Server:
             'black-fire-red': 'Black Fire-Red',
             'blue-black-yellow': 'Blue Black Yellow',
             'blue-white-red': 'Blue White Red',
-            'afmhot': 'AFM Hot',
+            'afm-hot': 'AFM Hot',
             'jet': 'Jet',
             'seismic': 'Seismic'
         }

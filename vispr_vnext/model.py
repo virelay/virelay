@@ -11,7 +11,7 @@ import h5py
 import numpy
 from PIL import Image
 
-import image_processing
+from .image_processing import add_border, center_crop, render_heatmap
 
 
 class Project:
@@ -481,7 +481,7 @@ class Attribution:
                 If the specified color map is unknown, then a ValueError is raised.
         """
 
-        return image_processing.render_heatmap(self.data, color_map)
+        return render_heatmap(self.data, color_map)
 
 
 class AnalysisDatabase:
@@ -1060,7 +1060,7 @@ class ImageDirectoryDataset:
         width, height, _ = image.shape
         if width < self.input_width or height < self.input_height:
             if self.up_sampling_method in ['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']:
-                image = image_processing.add_border(
+                image = add_border(
                     image,
                     max(width, self.input_width),
                     max(height, self.input_height),
@@ -1072,7 +1072,7 @@ class ImageDirectoryDataset:
         # If at least one of the image dimensions is greater than the target size, then the image is down-sampled
         if width > self.input_width or height > self.input_height:
             if self.down_sampling_method == 'center_crop':
-                image = image_processing.center_crop(image, self.input_width, self.input_height)
+                image = center_crop(image, self.input_width, self.input_height)
             else:
                 raise ValueError('The down-sampling method "{0}" is not supported.'.format(self.down_sampling_method))
 

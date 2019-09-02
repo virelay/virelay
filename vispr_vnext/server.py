@@ -83,6 +83,7 @@ class Server:
             os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
         # Starts the FLASK application
+        self.app.auto_reload = self.is_in_debug_mode
         self.app.run(host, port, self.is_in_debug_mode)
 
     def get_workspace(self):

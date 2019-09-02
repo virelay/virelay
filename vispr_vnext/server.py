@@ -59,9 +59,9 @@ class Server:
 
         # Registers the routes of the RESTful API with the FLASK application
         self.app.add_url_rule(
-            '/api/workspace',
-            'get_workspace',
-            self.get_workspace
+            '/api/projects',
+            'get_projects',
+            self.get_projects
         )
         self.app.add_url_rule(
             '/api/projects/<int:project_id>/dataset/<int:sample_index>',
@@ -153,7 +153,7 @@ class Server:
         self.app.auto_reload = self.is_in_debug_mode
         self.app.run(host, port, self.is_in_debug_mode)
 
-    def get_workspace(self):
+    def get_projects(self):
         """
         Retrieves all the projects and their respective information from the workspace.
 

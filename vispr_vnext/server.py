@@ -326,23 +326,32 @@ class Server:
         # list containing the embeddings as objects
         clustering = numpy.array(analysis.clustering).tolist()
         embedding = numpy.array(analysis.embedding).tolist()
-        indices = numpy.array(analysis.indices).tolist()
+        attribution_indices = numpy.array(analysis.attribution_indices).tolist()
         zipped_embedding = []
         for index, sample_embedding in enumerate(embedding):
             zipped_embedding.append({
                 'cluster': clustering[index],
-                'attributionIndex': indices[index],
+                'attributionIndex': attribution_indices[index],
                 'value': sample_embedding
             })
 
-        # Returns the retrieved analysis
-        return self.http_ok({
+        # Creates the JSON object that is returned to the client
+        embedding = {
             'categoryName': analysis.category_name,
             'humanReadableCategoryName': analysis.human_readable_category_name,
             'clusteringName': analysis.clustering_name,
             'embeddingName': analysis.embedding_name,
             'embedding': zipped_embedding
-        })
+        }
+        if analysis.eigen_values is not None:
+            embedding['eigenValues'] = numpy.array(analysis.eigen_values).tolist()
+        if analysis.base_embedding_name is not None:
+            embedding['baseEmbeddingName'] = analysis.base_embedding_name
+        if analysis.base_embedding_axes_indices is not None:
+            embedding['baseEmbeddingAxesIndices'] = numpy.array(analysis.base_embedding_axes_indices).tolist()
+
+        # Returns the retrieved analysis
+        return self.http_ok(embedding)
 
     def http_ok(self, content):
         """
@@ -363,14 +372,14 @@ class Server:
         response.status_code = 200
         return response
 
-    def http_bad_request(self, error_message):
+    def http_bad_request(self, error):
         """
         Generates an HTTP 400 Bad request response.
 
         Parameters
         ----------
-            error_message: str
-                The error message that is to be returned in the body of the response.
+            error: str or BaseException
+                The error that is to be returned in the body of the response.
 
         Returns
         -------
@@ -378,21 +387,21 @@ class Server:
                 Returns an HTTP 400 Bad Request response.
         """
 
-        if isinstance(error_message, BaseException):
-            error_message = self.format_exception(error_message)
+        if isinstance(error, BaseException):
+            error = self.format_exception(error)
 
-        response = flask.jsonify({'errorMessage': str(error_message)})
+        response = flask.jsonify({'errorMessage': str(error)})
         response.status_code = 400
         return response
 
-    def http_not_found(self, error_message):
+    def http_not_found(self, error):
         """
         Generates an HTTP 404 Not Found response.
 
         Parameters
         ----------
-            error_message: str
-                The error message that is to be returned in the body of the response.
+            error: str or BaseException
+                The error that is to be returned in the body of the response.
 
         Returns
         -------
@@ -400,10 +409,10 @@ class Server:
                 Returns an HTTP 404 Not found response.
         """
 
-        if isinstance(error_message, BaseException):
-            error_message = self.format_exception(error_message)
+        if isinstance(error, BaseException):
+            error = self.format_exception(error)
 
-        response = flask.jsonify({'errorMessage': str(error_message)})
+        response = flask.jsonify({'errorMessage': str(error)})
         response.status_code = 404
         return response
 

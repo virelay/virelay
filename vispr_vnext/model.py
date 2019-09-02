@@ -682,7 +682,16 @@ class AnalysisDatabase:
         analysis = self.analysis_file[category_name]
         clustering = analysis['cluster'][clustering_name]
         embedding = analysis['embedding'][embedding_name]
-        indices = analysis['index']
+        attribution_indices = analysis['index']
+        eigen_values = None
+        if 'eigenvalue' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
+            eigen_values = self.analysis_file[category_name]['embedding'][embedding_name].attrs['eigenvalue']
+        base_embedding_name = None
+        if 'embedding' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
+            base_embedding_name = self.analysis_file[category_name]['embedding'][embedding_name].attrs['embedding']
+        base_embedding_axes_indices = None
+        if 'index' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
+            base_embedding_axes_indices = self.analysis_file[category_name]['embedding'][embedding_name].attrs['index']
 
         # Wraps the information of the analysis in an object and returns it
         try:
@@ -696,7 +705,10 @@ class AnalysisDatabase:
             clustering,
             embedding_name,
             embedding,
-            indices
+            attribution_indices,
+            eigen_values,
+            base_embedding_name,
+            base_embedding_axes_indices
         )
 
     def close(self):
@@ -724,7 +736,10 @@ class Analysis:
             clustering,
             embedding_name,
             embedding,
-            indices
+            attribution_indices,
+            eigen_values,
+            base_embedding_name,
+            base_embedding_axes_indices
     ):
         """
         Initializes a new Analysis instance.
@@ -754,8 +769,22 @@ class Analysis:
             embedding: numpy.ndarray
                 The embedding, which contains the embedding vector for all the attributions, that are part of the
                 analysis.
-            indices: numpy.ndarray
+            attribution_indices: numpy.ndarray
                 Contains a list of the indices of the attributions that correspond to the embeddings and cluster points.
+            eigen_values: numpy.ndarray
+                The eigen values of the embedding. The eigen values must only be specified for normal embeddings that
+                are not based on another embedding (see the description for the base_embedding_name parameter for more
+                information).
+            base_embedding_name: str
+                There are two types of embeddings: normal embeddings and embeddings of embeddings. Embeddings of
+                embeddings are embeddings that are based on another embedding (e.g. the spectral embedding has a lot of
+                dimensions, so a T-SNE embedding is performed on the spectral embedding, which embeds the spectral
+                embedding in two-dimensional space). This is the name of the embedding on which the embedding is based.
+                When this is a normal embedding, then this should be None.
+            base_embedding_axes_indices: numpy.ndarray
+                The indices of the axes of the embedding on which this embedding is based. This value must only be
+                specified for embeddings that are based on other embeddings and not normal embeddings (see the
+                description for the base_embedding_name parameter for more information).
         """
 
         self.category_name = category_name
@@ -764,7 +793,10 @@ class Analysis:
         self.clustering = clustering
         self.embedding_name = embedding_name
         self.embedding = embedding
-        self.indices = indices
+        self.attribution_indices = attribution_indices
+        self.eigen_values = eigen_values
+        self.base_embedding_name = base_embedding_name
+        self.base_embedding_axes_indices = base_embedding_axes_indices
 
 
 class Hdf5Dataset:

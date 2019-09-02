@@ -159,7 +159,8 @@ class Server:
         # Returns the retrieved dataset sample
         return self.http_ok({
             'index': sample.index,
-            'labels': sample.labels
+            'labels': sample.labels,
+            'url': flask.url_for('get_sample_image', project_id=project_id, sample_index=sample_index)
         })
 
     def get_sample_image(self, project_id, sample_index):
@@ -223,12 +224,33 @@ class Server:
         except LookupError as error:
             return self.http_not_found(error)
 
-        # Returns the retrieved attribution
-        return self.http_ok({
+        # Generates the JSON object that is to be returned to the client
+        attribution_dictionary = {
             'index': attribution.index,
             'labels': attribution.labels,
-            'prediction': numpy.array(attribution.prediction).tolist()
-        })
+            'prediction': numpy.array(attribution.prediction).tolist(),
+            'url': flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
+            'urls': {}
+        }
+        color_maps = [
+            'gray-red-1',
+            'gray-red-2',
+            'black-green',
+            'black-fire-red',
+            'blue-black-yellow',
+            'blue-white-red',
+            'afmhot',
+            'jet',
+            'seismic'
+        ]
+        for color_map in color_maps:
+            attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}'.format(
+                flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
+                color_map
+            )
+
+        # Returns the retrieved attribution
+        return self.http_ok(attribution_dictionary)
 
     def get_attribution_heatmap(self, project_id, attribution_index):
         """
@@ -336,7 +358,7 @@ class Server:
             })
 
         # Creates the JSON object that is returned to the client
-        embedding = {
+        embedding_dictionary = {
             'categoryName': analysis.category_name,
             'humanReadableCategoryName': analysis.human_readable_category_name,
             'clusteringName': analysis.clustering_name,
@@ -351,7 +373,7 @@ class Server:
             embedding['baseEmbeddingAxesIndices'] = numpy.array(analysis.base_embedding_axes_indices).tolist()
 
         # Returns the retrieved analysis
-        return self.http_ok(embedding)
+        return self.http_ok(embedding_dictionary)
 
     def http_ok(self, content):
         """

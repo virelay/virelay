@@ -22,7 +22,12 @@ class Server:
             workspace: Workspace
                 The workspace that contains the projects that are to be managed by the server.
             is_in_debug_mode: bool
-                Determines whether the application should run in debug mode or not. Defaults to False.
+                Determines whether the application should run in debug mode or not. Defaults to False. When the
+                application is in debug mode, then all FLASK and Werkzeug logs are printed to stdout, FLASK debugging is
+                activated (FLASK will print out the debugger PIN for attaching the debugger), and the automatic
+                reloading, when the Python files change is activated. Otherwise all these things will be deactivated. If
+                the application is to be debugged using Visual Studio Code (or any other IDE for that matter), then the
+                application must not be started in debug mode, because Visual Studio will create its own debugger.
         """
 
         # Stores the arguments for later reference

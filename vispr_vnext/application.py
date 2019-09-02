@@ -45,7 +45,14 @@ class Application:
             '--debug-mode',
             dest='debug_mode',
             action='store_true',
-            help='Determines whether the application is run in debug mode.'
+            help='''
+                Determines whether the application is run in debug mode. When the application is in debug mode, then all
+                FLASK and Werkzeug logs are printed to stdout, FLASK debugging is activated (FLASK will print out the
+                debugger PIN for attaching the debugger), and the automatic reloading, when the Python files change is
+                activated. Otherwise all these things will be deactivated. If the application is to be debugged using
+                Visual Studio Code (or any other IDE for that matter), then the application must not be started in
+                debug mode, because Visual Studio will create its own debugger.
+            '''
         )
 
         # Initializes the workspace, which will contain all the loaded projects

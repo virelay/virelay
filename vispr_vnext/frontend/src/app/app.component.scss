@@ -6,3 +6,9 @@
 	height: 36px;
 	width: 36px;
 }
+
+.spinner {
+	position: absolute;
+	top: calc(50% - 1.5rem);
+	left: calc(50% - 1.5rem);
+}

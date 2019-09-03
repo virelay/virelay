@@ -118,6 +118,13 @@ class Server:
                 'serve_frontend_javascript',
                 lambda file_name: flask.send_file(os.path.join(frontend_path, '{0}.js').format(file_name))
             )
+            self.app.add_url_rule(
+                '/assets/images/<string:file_name>.png',
+                'serve_frontend_assets',
+                lambda file_name: flask.send_file(os.path.join(
+                    frontend_path, 'assets', 'images', '{0}.png'.format(file_name)
+                ))
+            )
 
     def run(self, host='localhost', port=8080):
         """

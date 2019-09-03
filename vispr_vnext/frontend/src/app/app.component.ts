@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
     /**
      * Initializes a new AppComponent instance.
      * @param projectsService The projects service, which is used to load the projects of the current workspace.
+     * @param router The router, which is used to navigate to the projects.
      */
     public constructor(private projectsService: ProjectsService, private router: Router) { }
 
@@ -29,7 +30,7 @@ export class AppComponent implements OnInit {
     /**
      * Contains the projects of the current workspace.
      */
-    public projects: Array<Project> = new Array<Project>();
+    public projects: Array<Project>;
 
     /**
      * Is invoked when the app component is being initialized. Loads the projects from the server.
@@ -42,6 +43,6 @@ export class AppComponent implements OnInit {
         this.isLoadingProjects = false;
 
         // Navigates the user to the first project
-        this.router.navigate(['/projects', this.projects[0].id]);
+        this.router.navigate(['projects', this.projects[0].id]);
     }
 }

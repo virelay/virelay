@@ -38,7 +38,7 @@ export class AppComponent implements OnInit {
 
         // Loads the projects from the RESTful API
         this.isLoadingProjects = true;
-        this.projects = await this.projectsService.get();
+        this.projects = await this.projectsService.getAsync();
         this.isLoadingProjects = false;
 
         // Navigates the user to the first project

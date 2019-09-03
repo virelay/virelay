@@ -21,12 +21,25 @@ export class ProjectsService {
     /**
      * Gets all projects from the current workspace.
      */
-    public async get(): Promise<Array<Project>> {
+    public async getAsync(): Promise<Array<Project>> {
         return await this.httpClient
             .get<Array<Project>>(`${environment.apiBaseUrl}/projects`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
             .pipe(map(projects => projects.map(project => new Project(project))))
+            .toPromise();
+    }
+
+    /**
+     * Gets the project with the specified ID.
+     * @param id The ID of the project that is to be retrieved.
+     */
+    public async getByIdAsync(id: number): Promise<Project> {
+        return await this.httpClient
+            .get<Project>(`${environment.apiBaseUrl}/projects/${id}`, {
+                headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+            })
+            .pipe(map(project => new Project(project)))
             .toPromise();
     }
 }

@@ -64,6 +64,11 @@ class Server:
             self.get_projects
         )
         self.app.add_url_rule(
+            '/api/projects/<int:project_id>',
+            'get_project',
+            self.get_project
+        )
+        self.app.add_url_rule(
             '/api/projects/<int:project_id>/dataset/<int:sample_index>',
             'get_sample',
             self.get_sample
@@ -175,25 +180,53 @@ class Server:
         for project_id, project_name in enumerate(self.workspace.get_project_names()):
 
             project = self.workspace.get_project(project_name)
-            project_data = {
+            projects.append({
                 'id': project_id,
                 'name': project_name,
                 'model': project.model,
-                'dataset': project.dataset.name,
-                'analysisMethods': []
-            }
-
-            for analysis_method_name in project.get_analysis_methods():
-                project_data['analysisMethods'].append({
-                    'name': analysis_method_name.replace('_', '-'),
-                    'categories': project.get_analysis_category_names(analysis_method_name),
-                    'clusterings': project.get_analysis_clustering_names(analysis_method_name),
-                    'embeddings': project.get_analysis_embedding_names(analysis_method_name)
-                })
-
-            projects.append(project_data)
+                'dataset': project.dataset.name
+            })
 
         return self.http_ok(projects)
+
+    def get_project(self, project_id):
+        """
+        Retrieves the project with the specified ID.
+
+        Parameters
+        ----------
+            project_id: int
+                The ID of the project that is to be retrieved.
+
+        Returns
+        -------
+            flask.Response
+                Returns an HTTP 200 OK response with a JSON string as content, which contains the project information.
+                If the specified project could not be found, then an HTTP 404 Not Found response is returned.
+        """
+
+        if project_id >= len(self.workspace.get_project_names()):
+            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+
+        project_name = self.workspace.get_project_names()[project_id]
+        project = self.workspace.get_project(project_name)
+        project_data = {
+            'id': project_id,
+            'name': project_name,
+            'model': project.model,
+            'dataset': project.dataset.name,
+            'analysisMethods': []
+        }
+
+        for analysis_method_name in project.get_analysis_methods():
+            project_data['analysisMethods'].append({
+                'name': analysis_method_name.replace('_', '-'),
+                'categories': project.get_analysis_category_names(analysis_method_name),
+                'clusterings': project.get_analysis_clustering_names(analysis_method_name),
+                'embeddings': project.get_analysis_embedding_names(analysis_method_name)
+            })
+
+        return self.http_ok(project_data)
 
     def get_sample(self, project_id, sample_index):
         """

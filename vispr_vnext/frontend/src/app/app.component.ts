@@ -1,5 +1,6 @@
 
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { ProjectsService } from 'src/services/projects/projects.service';
 import { Project } from 'src/services/projects/project';
@@ -18,7 +19,12 @@ export class AppComponent implements OnInit {
      * Initializes a new AppComponent instance.
      * @param projectsService The projects service, which is used to load the projects of the current workspace.
      */
-    public constructor(private projectsService: ProjectsService) { }
+    public constructor(private projectsService: ProjectsService, private router: Router) { }
+
+    /**
+     * Contains a value that determines whether the projects are currently being loaded.
+     */
+    public isLoadingProjects: boolean;
 
     /**
      * Contains the projects of the current workspace.
@@ -30,6 +36,12 @@ export class AppComponent implements OnInit {
      */
     public async ngOnInit(): Promise<any> {
 
+        // Loads the projects from the RESTful API
+        this.isLoadingProjects = true;
         this.projects = await this.projectsService.get();
+        this.isLoadingProjects = false;
+
+        // Navigates the user to the first project
+        this.router.navigate(['/projects', this.projects[0].id]);
     }
 }

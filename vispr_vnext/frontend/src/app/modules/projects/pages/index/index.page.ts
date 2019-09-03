@@ -36,6 +36,15 @@ export class IndexPage implements OnInit {
      */
     public project: Project;
 
+    public graph = {
+        data: [
+            { x: [1, 2, 3], y: [2, 6, 3], type: 'scatter', mode: 'lines+points', marker: {color: 'red'} },
+            { x: [1, 2, 3], y: [2, 5, 3], type: 'bar' },
+        ],
+        layout: { autosize: true, title: 'A Fancy Plot', paper_bgcolor: '#00000000', plot_bgcolor: '#00000000' },
+        responsive: true
+    };
+
     /**
      * Reloads the project and all its information.
      */
@@ -48,7 +57,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when the component is initialized. Retrieves the ID of the project from the URL and loads it
      */
-    public async ngOnInit(): Promise<any> {
+    public ngOnInit(): void {
 
         // Subscribes for changes of the route, when the route has changed, then the project ID is retrieved from the
         // URL and the project is loaded

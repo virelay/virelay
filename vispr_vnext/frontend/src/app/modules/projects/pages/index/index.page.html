@@ -1,2 +1,31 @@
 
 <span *ngIf="isLoadingProject" class="spinner spinner-centered"></span>
+
+<div *ngIf="project" id="panels-container">
+    <section>
+        <plotly-plot [data]="graph.data" [layout]="graph.layout" [useResizeHandler]="true"></plotly-plot>
+    </section>
+
+    <aside>
+        <form clrForm clrLayout="vertical">
+            <clr-input-container>
+                <label>Category</label>
+                <input clrInput type="text" id="category" name="category" />
+            </clr-input-container>
+            <clr-input-container>
+                <label>Clustering</label>
+                <input clrInput type="text" id="clustering" name="clustering" />
+            </clr-input-container>
+            <clr-input-container>
+                <label>Embedding</label>
+                <input clrInput type="text" id="embedding" name="embedding" />
+            </clr-input-container>
+        </form>
+    </aside>
+
+    <footer>
+        <strong>Project:</strong> {{ project.name }}
+        <strong>Dataset:</strong> {{ project.dataset }}
+        <strong>Model:</strong> {{ project.model }}
+    </footer>
+</div>

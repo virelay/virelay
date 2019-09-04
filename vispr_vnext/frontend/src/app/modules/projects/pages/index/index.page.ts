@@ -100,7 +100,8 @@ export class IndexPage implements OnInit {
                 y: embeddingsInCluster.map(embedding => embedding.value[1]),
                 type: 'scatter',
                 mode: 'markers',
-                marker: { size: 12 }
+                marker: { size: 12 },
+                hoverinfo: 'skip'
             });
         }
     }
@@ -117,31 +118,17 @@ export class IndexPage implements OnInit {
         autosize: true,
         paper_bgcolor: '#00000000',
         plot_bgcolor: '#00000000',
+        showlegend: false,
         xaxis: {
-            autorange: true,
             showgrid: false,
             zeroline: false,
-            showline: false,
-            autotick: false,
-            ticks: '',
             showticklabels: false
         },
         yaxis: {
-            autorange: true,
             showgrid: false,
             zeroline: false,
-            showline: false,
-            autotick: false,
-            ticks: '',
             showticklabels: false
         }
-    };
-
-    public graph = {
-        data: [
-            { x: [1, 2, 3], y: [2, 6, 3], type: 'scatter', mode: 'markers', marker: { size: 12 } }
-        ],
-        responsive: true
     };
 
     /**

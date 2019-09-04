@@ -116,8 +116,7 @@ export class IndexPage implements OnInit {
      */
     public graphLayout: Partial<Plotly.Layout> = {
         autosize: true,
-        paper_bgcolor: '#00000000',
-        plot_bgcolor: '#00000000',
+        dragmode: 'lasso',
         showlegend: false,
         xaxis: {
             showgrid: false,
@@ -128,7 +127,9 @@ export class IndexPage implements OnInit {
             showgrid: false,
             zeroline: false,
             showticklabels: false
-        }
+        },
+        paper_bgcolor: '#00000000',
+        plot_bgcolor: '#00000000'
     };
 
     /**

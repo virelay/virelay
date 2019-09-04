@@ -41,7 +41,7 @@ export class IndexPage implements OnInit {
             { x: [1, 2, 3], y: [2, 6, 3], type: 'scatter', mode: 'lines+points', marker: {color: 'red'} },
             { x: [1, 2, 3], y: [2, 5, 3], type: 'bar' },
         ],
-        layout: { autosize: true, title: 'A Fancy Plot', paper_bgcolor: '#00000000', plot_bgcolor: '#00000000' },
+        layout: { title: 'A Fancy Plot', paper_bgcolor: '#00000000', plot_bgcolor: '#00000000' },
         responsive: true
     };
 

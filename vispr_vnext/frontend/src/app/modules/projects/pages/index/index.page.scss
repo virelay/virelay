@@ -1,29 +1,27 @@
 
 #panels-container {
     display: grid;
-    grid-template-rows: 1fr 20px;
-    grid-template-columns: 1fr 250px;
+    grid-template-rows: 1fr 35px;
+    grid-template-columns: 1fr 300px;
     grid-template-areas:
         "data-panel information-panel"
         "footer footer"
     ;
 
-    height: 100%;
-
     section {
         grid-area: data-panel;
-
-        plotly-plot {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
+        width: calc(100vw - 300px);
+        height: calc(100vh - 95px);
     }
 
     aside {
         grid-area: information-panel;
+
+        background-color: #EFEFEF;
+        z-index: 1;
+
         form {
-            width: 220px;
+            width: 250px;
             margin: 0 auto;
         }
     }
@@ -34,8 +32,17 @@
         display: flex;
         align-items: center;
 
+        padding-left: 1rem;
+        z-index: 1;
+        background-color: #18111d;
+        color: white;
+
         strong {
+            margin-left: 5px;
             margin-right: 5px;
+        }
+
+        clr-icon {
             &:not(:first-child) {
                 margin-left: 20px;
             }

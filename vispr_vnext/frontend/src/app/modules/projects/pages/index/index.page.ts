@@ -31,9 +31,9 @@ export class IndexPage implements OnInit {
     ) { }
 
     /**
-     * Contains a value that determine whether the project is currently being loaded.
+     * Contains a value that determine whether the component is currently loading data from the RESTful API.
      */
-    public isLoadingProject: boolean;
+    public isLoading: boolean;
 
     /**
      * Contains the ID of the project.
@@ -48,22 +48,90 @@ export class IndexPage implements OnInit {
     /**
      * Contains the analysis method that was selected by the user.
      */
-    public selectedAnalysisMethod: AnalysisMethod = null;
+    private _selectedAnalysisMethod: AnalysisMethod;
+
+    /**
+     * Gets the analysis method that was selected by the user.
+     */
+    public get selectedAnalysisMethod(): AnalysisMethod {
+        return this._selectedAnalysisMethod;
+    }
+
+    /**
+     * Sets the analysis method that was selected by the user.
+     */
+    public set selectedAnalysisMethod(value: AnalysisMethod) {
+        this._selectedAnalysisMethod = value;
+        if (value) {
+            this.refreshAnalysisAsync();
+        }
+    }
 
     /**
      * Contains the name of the selected category.
      */
-    public selectedCategory: string;
+    private _selectedCategory: string;
+
+    /**
+     * Gets the name of the selected category.
+     */
+    public get selectedCategory(): string {
+        return this._selectedCategory;
+    }
+
+    /**
+     * Sets the name of the selected category.
+     */
+    public set selectedCategory(value: string) {
+        this._selectedCategory = value;
+        if (value) {
+            this.refreshAnalysisAsync();
+        }
+    }
 
     /**
      * Contains the name of the selected clustering.
      */
-    public selectedClustering: string;
+    private _selectedClustering: string;
+
+    /**
+     * Gets the name of the selected clustering.
+     */
+    public get selectedClustering(): string {
+        return this._selectedClustering;
+    }
+
+    /**
+     * Sets the name of the selected clustering.
+     */
+    public set selectedClustering(value: string) {
+        this._selectedClustering = value;
+        if (value) {
+            this.refreshAnalysisAsync();
+        }
+    }
 
     /**
      * Contains the name of the selected embedding.
      */
-    public selectedEmbedding: string;
+    private _selectedEmbedding: string;
+
+    /**
+     * Gets the name of the selected embedding.
+     */
+    public get selectedEmbedding(): string {
+        return this._selectedEmbedding;
+    }
+
+    /**
+     * Sets the name of the selected embedding.
+     */
+    public set selectedEmbedding(value: string) {
+        this._selectedEmbedding = value;
+        if (value) {
+            this.refreshAnalysisAsync();
+        }
+    }
 
     /**
      * Contains the current analysis.
@@ -135,8 +203,8 @@ export class IndexPage implements OnInit {
     /**
      * Reloads the project and all its information.
      */
-    private async refresh() {
-        this.isLoadingProject = true;
+    private async refreshProjectAsync() {
+        this.isLoading = true;
         this.project = await this.projectsService.getByIdAsync(this.id);
 
         this.selectedAnalysisMethod = this.project.analysisMethods[0];
@@ -147,7 +215,24 @@ export class IndexPage implements OnInit {
         } else {
             this.selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
         }
+        await this.refreshAnalysisAsync();
+        this.isLoading = false;
+    }
 
+    /**
+     * Reloads the analysis and all its information.
+     */
+    private async refreshAnalysisAsync() {
+
+        if (!this.selectedAnalysisMethod ||
+            !this.selectedCategory ||
+            !this.selectedClustering ||
+            !this.selectedEmbedding
+        ) {
+            return;
+        }
+
+        this.isLoading = true;
         this.analysis = await this.analysesService.getAsync(
             this.project.id,
             this.selectedAnalysisMethod.name,
@@ -155,8 +240,7 @@ export class IndexPage implements OnInit {
             this.selectedClustering,
             this.selectedEmbedding
         );
-
-        this.isLoadingProject = false;
+        this.isLoading = false;
     }
 
     /**
@@ -169,7 +253,7 @@ export class IndexPage implements OnInit {
         this.route.paramMap.subscribe(paramMap => {
             if (paramMap.has('id') && paramMap.get('id')) {
                 this.id = parseInt(paramMap.get('id'), 10);
-                this.refresh();
+                this.refreshProjectAsync();
             }
         });
     }

@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { ProjectsService } from 'src/services/projects/projects.service';
 import { ActivatedRoute } from '@angular/router';
 import { Project } from 'src/services/projects/project';
+import { AnalysisMethod } from 'src/services/projects/analysis-method';
 
 /**
  * Represents the index page of a project
@@ -36,6 +37,26 @@ export class IndexPage implements OnInit {
      */
     public project: Project;
 
+    /**
+     * Contains the analysis method that was selected by the user.
+     */
+    public selectedAnalysisMethod: AnalysisMethod = null;
+
+    /**
+     * Contains the name of the selected category.
+     */
+    public selectedCategory: string;
+
+    /**
+     * Contains the name of the selected clustering.
+     */
+    public selectedClustering: string;
+
+    /**
+     * Contains the name of the selected embedding.
+     */
+    public selectedEmbedding: string;
+
     public graph = {
         data: [
             { x: [1, 2, 3], y: [2, 6, 3], type: 'scatter', mode: 'lines+points', marker: {color: 'red'} },
@@ -51,6 +72,16 @@ export class IndexPage implements OnInit {
     private async refresh() {
         this.isLoadingProject = true;
         this.project = await this.projectsService.getByIdAsync(this.id);
+
+        this.selectedAnalysisMethod = this.project.analysisMethods[0];
+        this.selectedCategory = this.selectedAnalysisMethod.categories[0];
+        this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+        if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
+            this.selectedEmbedding = 'tsne';
+        } else {
+            this.selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
+        }
+
         this.isLoadingProject = false;
     }
 

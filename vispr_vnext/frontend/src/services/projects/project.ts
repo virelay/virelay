@@ -1,4 +1,6 @@
 
+import { AnalysisMethod } from './analysis-method';
+
 /**
  * Represents a single project from the workspace.
  */
@@ -14,6 +16,9 @@ export class Project {
             this.name = project.name;
             this.model = project.model;
             this.dataset = project.dataset;
+            if (project.analysisMethods) {
+                this.analysisMethods = project.analysisMethods.map(analysisMethod => new AnalysisMethod(analysisMethod));
+            }
         }
     }
 
@@ -36,4 +41,9 @@ export class Project {
      * Contains the name of the dataset on which the model was trained.
      */
     public dataset: string;
+
+    /**
+     * Contains the analysis methods supported by the project.
+     */
+    public analysisMethods: Array<AnalysisMethod>;
 }

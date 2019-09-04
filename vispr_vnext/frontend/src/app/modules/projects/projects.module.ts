@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
 import * as PlotlyJS from 'plotly.js/dist/plotly.js';
 import { PlotlyModule } from 'angular-plotly.js';
+import { FormsModule } from '@angular/forms';
 
 import { ProjectsService } from 'src/services/projects/projects.service';
 import { projectRoutes } from './projects.routes';
@@ -23,6 +24,7 @@ PlotlyModule.plotlyjs = PlotlyJS;
         BrowserModule,
         ClarityModule,
         PlotlyModule,
+        FormsModule,
         RouterModule.forChild(projectRoutes)
     ],
     exports: [],

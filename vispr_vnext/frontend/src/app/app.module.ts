@@ -9,6 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ProjectsService } from 'src/services/projects/projects.service';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { AnalysesService } from 'src/services/analyses/analyses.service';
 
 @NgModule({
     declarations: [
@@ -23,7 +24,8 @@ import { ProjectsModule } from './modules/projects/projects.module';
         RouterModule.forRoot([])
     ],
     providers: [
-        ProjectsService
+        ProjectsService,
+        AnalysesService
     ],
   bootstrap: [AppComponent]
 })

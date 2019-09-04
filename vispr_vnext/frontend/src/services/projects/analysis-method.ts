@@ -8,7 +8,7 @@ export class AnalysisMethod {
      * Initializes a new AnalysisMethod instance.
      * @param analysisMethod The JSON object that was retrieved from the RESTful API.
      */
-    constructor(analysisMethod?: any) {
+    public constructor(analysisMethod?: any) {
         if (analysisMethod) {
             this.name = analysisMethod.name;
             this.categories = analysisMethod.categories;

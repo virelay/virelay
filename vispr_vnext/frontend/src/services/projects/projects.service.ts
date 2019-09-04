@@ -16,7 +16,7 @@ export class ProjectsService {
      * Initializes a new ProjectsService instance.
      * @param httpClient The HTTP client, which is used to interface with the RESTful API.
      */
-    constructor(private httpClient: HttpClient) { }
+    public constructor(private httpClient: HttpClient) { }
 
     /**
      * Gets all projects from the current workspace.

@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { ProjectsService } from 'src/services/projects/projects.service';
 import { projectRoutes } from './projects.routes';
 import { IndexPage } from './pages/index/index.page';
+import { AnalysesService } from 'src/services/analyses/analyses.service';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -29,7 +30,8 @@ PlotlyModule.plotlyjs = PlotlyJS;
     ],
     exports: [],
     providers: [
-        ProjectsService
+        ProjectsService,
+        AnalysesService
     ]
 })
 export class ProjectsModule { }

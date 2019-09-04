@@ -3,7 +3,7 @@
 
 <div *ngIf="project" id="panels-container">
     <section>
-        <plotly-plot [data]="graph.data" [layout]="graph.layout" [useResizeHandler]="true"></plotly-plot>
+        <plotly-plot *ngIf="graphData" [data]="graphData" [layout]="graphLayout" [useResizeHandler]="true" [style]="{ width: '100%', height: '100%' }"></plotly-plot>
     </section>
 
     <aside>

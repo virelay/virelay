@@ -10,7 +10,7 @@ export class Project {
      * Initializes a new Project instance.
      * @param project The JSON object that was retrieved from the RESTful API.
      */
-    constructor(project?: any) {
+    public constructor(project?: any) {
         if (project) {
             this.id = project.id;
             this.name = project.name;

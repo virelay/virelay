@@ -449,7 +449,7 @@ class Server:
             })
 
         # Creates the JSON object that is returned to the client
-        embedding_dictionary = {
+        analysis_dictionary = {
             'categoryName': analysis.category_name,
             'humanReadableCategoryName': analysis.human_readable_category_name,
             'clusteringName': analysis.clustering_name,
@@ -457,14 +457,14 @@ class Server:
             'embedding': zipped_embedding
         }
         if analysis.eigen_values is not None:
-            embedding['eigenValues'] = numpy.array(analysis.eigen_values).tolist()
+            analysis_dictionary['eigenValues'] = numpy.array(analysis.eigen_values).tolist()
         if analysis.base_embedding_name is not None:
-            embedding['baseEmbeddingName'] = analysis.base_embedding_name
+            analysis_dictionary['baseEmbeddingName'] = analysis.base_embedding_name
         if analysis.base_embedding_axes_indices is not None:
-            embedding['baseEmbeddingAxesIndices'] = numpy.array(analysis.base_embedding_axes_indices).tolist()
+            analysis_dictionary['baseEmbeddingAxesIndices'] = numpy.array(analysis.base_embedding_axes_indices).tolist()
 
         # Returns the retrieved analysis
-        return self.http_ok(embedding_dictionary)
+        return self.http_ok(analysis_dictionary)
 
     def get_color_maps(self):
         """

@@ -1,34 +1,34 @@
 
 #panels-container {
     display: grid;
-    grid-template-rows: 1fr 35px;
-    grid-template-columns: 1fr 300px;
+    grid-template-rows: 85px 1fr 35px;
+    grid-template-columns: 1fr;
     grid-template-areas:
-        "data-panel information-panel"
-        "footer footer"
+        "information-panel"
+        "data-panel"
+        "status-bar"
     ;
 
     section {
         grid-area: data-panel;
-        width: calc(100vw - 300px);
-        height: calc(100vh - 95px);
+        width: 100vw;
+        height: calc(100vh - 180px);
     }
 
     aside {
         grid-area: information-panel;
 
         background-color: #EFEFEF;
+        margin: 0;
         z-index: 1;
 
-        form {
-            width: 250px;
-            margin: 0 auto;
-
+        clr-select-container:first-child {
+            margin-left: 24px;
         }
     }
 
     footer {
-        grid-area: footer;
+        grid-area: status-bar;
 
         display: flex;
         align-items: center;

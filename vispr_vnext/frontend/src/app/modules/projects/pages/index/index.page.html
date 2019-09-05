@@ -6,37 +6,35 @@
         <plotly-plot *ngIf="graphData" [data]="graphData" [layout]="graphLayout" [useResizeHandler]="true" [style]="{ width: '100%', height: '100%' }"></plotly-plot>
     </section>
 
-    <aside>
-        <form clrForm clrLayout="vertical">
-            <clr-select-container>
-                <label>Analysis method</label>
-                <select clrSelect name="analysis-method" [(ngModel)]="selectedAnalysisMethod">
-                    <option *ngIf="!selectedAnalysisMethod" [ngValue]="null">Select an analysis method...</option>
-                    <option *ngFor="let analysisMethod of project.analysisMethods" [ngValue]="analysisMethod">{{ analysisMethod.name }}</option>
-                </select>
-            </clr-select-container>
-            <clr-select-container *ngIf="selectedAnalysisMethod">
-                <label>Category</label>
-                <select clrSelect name="category" [(ngModel)]="selectedCategory">
-                    <option *ngIf="!selectedCategory" [ngValue]="null">Select a category...</option>
-                    <option *ngFor="let category of selectedAnalysisMethod.categories" [ngValue]="category">{{ category.humanReadableName }} ({{ category.name }})</option>
-                </select>
-            </clr-select-container>
-            <clr-select-container *ngIf="selectedAnalysisMethod">
-                <label>Clustering</label>
-                <select clrSelect class="full-width" name="clustering" [(ngModel)]="selectedClustering">
-                    <option *ngIf="!selectedClustering" [ngValue]="null">Select a clustering...</option>
-                    <option *ngFor="let clustering of selectedAnalysisMethod.clusterings" [value]="clustering">{{ clustering }}</option>
-                </select>
-            </clr-select-container>
-            <clr-select-container *ngIf="selectedAnalysisMethod">
-                <label>Embedding</label>
-                <select clrSelect name="embedding" [(ngModel)]="selectedEmbedding">
-                    <option *ngIf="!selectedEmbedding" [ngValue]="null">Select a embedding...</option>
-                    <option *ngFor="let embedding of selectedAnalysisMethod.embeddings" [value]="embedding">{{ embedding }}</option>
-                </select>
-            </clr-select-container>
-        </form>
+    <aside class="clr-row">
+        <clr-select-container class="clr-col-1">
+            <label>Analysis method</label>
+            <select clrSelect name="analysis-method" [(ngModel)]="selectedAnalysisMethod">
+                <option *ngIf="!selectedAnalysisMethod" [ngValue]="null">Select an analysis method...</option>
+                <option *ngFor="let analysisMethod of project.analysisMethods" [ngValue]="analysisMethod">{{ analysisMethod.name }}</option>
+            </select>
+        </clr-select-container>
+        <clr-select-container *ngIf="selectedAnalysisMethod" class="clr-col-6">
+            <label>Category</label>
+            <select clrSelect name="category" [(ngModel)]="selectedCategory">
+                <option *ngIf="!selectedCategory" [ngValue]="null">Select a category...</option>
+                <option *ngFor="let category of selectedAnalysisMethod.categories" [ngValue]="category">{{ category.humanReadableName }} ({{ category.name }})</option>
+            </select>
+        </clr-select-container>
+        <clr-select-container *ngIf="selectedAnalysisMethod" class="clr-col-1">
+            <label>Clustering</label>
+            <select clrSelect class="full-width" name="clustering" [(ngModel)]="selectedClustering">
+                <option *ngIf="!selectedClustering" [ngValue]="null">Select a clustering...</option>
+                <option *ngFor="let clustering of selectedAnalysisMethod.clusterings" [value]="clustering">{{ clustering }}</option>
+            </select>
+        </clr-select-container>
+        <clr-select-container *ngIf="selectedAnalysisMethod" class="clr-col-1">
+            <label>Embedding</label>
+            <select clrSelect name="embedding" [(ngModel)]="selectedEmbedding">
+                <option *ngIf="!selectedEmbedding" [ngValue]="null">Select a embedding...</option>
+                <option *ngFor="let embedding of selectedAnalysisMethod.embeddings" [value]="embedding">{{ embedding }}</option>
+            </select>
+        </clr-select-container>
     </aside>
 
     <footer>

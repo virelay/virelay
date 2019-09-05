@@ -219,12 +219,18 @@ class Server:
         }
 
         for analysis_method_name in project.get_analysis_methods():
-            project_data['analysisMethods'].append({
+            analysis_method = {
                 'name': analysis_method_name.replace('_', '-'),
-                'categories': project.get_analysis_category_names(analysis_method_name),
                 'clusterings': project.get_analysis_clustering_names(analysis_method_name),
+                'categories': [],
                 'embeddings': project.get_analysis_embedding_names(analysis_method_name)
-            })
+            }
+            for category in project.get_analysis_categories(analysis_method_name):
+                analysis_method['categories'].append({
+                    'name': category.name,
+                    'humanReadableName': category.human_readable_name
+                })
+            project_data['analysisMethods'].append(analysis_method)
 
         return self.http_ok(project_data)
 

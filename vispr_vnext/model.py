@@ -164,7 +164,7 @@ class Project:
 
         return list(self.analyses.keys())
 
-    def get_analysis_category_names(self, analysis_method):
+    def get_analysis_categories(self, analysis_method):
         """
         Retrieves the names of the categories that are in the analyses of the specified analysis method.
 
@@ -189,9 +189,9 @@ class Project:
 
         categories = []
         for analysis in self.analyses[analysis_method]:
-            for category_name in analysis.get_category_names():
-                if category_name not in categories:
-                    categories.append(category_name)
+            for category in analysis.get_categories():
+                if category.name not in map(lambda c: c.name, categories):
+                    categories.append(category)
 
         return categories
 
@@ -510,7 +510,7 @@ class AnalysisDatabase:
         # Loads the analysis file
         self.analysis_file = h5py.File(self.analysis_path, 'r')
 
-    def get_category_names(self):
+    def get_categories(self):
         """
         Retrieves the names of all the categories that are contained in this analysis database. The category names are
         umbrella terms for the attributions for which the analysis was performed. In most cases this will be the
@@ -523,14 +523,22 @@ class AnalysisDatabase:
 
         Returns
         -------
-            list of str
-                Returns a list containing the names of all the categories that are contained in this analysis database.
+            list of AnalysisCategory
+                Returns a list containing all the categories that are contained in this analysis database.
         """
 
         if self.is_closed:
             raise ValueError('The analysis database has already been closed.')
 
-        return list(self.analysis_file.keys())
+        categories = []
+        for category_name in self.analysis_file.keys():
+            try:
+                human_readable_category_name = self.label_map.get_labels(category_name)
+            except LookupError:
+                human_readable_category_name = ''
+            categories.append(AnalysisCategory(category_name, human_readable_category_name))
+
+        return categories
 
     def get_clustering_names(self):
         """
@@ -557,7 +565,7 @@ class AnalysisDatabase:
         # names of the clusterings may vary between analyses, as it is not enforced that they all must have the same
         # clusterings, nevertheless, this assumes that each analysis in a single analysis database has the same
         # clusterings and therefore the names are only retrieved from the first one
-        first_category_name = self.get_category_names()[0]
+        first_category_name = self.get_categories()[0].name
         return list(self.analysis_file[first_category_name]['cluster'])
 
     def get_embedding_names(self):
@@ -585,7 +593,7 @@ class AnalysisDatabase:
         # names of the embeddings may vary between analyses, as it is not enforced that they all must have the same
         # embeddings, nevertheless, this assumes that each analysis in a single analysis database has the same
         # embeddings and therefore the names are only retrieved from the first one
-        first_category_name = self.get_category_names()[0]
+        first_category_name = self.get_categories()[0].name
         return list(self.analysis_file[first_category_name]['embedding'])
 
     def has_analysis(self, category_name, clustering_name, embedding_name):
@@ -723,6 +731,29 @@ class AnalysisDatabase:
         """Destructs the analysis database."""
 
         self.close()
+
+
+class AnalysisCategory:
+    """
+    Represents a single category in an analysis. One category can contain many analyses for different attributions. The
+    category name is usually an umbrella term for all the attributions contained in the analysis. This is most-likely
+    a class name.
+    """
+
+    def __init__(self, name, human_readable_name):
+        """
+        Initializes a new AnalysisCategory instance.
+
+        Parameters
+        ----------
+            name: str
+                The name of the category, e.g. a label index or WordNet ID.
+            human_readable_name: str
+                A human-readable version of the category name, e.g. the label name.
+        """
+
+        self.name = name
+        self.human_readable_name = human_readable_name
 
 
 class Analysis:

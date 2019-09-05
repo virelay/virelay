@@ -19,7 +19,7 @@
                 <label>Category</label>
                 <select clrSelect name="category" [(ngModel)]="selectedCategory">
                     <option *ngIf="!selectedCategory" [ngValue]="null">Select a category...</option>
-                    <option *ngFor="let category of selectedAnalysisMethod.categories" [value]="category">{{ category }}</option>
+                    <option *ngFor="let category of selectedAnalysisMethod.categories" [ngValue]="category">{{ category.humanReadableName }} ({{ category.name }})</option>
                 </select>
             </clr-select-container>
             <clr-select-container *ngIf="selectedAnalysisMethod">

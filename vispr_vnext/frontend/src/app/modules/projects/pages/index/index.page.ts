@@ -9,6 +9,7 @@ import { AnalysisMethod } from 'src/services/projects/analysis-method';
 import { AnalysesService } from 'src/services/analyses/analyses.service';
 import { Analysis } from 'src/services/analyses/analysis';
 import { Embedding } from 'src/services/analyses/embedding';
+import { AnalysisCategory } from 'src/services/projects/analysis-category';
 
 /**
  * Represents the index page of a project
@@ -70,19 +71,19 @@ export class IndexPage implements OnInit {
     /**
      * Contains the name of the selected category.
      */
-    private _selectedCategory: string;
+    private _selectedCategory: AnalysisCategory;
 
     /**
      * Gets the name of the selected category.
      */
-    public get selectedCategory(): string {
+    public get selectedCategory(): AnalysisCategory {
         return this._selectedCategory;
     }
 
     /**
      * Sets the name of the selected category.
      */
-    public set selectedCategory(value: string) {
+    public set selectedCategory(value: AnalysisCategory) {
         this._selectedCategory = value;
         if (value) {
             this.refreshAnalysisAsync();
@@ -236,7 +237,7 @@ export class IndexPage implements OnInit {
         this.analysis = await this.analysesService.getAsync(
             this.project.id,
             this.selectedAnalysisMethod.name,
-            this.selectedCategory,
+            this.selectedCategory.name,
             this.selectedClustering,
             this.selectedEmbedding
         );

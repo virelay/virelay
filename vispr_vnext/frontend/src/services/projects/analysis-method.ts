@@ -1,4 +1,6 @@
 
+import { AnalysisCategory } from './analysis-category';
+
 /**
  * Represents an analysis method.
  */
@@ -11,7 +13,9 @@ export class AnalysisMethod {
     public constructor(analysisMethod?: any) {
         if (analysisMethod) {
             this.name = analysisMethod.name;
-            this.categories = analysisMethod.categories;
+            if (analysisMethod.categories) {
+                this.categories = analysisMethod.categories.map(category => new AnalysisCategory(category));
+            }
             this.clusterings = analysisMethod.clusterings;
             this.embeddings = analysisMethod.embeddings;
         }
@@ -25,7 +29,7 @@ export class AnalysisMethod {
     /**
      * Contains the names of the categories that are in the analysis.
      */
-    public categories: Array<string>;
+    public categories: Array<AnalysisCategory>;
 
     /**
      * Contains the names of the clusterings that are in the analysis.

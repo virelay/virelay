@@ -64,6 +64,13 @@ export class IndexPage implements OnInit {
     public set selectedAnalysisMethod(value: AnalysisMethod) {
         this._selectedAnalysisMethod = value;
         if (value) {
+            this.selectedCategory = this.selectedAnalysisMethod.categories[0];
+            this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+            if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
+                this.selectedEmbedding = 'tsne';
+            } else {
+                this.selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
+            }
             this.refreshAnalysisAsync();
         }
     }

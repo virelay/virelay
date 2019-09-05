@@ -340,7 +340,8 @@ class Server:
             'url': flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
             'urls': {}
         }
-        for color_map, _ in self.color_maps:
+        print(self.color_maps)
+        for color_map in self.color_maps:
             attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}'.format(
                 flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
                 color_map

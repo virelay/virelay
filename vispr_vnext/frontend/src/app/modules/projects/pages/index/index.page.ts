@@ -8,8 +8,10 @@ import { Project } from 'src/services/projects/project';
 import { AnalysisMethod } from 'src/services/projects/analysis-method';
 import { AnalysesService } from 'src/services/analyses/analyses.service';
 import { Analysis } from 'src/services/analyses/analysis';
-import { Embedding } from 'src/services/analyses/embedding';
 import { AnalysisCategory } from 'src/services/projects/analysis-category';
+import { AttributionsService } from 'src/services/attributions/attributions.service';
+import { Sample } from 'src/services/dataset/sample';
+import { DatasetService } from 'src/services/dataset/dataset.service';
 
 /**
  * Represents the index page of a project
@@ -28,6 +30,8 @@ export class IndexPage implements OnInit {
     public constructor(
         private projectsService: ProjectsService,
         private analysesService: AnalysesService,
+        private attributionsService: AttributionsService,
+        private datasetService: DatasetService,
         private route: ActivatedRoute
     ) { }
 
@@ -45,6 +49,16 @@ export class IndexPage implements OnInit {
      * Contains the project that is being displayed.
      */
     public project: Project;
+
+    /**
+     * Contains the dataset sample of the embedding that the user is currently hovering its mouse over.
+     */
+    public datasetSampleHoverPreview: Sample;
+
+    /**
+     * Contains the position of the hover preview, which is at the mouse position where the hover took place.
+     */
+    public datasetSampleHoverPreviewPosition: { x: number; y: number; };
 
     /**
      * Contains the analysis method that was selected by the user.
@@ -177,7 +191,8 @@ export class IndexPage implements OnInit {
                 type: 'scatter',
                 mode: 'markers',
                 marker: { size: 12 },
-                hoverinfo: 'skip'
+                hoverinfo: 'none',
+                attributionIndices: embeddingsInCluster.map(embedding => embedding.attributionIndex)
             });
         }
     }
@@ -193,6 +208,8 @@ export class IndexPage implements OnInit {
     public graphLayout: Partial<Plotly.Layout> = {
         autosize: true,
         dragmode: 'lasso',
+        hovermode: 'closest',
+        hoverdistance: 12,
         showlegend: false,
         xaxis: {
             showgrid: false,
@@ -264,5 +281,21 @@ export class IndexPage implements OnInit {
                 this.refreshProjectAsync();
             }
         });
+    }
+
+    public async onHoverAsync(event: any): Promise<any> {
+        console.log(event);
+        const attributionIndex = event.points[0].data.attributionIndices[event.points[0].pointIndex];
+        const attribution = await this.attributionsService.getAsync(this.project.id, attributionIndex);
+        this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
+        this.datasetSampleHoverPreviewPosition = {
+            x: event.event.clientX,
+            y: event.event.clientY
+        };
+    }
+
+    public onUnhover(): void {
+        this.datasetSampleHoverPreview = null;
+        this.datasetSampleHoverPreviewPosition = null;
     }
 }

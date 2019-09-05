@@ -35,7 +35,7 @@ export class AnalysesService {
         embedding: string
     ): Promise<Analysis> {
         return await this.httpClient
-            .get<Analysis>(`${environment.apiBaseUrl}/projects/${projectId}/analyses/${analysisMethod}?category=${category}&clustering=${clustering}&embedding=${embedding}`, {
+            .get<Analysis>(`${environment.apiBaseUrl}/api/projects/${projectId}/analyses/${analysisMethod}?category=${category}&clustering=${clustering}&embedding=${embedding}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
             .pipe(map(analysis => new Analysis(analysis)))

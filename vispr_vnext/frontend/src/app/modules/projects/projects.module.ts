@@ -11,6 +11,8 @@ import { ProjectsService } from 'src/services/projects/projects.service';
 import { projectRoutes } from './projects.routes';
 import { IndexPage } from './pages/index/index.page';
 import { AnalysesService } from 'src/services/analyses/analyses.service';
+import { AttributionsService } from 'src/services/attributions/attributions.service';
+import { DatasetService } from 'src/services/dataset/dataset.service';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -31,7 +33,9 @@ PlotlyModule.plotlyjs = PlotlyJS;
     exports: [],
     providers: [
         ProjectsService,
-        AnalysesService
+        AnalysesService,
+        AttributionsService,
+        DatasetService
     ]
 })
 export class ProjectsModule { }

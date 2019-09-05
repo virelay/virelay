@@ -23,7 +23,7 @@ export class ProjectsService {
      */
     public async getAsync(): Promise<Array<Project>> {
         return await this.httpClient
-            .get<Array<Project>>(`${environment.apiBaseUrl}/projects`, {
+            .get<Array<Project>>(`${environment.apiBaseUrl}/api/projects`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
             .pipe(map(projects => projects.map(project => new Project(project))))
@@ -36,7 +36,7 @@ export class ProjectsService {
      */
     public async getByIdAsync(id: number): Promise<Project> {
         return await this.httpClient
-            .get<Project>(`${environment.apiBaseUrl}/projects/${id}`, {
+            .get<Project>(`${environment.apiBaseUrl}/api/projects/${id}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
             .pipe(map(project => new Project(project)))

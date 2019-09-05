@@ -10,6 +10,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ProjectsService } from 'src/services/projects/projects.service';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { AnalysesService } from 'src/services/analyses/analyses.service';
+import { AttributionsService } from 'src/services/attributions/attributions.service';
+import { DatasetService } from 'src/services/dataset/dataset.service';
 
 @NgModule({
     declarations: [
@@ -25,7 +27,9 @@ import { AnalysesService } from 'src/services/analyses/analyses.service';
     ],
     providers: [
         ProjectsService,
-        AnalysesService
+        AnalysesService,
+        AttributionsService,
+        DatasetService
     ],
   bootstrap: [AppComponent]
 })

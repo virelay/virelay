@@ -2,50 +2,30 @@
 <span *ngIf="isLoading" class="spinner spinner-centered"></span>
 
 <div *ngIf="project" id="panels-container">
-    <section>
-        <plotly-plot
-            *ngIf="graphData"
-            [data]="graphData"
-            [layout]="graphLayout"
-            [useResizeHandler]="true"
-            [style]="{ width: '100%', height: '100%' }"
-            (hover)="onHoverAsync($event)"
-            (unhover)="onUnhover($event)">
-        </plotly-plot>
 
-        <img
-            id="attribution-hover-preview"
-            *ngIf="datasetSampleHoverPreview"
-            [src]="datasetSampleHoverPreview.url"
-            [alt]="datasetSampleHoverPreview.labels"
-            [style.left.px]="datasetSampleHoverPreviewPosition.x"
-            [style.top.px]="datasetSampleHoverPreviewPosition.y"
-        />
-    </section>
-
-    <aside class="clr-row">
-        <clr-select-container class="clr-col-1">
+    <aside id="options-pane">
+        <clr-select-container>
             <label>Analysis method</label>
             <select clrSelect name="analysis-method" [(ngModel)]="selectedAnalysisMethod">
                 <option *ngIf="!selectedAnalysisMethod" [ngValue]="null">Select an analysis method...</option>
                 <option *ngFor="let analysisMethod of project.analysisMethods" [ngValue]="analysisMethod">{{ analysisMethod.name }}</option>
             </select>
         </clr-select-container>
-        <clr-select-container *ngIf="selectedAnalysisMethod" class="clr-col-6">
+        <clr-select-container *ngIf="selectedAnalysisMethod">
             <label>Category</label>
             <select clrSelect name="category" [(ngModel)]="selectedCategory">
                 <option *ngIf="!selectedCategory" [ngValue]="null">Select a category...</option>
                 <option *ngFor="let category of selectedAnalysisMethod.categories" [ngValue]="category">{{ category.humanReadableName }} ({{ category.name }})</option>
             </select>
         </clr-select-container>
-        <clr-select-container *ngIf="selectedAnalysisMethod" class="clr-col-1">
+        <clr-select-container *ngIf="selectedAnalysisMethod">
             <label>Clustering</label>
             <select clrSelect class="full-width" name="clustering" [(ngModel)]="selectedClustering">
                 <option *ngIf="!selectedClustering" [ngValue]="null">Select a clustering...</option>
                 <option *ngFor="let clustering of selectedAnalysisMethod.clusterings" [value]="clustering">{{ clustering }}</option>
             </select>
         </clr-select-container>
-        <clr-select-container *ngIf="selectedAnalysisMethod" class="clr-col-1">
+        <clr-select-container *ngIf="selectedAnalysisMethod">
             <label>Embedding</label>
             <select clrSelect name="embedding" [(ngModel)]="selectedEmbedding">
                 <option *ngIf="!selectedEmbedding" [ngValue]="null">Select a embedding...</option>
@@ -54,7 +34,45 @@
         </clr-select-container>
     </aside>
 
-    <footer>
+    <section id="embedding-plot">
+        <plotly-plot
+            *ngIf="graphData"
+            [data]="graphData"
+            [layout]="graphLayout"
+            [useResizeHandler]="true"
+            [style]="{ width: '100%', height: '100%' }"
+            (hover)="onHoverAsync($event)"
+            (unhover)="onUnhover($event)"
+            (selected)="onSelectedAsync($event)"
+            (selecting)="onSelecting()"
+            (deselect)="onDeselect()">
+        </plotly-plot>
+
+        <img
+            id="attribution-hover-preview"
+            *ngIf="datasetSampleHoverPreview"
+            [src]="datasetSampleHoverPreview.url"
+            [alt]="datasetSampleHoverPreview.labelDisplay"
+            [style.left.px]="datasetSampleHoverPreviewPosition.x"
+            [style.top.px]="datasetSampleHoverPreviewPosition.y"
+        />
+    </section>
+
+    <aside id="selected-embeddings">
+        <span *ngIf="isLoadingSelection" class="spinner spinner-locally-centered"></span>
+
+        <div *ngIf="!isLoadingSelection && (!selectedAttributions || selectedAttributions.length === 0)" id="selection-hint">
+            <p>Select data points to display attributions...</p>
+        </div>
+
+        <div *ngIf="!isLoadingSelection && selectedAttributions && selectedAttributions.length > 0" id="embeddings-list">
+            <div *ngFor="let attribution of selectedAttributions" class="embedding">
+                <img [src]="attribution.url" [alt]="attribution.labelDisplay" />
+            </div>
+        </div>
+    </aside>
+
+    <footer id="status-bar">
         <clr-icon shape="library"></clr-icon> <strong>Project:</strong> {{ project.name }}
         <clr-icon shape="storage"></clr-icon> <strong>Dataset:</strong> {{ project.dataset }}
         <clr-icon shape="organization"></clr-icon> <strong>Model:</strong> {{ project.model }}

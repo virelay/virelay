@@ -12,6 +12,7 @@ import { AnalysisCategory } from 'src/services/projects/analysis-category';
 import { AttributionsService } from 'src/services/attributions/attributions.service';
 import { Sample } from 'src/services/dataset/sample';
 import { DatasetService } from 'src/services/dataset/dataset.service';
+import { Attribution } from 'src/services/attributions/attribution';
 
 /**
  * Represents the index page of a project
@@ -36,9 +37,15 @@ export class IndexPage implements OnInit {
     ) { }
 
     /**
-     * Contains a value that determine whether the component is currently loading data from the RESTful API.
+     * Contains a value that determines whether the component is currently loading data from the RESTful API.
      */
     public isLoading: boolean;
+
+    /**
+     * Contains a value that determines whether the selected attributions and dataset samples are currently being loaded
+     * from the RESTful API.
+     */
+    public isLoadingSelection: boolean;
 
     /**
      * Contains the ID of the project.
@@ -225,6 +232,8 @@ export class IndexPage implements OnInit {
         plot_bgcolor: '#00000000'
     };
 
+    public selectedAttributions: Array<Attribution>;
+
     /**
      * Reloads the project and all its information.
      */
@@ -232,6 +241,7 @@ export class IndexPage implements OnInit {
         this.isLoading = true;
         this.project = await this.projectsService.getByIdAsync(this.id);
 
+        this.selectedAttributions = null;
         this.selectedAnalysisMethod = this.project.analysisMethods[0];
         this.selectedCategory = this.selectedAnalysisMethod.categories[0];
         this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
@@ -258,6 +268,7 @@ export class IndexPage implements OnInit {
         }
 
         this.isLoading = true;
+        this.selectedAttributions = null;
         this.analysis = await this.analysesService.getAsync(
             this.project.id,
             this.selectedAnalysisMethod.name,
@@ -320,5 +331,53 @@ export class IndexPage implements OnInit {
     public onUnhover(): void {
         this.datasetSampleHoverPreview = null;
         this.datasetSampleHoverPreviewPosition = null;
+    }
+
+    /**
+     * Is invoked when the user starts selecting. During the selection, the dataset sample preview is removed, so that
+     * the user is able to properly see the data points.
+     */
+    public onSelecting(): void {
+        this.datasetSampleHoverPreview = null;
+        this.datasetSampleHoverPreviewPosition = null;
+    }
+
+    /**
+     * Is invoked when the user selects embeddings.
+     * @param eventInfo The event object that contains the information about the embeddings that were selected.
+     */
+    public async onSelectedAsync(eventInfo?: any): Promise<any> {
+
+        // When nothing was selected, then nothing needs to be loaded (this sometimes happens when deselecting)
+        if (!eventInfo) {
+            return;
+        }
+
+        // Gets the attributions of the data points that were selected
+        this.isLoadingSelection = true;
+        const attributionIndices: Array<number> = eventInfo.points.map(
+            dataPoint => dataPoint.data.attributionIndices[dataPoint.pointIndex]
+        );
+        this.selectedAttributions = await Promise.all(attributionIndices.map(
+            index => this.attributionsService.getAsync(this.project.id, index)
+        ));
+
+        // Gets the dataset samples for which the attributions were generated
+        const selectedDatasetSamples: Array<Sample> = await Promise.all(this.selectedAttributions.map(
+            attribution => this.datasetService.getAsync(this.project.id, attribution.index)
+        ));
+
+        // Assigns the dataset sample to their respective attribution
+        for (const attribution of this.selectedAttributions) {
+            attribution.sample = selectedDatasetSamples.filter(sample => sample.index === attribution.index)[0];
+        }
+        this.isLoadingSelection = false;
+    }
+
+    /**
+     * Is invoked, when the user deselects everything.
+     */
+    public onDeselect(): void {
+        this.selectedAttributions = null;
     }
 }

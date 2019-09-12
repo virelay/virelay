@@ -1,3 +1,4 @@
+import { Sample } from '../dataset/sample';
 
 /**
  * Represents a single attribution.
@@ -73,4 +74,9 @@ export class Attribution {
      * Contains the URLs to the heatmaps for the attribution for all supported color maps.
      */
     public urls: { [colorMap: string]: string; };
+
+    /**
+     * Contains the sample for which the attribution was generated.
+     */
+    public sample?: Sample;
 }

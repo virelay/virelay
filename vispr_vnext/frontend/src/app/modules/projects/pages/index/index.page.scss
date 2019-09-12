@@ -2,16 +2,16 @@
 #panels-container {
     display: grid;
     grid-template-rows: 85px 1fr 35px;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 250px;
     grid-template-areas:
-        "information-panel"
-        "data-panel"
-        "status-bar"
+        "options-pane selected-embeddings"
+        "embedding-plot selected-embeddings"
+        "status-bar status-bar"
     ;
 
-    section {
-        grid-area: data-panel;
-        width: 100vw;
+    #embedding-plot {
+        grid-area: embedding-plot;
+        width: calc(100vw - 250px);
         height: calc(100vh - 180px);
 
         #attribution-hover-preview {
@@ -20,19 +20,67 @@
         }
     }
 
-    aside {
-        grid-area: information-panel;
+    #options-pane {
+        grid-area: options-pane;
+
+        display: flex;
+        align-items: center;
 
         background-color: #EFEFEF;
         margin: 0;
         z-index: 1;
 
-        clr-select-container:first-child {
-            margin-left: 12px;
+        clr-select-container {
+            margin: 0 0 0 24px;
         }
     }
 
-    footer {
+    #selected-embeddings {
+        grid-area: selected-embeddings;
+        height: calc(100vh - 95px);
+
+        background-color: #EFEFEF;
+
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        .spinner-locally-centered {
+            position: relative;
+            top: calc(50% - 1.5rem);
+            left: calc(50% - 1.5rem);
+        }
+
+        #selection-hint {
+            display: table;
+
+            height: calc(100% - 24px);
+            margin: 12px;
+
+            border: 1px dashed rgb(192, 192, 192);
+            border-radius: 5px;
+
+            text-align: center;
+
+            p {
+                vertical-align: middle;
+                display: table-cell;
+            }
+        }
+
+        #embeddings-list {
+            margin: 12px;
+
+            .embedding {
+                margin-bottom: 12px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+
+    #status-bar {
         grid-area: status-bar;
 
         display: flex;

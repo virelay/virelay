@@ -268,6 +268,8 @@ class Server:
         return self.http_ok({
             'index': sample.index,
             'labels': sample.labels,
+            'width': sample.data.shape[0],
+            'height': sample.data.shape[1],
             'url': flask.url_for('get_sample_image', project_id=project_id, sample_index=sample_index)
         })
 
@@ -337,6 +339,8 @@ class Server:
             'index': attribution.index,
             'labels': attribution.labels,
             'prediction': numpy.array(attribution.prediction).tolist(),
+            'width': attribution.data.shape[0],
+            'height': attribution.data.shape[1],
             'url': flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
             'urls': {}
         }

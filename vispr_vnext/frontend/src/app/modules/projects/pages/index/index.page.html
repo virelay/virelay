@@ -10,8 +10,17 @@
             [useResizeHandler]="true"
             [style]="{ width: '100%', height: '100%' }"
             (hover)="onHoverAsync($event)"
-            (unhover)="onUnhover()">
+            (unhover)="onUnhover($event)">
         </plotly-plot>
+
+        <img
+            id="attribution-hover-preview"
+            *ngIf="datasetSampleHoverPreview"
+            [src]="datasetSampleHoverPreview.url"
+            [alt]="datasetSampleHoverPreview.labels"
+            [style.left.px]="datasetSampleHoverPreviewPosition.x"
+            [style.top.px]="datasetSampleHoverPreviewPosition.y"
+        />
     </section>
 
     <aside class="clr-row">
@@ -43,15 +52,6 @@
                 <option *ngFor="let embedding of selectedAnalysisMethod.embeddings" [value]="embedding">{{ embedding }}</option>
             </select>
         </clr-select-container>
-
-        <img
-            id="attribution-hover-preview"
-            *ngIf="datasetSampleHoverPreview"
-            [src]="datasetSampleHoverPreview.url"
-            [alt]="datasetSampleHoverPreview.labels"
-            [style.left.px]="datasetSampleHoverPreviewPosition.x"
-            [style.top.px]="datasetSampleHoverPreviewPosition.y"
-        />
     </aside>
 
     <footer>

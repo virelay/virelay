@@ -13,6 +13,8 @@ export class Sample {
         if (sample) {
             this.index = sample.index;
             this.labels = sample.labels;
+            this.width = sample.width;
+            this.height = sample.height;
             this.url = sample.url;
             if (baseUrl) {
                 this.url = baseUrl + this.url;
@@ -39,6 +41,16 @@ export class Sample {
         }
         return this.labels;
     }
+
+    /**
+     * The width of the sample image.
+     */
+    public width: number;
+
+    /**
+     * The height of the sample image.
+     */
+    public height: number;
 
     /**
      * Contains the URL to the image of the dataset sample.

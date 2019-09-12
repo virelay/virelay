@@ -13,6 +13,11 @@
         grid-area: data-panel;
         width: 100vw;
         height: calc(100vh - 180px);
+
+        #attribution-hover-preview {
+            position: absolute;
+            z-index: 9999;
+        }
     }
 
     aside {
@@ -24,11 +29,6 @@
 
         clr-select-container:first-child {
             margin-left: 12px;
-        }
-
-        #attribution-hover-preview {
-            position: absolute;
-            z-index: 9999;
         }
     }
 

@@ -209,7 +209,7 @@ export class IndexPage implements OnInit {
         autosize: true,
         dragmode: 'lasso',
         hovermode: 'closest',
-        hoverdistance: 12,
+        hoverdistance: 1,
         showlegend: false,
         xaxis: {
             showgrid: false,
@@ -283,17 +283,40 @@ export class IndexPage implements OnInit {
         });
     }
 
-    public async onHoverAsync(event: any): Promise<any> {
-        console.log(event);
-        const attributionIndex = event.points[0].data.attributionIndices[event.points[0].pointIndex];
+    /**
+     * Is invoked when the user hovers the mouse over an embedding.
+     * @param eventInfo The event object that contains the information about the embedding that the user hovered over.
+     */
+    public async onHoverAsync(eventInfo: any): Promise<any> {
+
+        // Loads the attribution and the corresponding dataset sample
+        const attributionIndex = eventInfo.points[0].data.attributionIndices[eventInfo.points[0].pointIndex];
         const attribution = await this.attributionsService.getAsync(this.project.id, attributionIndex);
         this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
+
+        // Determines the position of the dataset sample image on screen (the position is computed so that it never
+        // reaches beyond the viewport)
+        let previewPositionX;
+        if (window.innerWidth < eventInfo.event.clientX + 10 + this.datasetSampleHoverPreview.width) {
+            previewPositionX = eventInfo.event.clientX - 10 - this.datasetSampleHoverPreview.width;
+        } else {
+            previewPositionX = eventInfo.event.clientX + 10;
+        }
+        let previewPositionY;
+        if (window.innerHeight < eventInfo.event.clientY + 10 + this.datasetSampleHoverPreview.height) {
+            previewPositionY = eventInfo.event.clientY - 10 - this.datasetSampleHoverPreview.height;
+        } else {
+            previewPositionY = eventInfo.event.clientY + 10;
+        }
         this.datasetSampleHoverPreviewPosition = {
-            x: event.event.clientX,
-            y: event.event.clientY
+            x: previewPositionX,
+            y: previewPositionY
         };
     }
 
+    /**
+     * Is invoked when the user moves the mouse away from a sample.
+     */
     public onUnhover(): void {
         this.datasetSampleHoverPreview = null;
         this.datasetSampleHoverPreviewPosition = null;

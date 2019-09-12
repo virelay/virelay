@@ -14,6 +14,8 @@ export class Attribution {
             this.index = attribution.index;
             this.labels = attribution.labels;
             this.prediction = attribution.prediction;
+            this.width = attribution.width;
+            this.height = attribution.height;
             this.url = attribution.url;
             this.urls = attribution.urls;
             if (baseUrl) {
@@ -51,6 +53,16 @@ export class Attribution {
      * Contains the output of the model for the dataset sample for which the attribution was generated.
      */
     public prediction: Array<number>;
+
+    /**
+     * The width of the attribution heatmap image.
+     */
+    public width: number;
+
+    /**
+     * The height of the attribution heatmap image.
+     */
+    public height: number;
 
     /**
      * Contains the URL to the heatmap for the attribution with a default color map.

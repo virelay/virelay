@@ -355,9 +355,10 @@ export class IndexPage implements OnInit {
 
         // Gets the attributions of the data points that were selected
         this.isLoadingSelection = true;
-        const attributionIndices: Array<number> = eventInfo.points.map(
+        let attributionIndices: Array<number> = eventInfo.points.map(
             dataPoint => dataPoint.data.attributionIndices[dataPoint.pointIndex]
         );
+        attributionIndices = attributionIndices.slice(0, 10);
         this.selectedAttributions = await Promise.all(attributionIndices.map(
             index => this.attributionsService.getAsync(this.project.id, index)
         ));

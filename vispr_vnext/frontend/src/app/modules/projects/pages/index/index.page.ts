@@ -76,6 +76,56 @@ export class IndexPage implements OnInit {
     public datasetSampleHoverPreview: Sample;
 
     /**
+     * Gets a list of all the dimensions that are available in the currently selected embedding.
+     */
+    public get embeddingDimensions(): Array<number> {
+        if (!this.analysis || this.analysis.embedding.length === 0) {
+            return new Array();
+        }
+        return new Array(this.analysis.embedding[0].value.length).fill(0).map((_, index) => index);
+    }
+
+    /**
+     * Contains the index of the dimension of the embedding that is to be displayed in the plot.
+     */
+    private _horizontalAxisDimensionIndex = 0;
+
+    /**
+     * Gets the index of the dimension of the embedding that is to be displayed in the plot.
+     */
+    public get horizontalAxisDimensionIndex(): number {
+        return this._horizontalAxisDimensionIndex;
+    }
+
+    /**
+     * Sets the index of the dimension of the embedding that is to be displayed in the plot.
+     */
+    public set horizontalAxisDimensionIndex(value: number) {
+        this._horizontalAxisDimensionIndex = value;
+        this.refreshPlot();
+    }
+
+    /**
+     * Contains the index of the dimension of the embedding that is to be displayed in the plot.
+     */
+    private _verticalAxisDimensionIndex = 1;
+
+    /**
+     * Gets the index of the dimension of the embedding that is to be displayed in the plot.
+     */
+    public get verticalAxisDimensionIndex(): number {
+        return this._verticalAxisDimensionIndex;
+    }
+
+    /**
+     * Sets the index of the dimension of the embedding that is to be displayed in the plot.
+     */
+    public set verticalAxisDimensionIndex(value: number) {
+        this._verticalAxisDimensionIndex = value;
+        this.refreshPlot();
+    }
+
+    /**
      * Contains the color maps from which the user can choose one for rendering the heatmaps.
      */
     public colorMaps: Array<ColorMap>;
@@ -175,6 +225,8 @@ export class IndexPage implements OnInit {
      */
     public set selectedEmbedding(value: string) {
         this._selectedEmbedding = value;
+        this._horizontalAxisDimensionIndex = 0;
+        this._verticalAxisDimensionIndex = 1;
         if (value) {
             this.refreshAnalysisAsync();
         }
@@ -198,28 +250,7 @@ export class IndexPage implements OnInit {
      */
     public set analysis(value: Analysis) {
         this._analysis = value;
-
-        const clusters = new Array<number>();
-        for (const cluster of this.analysis.embedding.map(embedding => embedding.cluster)) {
-            if (clusters.indexOf(cluster) === -1) {
-                clusters.push(cluster);
-            }
-        }
-
-        this.graphData = new Array<Plotly.Data>();
-        for (const cluster of clusters) {
-            const embeddingsInCluster = this.analysis.embedding.filter(embedding => embedding.cluster === cluster);
-            this.graphData.push({
-                name: `Cluster ${cluster}`,
-                x: embeddingsInCluster.map(embedding => embedding.value[0]),
-                y: embeddingsInCluster.map(embedding => embedding.value[1]),
-                type: 'scatter',
-                mode: 'markers',
-                marker: { size: 12 },
-                hoverinfo: 'none',
-                attributionIndices: embeddingsInCluster.map(embedding => embedding.attributionIndex)
-            });
-        }
+        this.refreshPlot();
     }
 
     /**
@@ -257,12 +288,47 @@ export class IndexPage implements OnInit {
         plot_bgcolor: '#00000000'
     };
 
+    /**
+     * Contains the attributions that were selected by the user.
+     */
     public selectedAttributions: Array<Attribution>;
+
+    /**
+     * Refreshes the plot.
+     */
+    private refreshPlot(): void {
+
+        if (!this.analysis) {
+            return;
+        }
+
+        const clusters = new Array<number>();
+        for (const cluster of this.analysis.embedding.map(embedding => embedding.cluster)) {
+            if (clusters.indexOf(cluster) === -1) {
+                clusters.push(cluster);
+            }
+        }
+
+        this.graphData = new Array<Plotly.Data>();
+        for (const cluster of clusters) {
+            const embeddingsInCluster = this.analysis.embedding.filter(embedding => embedding.cluster === cluster);
+            this.graphData.push({
+                name: `Cluster ${cluster}`,
+                x: embeddingsInCluster.map(embedding => embedding.value[this.horizontalAxisDimensionIndex]),
+                y: embeddingsInCluster.map(embedding => embedding.value[this.verticalAxisDimensionIndex]),
+                type: 'scatter',
+                mode: 'markers',
+                marker: { size: 12 },
+                hoverinfo: 'none',
+                attributionIndices: embeddingsInCluster.map(embedding => embedding.attributionIndex)
+            });
+        }
+    }
 
     /**
      * Reloads the project and all its information.
      */
-    private async refreshProjectAsync() {
+    private async refreshProjectAsync(): Promise<void> {
         this.isLoading = true;
         this.project = await this.projectsService.getByIdAsync(this.id);
 
@@ -307,7 +373,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when the component is initialized. Retrieves the ID of the project from the URL and loads it
      */
-    public async ngOnInit(): Promise<any> {
+    public async ngOnInit(): Promise<void> {
 
         // Subscribes for changes of the route, when the route has changed, then the project ID is retrieved from the
         // URL and the project is loaded
@@ -332,7 +398,7 @@ export class IndexPage implements OnInit {
      * Is invoked when the user hovers the mouse over an embedding.
      * @param eventInfo The event object that contains the information about the embedding that the user hovered over.
      */
-    public async onHoverAsync(eventInfo: any): Promise<any> {
+    public async onHoverAsync(eventInfo: any): Promise<void> {
 
         this.isHovering = true;
         const attributionIndex = eventInfo.points[0].data.attributionIndices[eventInfo.points[0].pointIndex];
@@ -352,7 +418,7 @@ export class IndexPage implements OnInit {
      * Is invoked when the user selects embeddings.
      * @param eventInfo The event object that contains the information about the embeddings that were selected.
      */
-    public async onSelectedAsync(eventInfo?: any): Promise<any> {
+    public async onSelectedAsync(eventInfo?: any): Promise<void> {
 
         // When nothing was selected, then nothing needs to be loaded (this sometimes happens when deselecting)
         if (!eventInfo) {

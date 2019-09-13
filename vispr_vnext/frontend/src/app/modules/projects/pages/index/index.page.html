@@ -32,6 +32,18 @@
                 <option *ngFor="let embedding of selectedAnalysisMethod.embeddings" [value]="embedding">{{ embedding }}</option>
             </select>
         </clr-select-container>
+        <clr-select-container *ngIf="embeddingDimensions && embeddingDimensions.length > 2">
+            <label>X-Axis</label>
+            <select clrSelect name="horizontal-axis-dimension-index" [(ngModel)]="horizontalAxisDimensionIndex">
+                <option *ngFor="let index of embeddingDimensions" [value]="index">{{ index }}</option>
+            </select>
+        </clr-select-container>
+        <clr-select-container *ngIf="embeddingDimensions && embeddingDimensions.length > 2">
+            <label>Y-Axis</label>
+            <select clrSelect name="vertical-axis-dimension-index" [(ngModel)]="verticalAxisDimensionIndex">
+                <option *ngFor="let index of embeddingDimensions" [value]="index">{{ index }}</option>
+            </select>
+        </clr-select-container>
         <clr-select-container *ngIf="colorMaps">
             <label>Color map</label>
             <select clrSelect name="color-map" [(ngModel)]="selectedColorMap">

@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
     /**
      * Is invoked when the app component is being initialized. Loads the projects from the server.
      */
-    public async ngOnInit(): Promise<any> {
+    public async ngOnInit(): Promise<void> {
 
         // Loads the projects from the RESTful API
         this.isLoadingProjects = true;

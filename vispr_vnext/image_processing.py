@@ -109,8 +109,7 @@ def render_heatmap(data, color_map):
     # Creates a dictionary, which maps the name of a custom color map to a method that produces the heatmap image
     # using that color map
     custom_color_maps = {
-        'gray-red-1': generate_heatmap_image_gray_red_1,
-        'gray-red-2': generate_heatmap_image_gray_red_2,
+        'gray-red': generate_heatmap_image_gray_red,
         'black-green': generate_heatmap_image_black_green,
         'black-fire-red': generate_heatmap_image_black_fire_red,
         'blue-black-yellow': generate_heatmap_image_black_yellow
@@ -174,7 +173,7 @@ def generate_heatmap_image_using_matplotlib(raw_heatmap, color_map_name):
     return heatmap_image
 
 
-def generate_heatmap_image_gray_red_1(raw_heatmap):
+def generate_heatmap_image_gray_red(raw_heatmap):
     """
     Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
     blue tones are used to visualize negative relevances.
@@ -209,59 +208,6 @@ def generate_heatmap_image_gray_red_1(raw_heatmap):
 
     # Returns the created heatmap image
     return heatmap_image
-
-
-def generate_heatmap_image_gray_red_2(raw_heatmap):
-    """
-    Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
-    blue tones are used to visualize negative relevances.
-
-    Parameters
-    ----------
-        raw_heatmap: numpy.ndarray
-            The raw heatmap, which are to be converted into an image representation.
-
-    Returns
-    -------
-        numpy.ndarray
-            Returns an array that contains the RGB values of the resulting heatmap image.
-    """
-
-    # Prepares the raw heatmap
-    variance = numpy.var(raw_heatmap)
-    raw_heatmap[raw_heatmap > 10 * variance] = 0
-    raw_heatmap[raw_heatmap < 0] = 0
-    raw_heatmap = raw_heatmap / numpy.max(raw_heatmap)
-
-    # Applies the heatmap to the positive relevances
-    heatmap_red_positive = 0.9 - numpy.clip(raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.5
-    heatmap_green_positive = \
-        0.9 - numpy.clip(raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
-        0.5 - numpy.clip(raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
-    heatmap_blue_positive = \
-        0.9 - numpy.clip(raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
-        0.5 - numpy.clip(raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
-
-    # Applies the heatmap to the negative relevances
-    heatmap_red_negative = \
-        0.9 - numpy.clip(-raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
-        0.5 - numpy.clip(-raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
-    heatmap_green_negative = \
-        0.9 - numpy.clip(-raw_heatmap - 0.0, 0, 0.3) / 0.3 * \
-        0.5 - numpy.clip(-raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.4
-    heatmap_blue_negative = 0.9 - numpy.clip(-raw_heatmap - 0.3, 0, 0.7) / 0.7 * 0.5
-
-    # Combines the positive and negative relevances
-    heatmap_red = heatmap_red_positive * (raw_heatmap >= 0) + heatmap_red_negative * (raw_heatmap < 0)
-    heatmap_green = heatmap_green_positive * (raw_heatmap >= 0) + heatmap_green_negative * (raw_heatmap < 0)
-    heatmap_blue = heatmap_blue_positive * (raw_heatmap >= 0) + heatmap_blue_negative * (raw_heatmap < 0)
-
-    # Concatenates the individual color channels back together and returns the generated heatmap image
-    return numpy.concatenate([
-        heatmap_red[..., None],
-        heatmap_green[..., None],
-        heatmap_blue[..., None]
-    ], axis=2)
 
 
 def generate_heatmap_image_black_green(raw_heatmap):

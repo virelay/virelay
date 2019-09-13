@@ -43,8 +43,7 @@ class Server:
 
         # Initializes the class members
         self.color_maps = {
-            'gray-red-1': 'Gray Red',
-            'gray-red-2': 'Gray Red 2',
+            'gray-red': 'Gray Red',
             'black-green': 'Black Green',
             'black-fire-red': 'Black Fire-Red',
             'blue-black-yellow': 'Blue Black Yellow',

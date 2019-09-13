@@ -42,6 +42,12 @@ export class BeforeAndAfterSliderComponent implements AfterViewInit {
     public afterImageSource: string;
 
     /**
+     * An alternative string, which is displayed when an image cannot be loaded.
+     */
+    @Input()
+    public alt: string;
+
+    /**
      * Is invoked when the view of component was properly initialized.
      */
     public ngAfterViewInit(): void {

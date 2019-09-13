@@ -63,10 +63,11 @@
         </div>
 
         <div *ngIf="!isLoadingSelection && selectedAttributions && selectedAttributions.length > 0" id="embeddings-list">
-            <div *ngFor="let attribution of selectedAttributions" class="embedding">
+            <div *ngFor="let attribution of selectedAttributions" class="embedding" [title]="attribution.labelDisplay">
                 <app-before-and-after-slider
                     [beforeImageSource]="attribution.url"
-                    [afterImageSource]="attribution.sample.url">
+                    [afterImageSource]="attribution.sample.url"
+                    [alt]="attribution.labelDisplay">
                 </app-before-and-after-slider>
             </div>
         </div>

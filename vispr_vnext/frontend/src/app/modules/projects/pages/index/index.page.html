@@ -49,7 +49,7 @@
 
         <img
             id="attribution-hover-preview"
-            *ngIf="datasetSampleHoverPreview"
+            *ngIf="datasetSampleHoverPreview && isHovering"
             [src]="datasetSampleHoverPreview.url"
             [alt]="datasetSampleHoverPreview.labelDisplay"
         />

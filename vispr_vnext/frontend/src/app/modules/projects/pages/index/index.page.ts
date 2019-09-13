@@ -58,6 +58,11 @@ export class IndexPage implements OnInit {
     public project: Project;
 
     /**
+     * Contains a value that determines whether the user is currently hovering the mouse over a data point.
+     */
+    public isHovering: boolean;
+
+    /**
      * Contains the dataset sample of the embedding that the user is currently hovering its mouse over.
      */
     public datasetSampleHoverPreview: Sample;
@@ -302,6 +307,7 @@ export class IndexPage implements OnInit {
      */
     public async onHoverAsync(eventInfo: any): Promise<any> {
 
+        this.isHovering = true;
         const attributionIndex = eventInfo.points[0].data.attributionIndices[eventInfo.points[0].pointIndex];
         const attribution = await this.attributionsService.getAsync(this.project.id, attributionIndex);
         this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
@@ -311,6 +317,7 @@ export class IndexPage implements OnInit {
      * Is invoked when the user moves the mouse away from a sample.
      */
     public onUnhover(): void {
+        this.isHovering = false;
         this.datasetSampleHoverPreview = null;
     }
 

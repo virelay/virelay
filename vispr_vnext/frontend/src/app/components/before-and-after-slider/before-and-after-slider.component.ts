@@ -61,13 +61,13 @@ export class BeforeAndAfterSliderComponent implements AfterViewInit {
         beforeImage.style.clip = `rect(0px, ${imageWidth / 2}px, 999px, 0px)`;
 
         let isMouseDown = false;
-        let sliderHandlePosition;
+        let sliderHandlePosition: number;
         sliderHandle.addEventListener('mousedown', event => {
             sliderHandlePosition = event.clientX;
             isMouseDown = true;
         });
-        sliderHandle.addEventListener('mouseup', _ => isMouseDown = false);
-        sliderHandle.addEventListener('mouseout', _ => isMouseDown = false);
+        document.addEventListener('mouseup', _ => isMouseDown = false);
+        document.addEventListener('mouseleave', _ => isMouseDown = false);
         sliderHandle.addEventListener('mousemove', event => {
             if (isMouseDown) {
                 sliderHandle.style.left = `${parseInt(sliderHandle.style.left, 10) + (event.clientX - sliderHandlePosition)}px`;

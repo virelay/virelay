@@ -315,14 +315,6 @@ export class IndexPage implements OnInit {
     }
 
     /**
-     * Is invoked when the user starts selecting. During the selection, the dataset sample preview is removed, so that
-     * the user is able to properly see the data points.
-     */
-    public onSelecting(): void {
-        this.datasetSampleHoverPreview = null;
-    }
-
-    /**
      * Is invoked when the user selects embeddings.
      * @param eventInfo The event object that contains the information about the embeddings that were selected.
      */

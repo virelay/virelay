@@ -13,6 +13,7 @@ import { IndexPage } from './pages/index/index.page';
 import { AnalysesService } from 'src/services/analyses/analyses.service';
 import { AttributionsService } from 'src/services/attributions/attributions.service';
 import { DatasetService } from 'src/services/dataset/dataset.service';
+import { ComponentsModule } from 'src/app/components/components.module';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -28,6 +29,7 @@ PlotlyModule.plotlyjs = PlotlyJS;
         ClarityModule,
         PlotlyModule,
         FormsModule,
+        ComponentsModule,
         RouterModule.forChild(projectRoutes)
     ],
     exports: [],

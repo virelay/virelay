@@ -1,0 +1,52 @@
+
+img {
+    width: 100%;
+    vertical-align: middle;
+}
+
+.before-and-after-slider-container, img, .slider-handle {
+    overflow: hidden;
+    user-select: none;
+}
+
+.before-and-after-slider-container {
+    position: relative;
+}
+
+.before-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.slider-handle {
+    position: absolute;
+    width: 200px;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10;
+
+    &:before, &:after {
+        position: absolute;
+        left: 50%;
+        content: "";
+        background: white;
+        cursor: grab;
+    }
+
+    &:before {
+        top: 0;
+        transform: translateX(-50%);
+        width: 1px;
+        height: 100%;
+    }
+
+    &:after {
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 5px;
+        height: 33%;
+        border-radius: 5px;
+    }
+}

@@ -44,7 +44,6 @@
             (hover)="onHoverAsync($event)"
             (unhover)="onUnhover($event)"
             (selected)="onSelectedAsync($event)"
-            (selecting)="onSelecting()"
             (deselect)="onDeselect()">
         </plotly-plot>
 
@@ -65,7 +64,10 @@
 
         <div *ngIf="!isLoadingSelection && selectedAttributions && selectedAttributions.length > 0" id="embeddings-list">
             <div *ngFor="let attribution of selectedAttributions" class="embedding">
-                <img [src]="attribution.url" [alt]="attribution.labelDisplay" />
+                <app-before-and-after-slider
+                    [beforeImageSource]="attribution.url"
+                    [afterImageSource]="attribution.sample.url">
+                </app-before-and-after-slider>
             </div>
         </div>
     </aside>

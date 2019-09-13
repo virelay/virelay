@@ -213,6 +213,13 @@ export class IndexPage implements OnInit {
         hovermode: 'closest',
         hoverdistance: 1,
         showlegend: false,
+        margin: {
+            l: 0,
+            r: 0,
+            t: 0,
+            b: 0,
+            pad: 0
+        },
         xaxis: {
             showgrid: false,
             zeroline: false,

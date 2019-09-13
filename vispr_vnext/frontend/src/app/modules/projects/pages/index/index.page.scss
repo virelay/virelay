@@ -4,7 +4,7 @@
     grid-template-rows: 85px 1fr 35px;
     grid-template-columns: 1fr 250px;
     grid-template-areas:
-        "options-pane selected-embeddings"
+        "options-pane options-pane"
         "embedding-plot selected-embeddings"
         "status-bar status-bar"
     ;
@@ -16,6 +16,8 @@
 
         #attribution-hover-preview {
             position: absolute;
+            top: 169px;
+            left: 24px;
             z-index: 9999;
         }
     }
@@ -37,7 +39,7 @@
 
     #selected-embeddings {
         grid-area: selected-embeddings;
-        height: calc(100vh - 95px);
+        height: calc(100vh - 180px);
 
         background-color: #EFEFEF;
 
@@ -53,8 +55,8 @@
         #selection-hint {
             display: table;
 
-            height: calc(100% - 24px);
-            margin: 12px;
+            height: calc(100% - 12px);
+            margin: 0 12px 12px 12px;
 
             border: 1px dashed rgb(192, 192, 192);
             border-radius: 5px;
@@ -69,6 +71,10 @@
 
         #embeddings-list {
             margin: 12px;
+
+            &:first-child {
+                margin-top: 0;
+            }
 
             .embedding {
                 margin-bottom: 12px;

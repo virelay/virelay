@@ -63,11 +63,6 @@ export class IndexPage implements OnInit {
     public datasetSampleHoverPreview: Sample;
 
     /**
-     * Contains the position of the hover preview, which is at the mouse position where the hover took place.
-     */
-    public datasetSampleHoverPreviewPosition: { x: number; y: number; };
-
-    /**
      * Contains the analysis method that was selected by the user.
      */
     private _selectedAnalysisMethod: AnalysisMethod;
@@ -300,29 +295,9 @@ export class IndexPage implements OnInit {
      */
     public async onHoverAsync(eventInfo: any): Promise<any> {
 
-        // Loads the attribution and the corresponding dataset sample
         const attributionIndex = eventInfo.points[0].data.attributionIndices[eventInfo.points[0].pointIndex];
         const attribution = await this.attributionsService.getAsync(this.project.id, attributionIndex);
         this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
-
-        // Determines the position of the dataset sample image on screen (the position is computed so that it never
-        // reaches beyond the viewport)
-        let previewPositionX;
-        if (window.innerWidth < eventInfo.event.clientX + 10 + this.datasetSampleHoverPreview.width) {
-            previewPositionX = eventInfo.event.clientX - 10 - this.datasetSampleHoverPreview.width;
-        } else {
-            previewPositionX = eventInfo.event.clientX + 10;
-        }
-        let previewPositionY;
-        if (window.innerHeight < eventInfo.event.clientY + 10 + this.datasetSampleHoverPreview.height) {
-            previewPositionY = eventInfo.event.clientY - 10 - this.datasetSampleHoverPreview.height;
-        } else {
-            previewPositionY = eventInfo.event.clientY + 10;
-        }
-        this.datasetSampleHoverPreviewPosition = {
-            x: previewPositionX,
-            y: previewPositionY
-        };
     }
 
     /**
@@ -330,7 +305,6 @@ export class IndexPage implements OnInit {
      */
     public onUnhover(): void {
         this.datasetSampleHoverPreview = null;
-        this.datasetSampleHoverPreviewPosition = null;
     }
 
     /**
@@ -339,7 +313,6 @@ export class IndexPage implements OnInit {
      */
     public onSelecting(): void {
         this.datasetSampleHoverPreview = null;
-        this.datasetSampleHoverPreviewPosition = null;
     }
 
     /**
@@ -358,7 +331,7 @@ export class IndexPage implements OnInit {
         let attributionIndices: Array<number> = eventInfo.points.map(
             dataPoint => dataPoint.data.attributionIndices[dataPoint.pointIndex]
         );
-        attributionIndices = attributionIndices.slice(0, 10);
+        attributionIndices = attributionIndices.slice(0, 20);
         this.selectedAttributions = await Promise.all(attributionIndices.map(
             index => this.attributionsService.getAsync(this.project.id, index)
         ));

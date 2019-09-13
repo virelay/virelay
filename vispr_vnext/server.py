@@ -129,6 +129,11 @@ class Server:
                     frontend_path, 'assets', 'images', '{0}.png'.format(file_name)
                 ))
             )
+            self.app.add_url_rule(
+                '/<path:path>',
+                'serve_frontend_catch_all',
+                lambda path: flask.send_file(os.path.join(frontend_path, 'index.html'))
+            )
 
     def run(self, host='localhost', port=8080):
         """

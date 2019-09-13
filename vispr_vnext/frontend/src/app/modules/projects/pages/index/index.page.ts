@@ -13,6 +13,8 @@ import { AttributionsService } from 'src/services/attributions/attributions.serv
 import { Sample } from 'src/services/dataset/sample';
 import { DatasetService } from 'src/services/dataset/dataset.service';
 import { Attribution } from 'src/services/attributions/attribution';
+import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
+import { ColorMap } from 'src/services/colorMaps/color-map';
 
 /**
  * Represents the index page of a project
@@ -27,12 +29,18 @@ export class IndexPage implements OnInit {
     /**
      * Initializes a new IndexPage instance.
      * @param projectsService The service which is used to manage projects.
+     * @param analysesService The service which is used to manage analyses.
+     * @param attributionsService The service which is used to manage attributions.
+     * @param datasetService The service which is used to manage the datasets.
+     * @param colorMapsService The service which is used to manage color maps.
+     * @param route The currently activated route.
      */
     public constructor(
         private projectsService: ProjectsService,
         private analysesService: AnalysesService,
         private attributionsService: AttributionsService,
         private datasetService: DatasetService,
+        private colorMapsService: ColorMapsService,
         private route: ActivatedRoute
     ) { }
 
@@ -66,6 +74,16 @@ export class IndexPage implements OnInit {
      * Contains the dataset sample of the embedding that the user is currently hovering its mouse over.
      */
     public datasetSampleHoverPreview: Sample;
+
+    /**
+     * Contains the color maps from which the user can choose one for rendering the heatmaps.
+     */
+    public colorMaps: Array<ColorMap>;
+
+    /**
+     * Contains the color map that was selected by the user for rendering the heatmaps.
+     */
+    public selectedColorMap: ColorMap;
 
     /**
      * Contains the analysis method that was selected by the user.
@@ -289,7 +307,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when the component is initialized. Retrieves the ID of the project from the URL and loads it
      */
-    public ngOnInit(): void {
+    public async ngOnInit(): Promise<any> {
 
         // Subscribes for changes of the route, when the route has changed, then the project ID is retrieved from the
         // URL and the project is loaded
@@ -299,6 +317,15 @@ export class IndexPage implements OnInit {
                 this.refreshProjectAsync();
             }
         });
+
+        // Loads the color maps from the RESTful API
+        this.colorMaps = await this.colorMapsService.getAsync();
+        const defaultColorMaps = this.colorMaps.filter(colorMap => colorMap.name === 'black-fire-red');
+        if (defaultColorMaps.length > 0) {
+            this.selectedColorMap = defaultColorMaps[0];
+        } else {
+            this.selectedColorMap = this.colorMaps[0];
+        }
     }
 
     /**

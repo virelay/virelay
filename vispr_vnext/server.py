@@ -485,8 +485,15 @@ class Server:
             flask.Response
                 Returns an HTTP 200 OK response with a list of all the supported color maps as content.
         """
-
-        return self.http_ok(self.color_maps)
+        color_maps = []
+        for color_map_name in self.color_maps:
+            human_readable_name = self.color_maps[color_map_name]
+            color_maps.append({
+                'name': color_map_name,
+                'humanReadableName': human_readable_name,
+                'url': flask.url_for('get_color_map_preview', color_map=color_map_name)
+            })
+        return self.http_ok(color_maps)
 
     def get_color_map_preview(self, color_map):
         """

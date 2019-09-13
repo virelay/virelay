@@ -12,6 +12,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { AnalysesService } from 'src/services/analyses/analyses.service';
 import { AttributionsService } from 'src/services/attributions/attributions.service';
 import { DatasetService } from 'src/services/dataset/dataset.service';
+import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 
 @NgModule({
     declarations: [
@@ -29,7 +30,8 @@ import { DatasetService } from 'src/services/dataset/dataset.service';
         ProjectsService,
         AnalysesService,
         AttributionsService,
-        DatasetService
+        DatasetService,
+        ColorMapsService
     ],
   bootstrap: [AppComponent]
 })

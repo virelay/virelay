@@ -14,6 +14,7 @@ import { AnalysesService } from 'src/services/analyses/analyses.service';
 import { AttributionsService } from 'src/services/attributions/attributions.service';
 import { DatasetService } from 'src/services/dataset/dataset.service';
 import { ComponentsModule } from 'src/app/components/components.module';
+import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -37,7 +38,8 @@ PlotlyModule.plotlyjs = PlotlyJS;
         ProjectsService,
         AnalysesService,
         AttributionsService,
-        DatasetService
+        DatasetService,
+        ColorMapsService
     ]
 })
 export class ProjectsModule { }

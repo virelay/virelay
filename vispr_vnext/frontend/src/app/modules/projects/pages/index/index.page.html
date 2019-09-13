@@ -32,6 +32,14 @@
                 <option *ngFor="let embedding of selectedAnalysisMethod.embeddings" [value]="embedding">{{ embedding }}</option>
             </select>
         </clr-select-container>
+        <clr-select-container *ngIf="colorMaps">
+            <label>Color map</label>
+            <select clrSelect name="color-map" [(ngModel)]="selectedColorMap">
+                <option *ngIf="!selectedColorMap" [ngValue]="null">Select a color map...</option>
+                <option *ngFor="let colorMap of colorMaps" [ngValue]="colorMap">{{ colorMap.humanReadableName }}</option>
+            </select>
+        </clr-select-container>
+        <img *ngIf="selectedColorMap" [src]="selectedColorMap.url" [alt]="selectedColorMap.humanReadableName" />
     </aside>
 
     <section id="embedding-plot">
@@ -65,7 +73,7 @@
         <div *ngIf="!isLoadingSelection && selectedAttributions && selectedAttributions.length > 0" id="embeddings-list">
             <div *ngFor="let attribution of selectedAttributions" class="embedding" [title]="attribution.labelDisplay">
                 <app-before-and-after-slider
-                    [beforeImageSource]="attribution.url"
+                    [beforeImageSource]="attribution.urls[selectedColorMap.name]"
                     [afterImageSource]="attribution.sample.url"
                     [alt]="attribution.labelDisplay">
                 </app-before-and-after-slider>

@@ -75,20 +75,21 @@
         />
     </section>
 
-    <aside id="selected-embeddings">
+    <aside id="selected-data-points">
         <span *ngIf="isLoadingSelection" class="spinner spinner-locally-centered"></span>
 
-        <div *ngIf="!isLoadingSelection && (!selectedAttributions || selectedAttributions.length === 0)" id="selection-hint">
+        <div *ngIf="!isLoadingSelection && (!selectedDataPoints || selectedDataPoints.length === 0)" id="selection-hint">
             <p>Select data points to display attributions...</p>
         </div>
 
-        <div *ngIf="!isLoadingSelection && selectedAttributions && selectedAttributions.length > 0" id="embeddings-list">
-            <div *ngFor="let attribution of selectedAttributions" class="embedding" [title]="attribution.labelDisplay">
+        <div *ngIf="!isLoadingSelection && selectedDataPoints && selectedDataPoints.length > 0" id="data-point-list">
+            <div *ngFor="let dataPoint of selectedDataPoints" class="embedding" [title]="dataPoint.attribution.labelDisplay">
                 <app-before-and-after-slider
-                    [beforeImageSource]="attribution.urls[selectedColorMap.name]"
-                    [afterImageSource]="attribution.sample.url"
-                    [alt]="attribution.labelDisplay">
+                    [beforeImageSource]="dataPoint.attribution.urls[selectedColorMap.name]"
+                    [afterImageSource]="dataPoint.sample.url"
+                    [alt]="dataPoint.attribution.labelDisplay">
                 </app-before-and-after-slider>
+                <p><span [style.color]="dataPoint.color">&#11044;</span> Cluster {{ dataPoint.clusterIndex + 1 }}</p>
             </div>
         </div>
     </aside>

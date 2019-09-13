@@ -5,7 +5,7 @@
     grid-template-columns: 1fr 250px;
     grid-template-areas:
         "options-pane options-pane"
-        "embedding-plot selected-embeddings"
+        "embedding-plot selected-data-points"
         "status-bar status-bar"
     ;
 
@@ -46,8 +46,8 @@
         }
     }
 
-    #selected-embeddings {
-        grid-area: selected-embeddings;
+    #selected-data-points {
+        grid-area: selected-data-points;
         height: calc(100vh - 180px);
 
         background-color: #EFEFEF;
@@ -78,7 +78,7 @@
             }
         }
 
-        #embeddings-list {
+        #data-point-list {
             margin: 12px;
 
             &:first-child {
@@ -91,6 +91,10 @@
                 &:last-child {
                     margin-bottom: 0;
                 }
+            }
+
+            p {
+                margin-top: 6px;
             }
         }
     }

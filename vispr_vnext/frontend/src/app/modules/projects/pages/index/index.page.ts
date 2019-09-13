@@ -15,6 +15,7 @@ import { DatasetService } from 'src/services/dataset/dataset.service';
 import { Attribution } from 'src/services/attributions/attribution';
 import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 import { ColorMap } from 'src/services/colorMaps/color-map';
+import * as d3 from 'd3';
 
 /**
  * Represents the index page of a project
@@ -289,9 +290,24 @@ export class IndexPage implements OnInit {
     };
 
     /**
-     * Contains the attributions that were selected by the user.
+     * Contains the data points that were selected by the user.
      */
-    public selectedAttributions: Array<Attribution>;
+    public selectedDataPoints: Array<{
+        attribution: Attribution,
+        sample: Sample,
+        color: string,
+        clusterIndex: number
+    }>;
+
+    /**
+     * Generates a unique color for the specified cluster (ploty.js, unfortunately only uses 10 different colors by
+     * default, but there are options for more clusters in VISPR).
+     * @param index The index of the cluster for which the color is to be generated.
+     * @param total The total number of clusters.
+     */
+    private generateClusterColor(index: number, total: number): string {
+        return d3.hsl(360 / total * index, 1.0, 0.5).toString();
+    }
 
     /**
      * Refreshes the plot.
@@ -318,9 +334,13 @@ export class IndexPage implements OnInit {
                 y: embeddingsInCluster.map(embedding => embedding.value[this.verticalAxisDimensionIndex]),
                 type: 'scatter',
                 mode: 'markers',
-                marker: { size: 12 },
+                marker: {
+                    size: 12,
+                    color: this.generateClusterColor(cluster, clusters.length)
+                },
                 hoverinfo: 'none',
-                attributionIndices: embeddingsInCluster.map(embedding => embedding.attributionIndex)
+                attributionIndices: embeddingsInCluster.map(embedding => embedding.attributionIndex),
+                clusterIndex: cluster
             });
         }
     }
@@ -332,7 +352,7 @@ export class IndexPage implements OnInit {
         this.isLoading = true;
         this.project = await this.projectsService.getByIdAsync(this.id);
 
-        this.selectedAttributions = null;
+        this.selectedDataPoints = null;
         this.selectedAnalysisMethod = this.project.analysisMethods[0];
         this.selectedCategory = this.selectedAnalysisMethod.categories[0];
         this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
@@ -359,7 +379,7 @@ export class IndexPage implements OnInit {
         }
 
         this.isLoading = true;
-        this.selectedAttributions = null;
+        this.selectedDataPoints = null;
         this.analysis = await this.analysesService.getAsync(
             this.project.id,
             this.selectedAnalysisMethod.name,
@@ -427,22 +447,29 @@ export class IndexPage implements OnInit {
 
         // Gets the attributions of the data points that were selected
         this.isLoadingSelection = true;
+        console.log(eventInfo.points.map(p => p.data.marker.color));
         let attributionIndices: Array<number> = eventInfo.points.map(
             dataPoint => dataPoint.data.attributionIndices[dataPoint.pointIndex]
         );
         attributionIndices = attributionIndices.slice(0, 20);
-        this.selectedAttributions = await Promise.all(attributionIndices.map(
+        const attributions = await Promise.all(attributionIndices.map(
             index => this.attributionsService.getAsync(this.project.id, index)
         ));
 
         // Gets the dataset samples for which the attributions were generated
-        const selectedDatasetSamples: Array<Sample> = await Promise.all(this.selectedAttributions.map(
+        const datasetSamples: Array<Sample> = await Promise.all(attributions.map(
             attribution => this.datasetService.getAsync(this.project.id, attribution.index)
         ));
 
         // Assigns the dataset sample to their respective attribution
-        for (const attribution of this.selectedAttributions) {
-            attribution.sample = selectedDatasetSamples.filter(sample => sample.index === attribution.index)[0];
+        this.selectedDataPoints = [];
+        for (let index = 0; index < attributions.length; index++) {
+            this.selectedDataPoints.push({
+                attribution: attributions[index],
+                sample: datasetSamples.filter(sample => sample.index === attributions[index].index)[0],
+                color: eventInfo.points[index].data.marker.color,
+                clusterIndex: eventInfo.points[index].data.clusterIndex
+            });
         }
         this.isLoadingSelection = false;
     }
@@ -451,6 +478,6 @@ export class IndexPage implements OnInit {
      * Is invoked, when the user deselects everything.
      */
     public onDeselect(): void {
-        this.selectedAttributions = null;
+        this.selectedDataPoints = null;
     }
 }

@@ -32,12 +32,17 @@
         margin: 0;
         z-index: 1;
 
-        clr-select-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        clr-select-container, img {
             margin: 0 0 0 24px;
         }
 
         img {
-            margin: 16px 0 0 24px;
+            padding-right: 24px;
+            width: 174px;
+            height: 40px;
         }
     }
 

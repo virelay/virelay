@@ -306,7 +306,7 @@ export class IndexPage implements OnInit {
      * @param total The total number of clusters.
      */
     private generateClusterColor(index: number, total: number): string {
-        return d3.hsl(360 / total * index, 1.0, 0.5).toString();
+        return d3.hsl(360 / total * index, 0.8, 0.5).toString();
     }
 
     /**

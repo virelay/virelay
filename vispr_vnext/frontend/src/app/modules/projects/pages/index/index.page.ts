@@ -353,13 +353,13 @@ export class IndexPage implements OnInit {
         this.project = await this.projectsService.getByIdAsync(this.id);
 
         this.selectedDataPoints = null;
-        this.selectedAnalysisMethod = this.project.analysisMethods[0];
-        this.selectedCategory = this.selectedAnalysisMethod.categories[0];
-        this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+        this._selectedAnalysisMethod = this.project.analysisMethods[0];
+        this._selectedCategory = this.selectedAnalysisMethod.categories[0];
+        this._selectedClustering = this.selectedAnalysisMethod.clusterings[0];
         if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
-            this.selectedEmbedding = 'tsne';
+            this._selectedEmbedding = 'tsne';
         } else {
-            this.selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
+            this._selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
         }
         await this.refreshAnalysisAsync();
         this.isLoading = false;

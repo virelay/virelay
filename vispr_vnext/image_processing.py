@@ -35,7 +35,10 @@ def add_border(image, new_width, new_height, method):
             Returns the up-sampled image.
     """
 
-    width, height, _ = image.shape
+    if len(image.shape) == 2:
+        width, height = image.shape
+    else:
+        width, height, _ = image.shape
     horizontal_padding = max(0, new_width - width)
     vertical_padding = max(0, new_height - height)
     left_padding = math.ceil(float(horizontal_padding) / 2.0)
@@ -80,7 +83,10 @@ def center_crop(image, new_width, new_height):
             The new height to which the image is to be down-sampled.
     """
 
-    width, height, _ = image.shape
+    if len(image.shape) == 2:
+        width, height = image.shape
+    else:
+        width, height, _ = image.shape
     horizontal_crop = max(0, width - new_width)
     vertical_crop = max(0, height - new_width)
     left_crop = math.ceil(float(horizontal_crop) / 2.0)

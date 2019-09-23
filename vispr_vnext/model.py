@@ -1128,7 +1128,10 @@ class ImageDirectoryDataset:
         # (if for example the width is smaller than the target width but the height is larger, then the image is first
         # up-sampled so that the width matched the target width, in the next step, the image will be down-sampled, so
         # that the height also matches the target width)
-        width, height, _ = image.shape
+        if len(image.shape) == 2:
+            width, height = image.shape
+        else:
+            width, height, _ = image.shape
         if width < self.input_width or height < self.input_height:
             if self.up_sampling_method in ['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']:
                 image = add_border(

@@ -697,6 +697,8 @@ class AnalysisDatabase:
         base_embedding_name = None
         if 'embedding' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
             base_embedding_name = self.analysis_file[category_name]['embedding'][embedding_name].attrs['embedding']
+            if 'eigenvalue' in self.analysis_file[category_name]['embedding'][base_embedding_name].attrs.keys():
+                eigen_values = self.analysis_file[category_name]['embedding'][base_embedding_name].attrs['eigenvalue']
         base_embedding_axes_indices = None
         if 'index' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
             base_embedding_axes_indices = self.analysis_file[category_name]['embedding'][embedding_name].attrs['index']
@@ -892,13 +894,19 @@ class Hdf5Dataset:
             raise ValueError('The dataset is already closed.')
 
         # Checks if the index is out of range
-        if index >= len(self.dataset_file['index']):
-            raise LookupError('No sample with the index {0} could be found.'.format(index))
+        if 'index' in self.dataset_file:
+            try:
+                index = self.dataset_file['index'][index]
+            except ValueError as error:
+                raise LookupError('No sample with the index {0} could be found.'.format(index)) from error
 
         # Extracts the information about the sample from the dataset
-        sample_data = self.dataset_file['data'][index]
-        sample_label_reference = self.dataset_file['label'][index]
-        sample_labels = self.label_map.get_labels(sample_label_reference)
+        try:
+            sample_data = self.dataset_file['data'][index]
+            sample_label_reference = self.dataset_file['label'][index]
+            sample_labels = self.label_map.get_labels(sample_label_reference)
+        except ValueError as error:
+            raise LookupError('No sample with the index {0} could be found.'.format(index)) from error
 
         # Wraps the sample in an object and returns it
         return Sample(index, sample_data, sample_labels)
@@ -945,7 +953,7 @@ class Hdf5Dataset:
                 Returns the number of samples in the datasets.
         """
 
-        return len(self.dataset_file['index'])
+        return len(self.dataset_file['data'])
 
     def close(self):
         """Closes the dataset."""
@@ -1023,9 +1031,9 @@ class ImageDirectoryDataset:
         self.is_closed = False
 
         # Validates the arguments
-        if down_sampling_method not in ['center_crop']:
+        if down_sampling_method not in ['none', 'center_crop']:
             raise ValueError('The down-sampling method "{0}" is not supported.'.format(down_sampling_method))
-        if up_sampling_method not in ['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']:
+        if up_sampling_method not in ['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']:
             raise ValueError('The up-sampling method "{0}" is not supported.'.format(up_sampling_method))
 
         # Stores the arguments for later reference
@@ -1129,6 +1137,8 @@ class ImageDirectoryDataset:
                     max(height, self.input_height),
                     self.up_sampling_method
                 )
+            elif self.up_sampling_method == 'none':
+                pass
             else:
                 raise ValueError('The up-sampling method "{0}" is not supported.'.format(self.up_sampling_method))
 
@@ -1136,6 +1146,8 @@ class ImageDirectoryDataset:
         if width > self.input_width or height > self.input_height:
             if self.down_sampling_method == 'center_crop':
                 image = center_crop(image, self.input_width, self.input_height)
+            elif self.up_sampling_method == 'none':
+                pass
             else:
                 raise ValueError('The down-sampling method "{0}" is not supported.'.format(self.down_sampling_method))
 

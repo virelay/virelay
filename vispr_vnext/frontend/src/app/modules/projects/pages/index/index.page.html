@@ -56,9 +56,9 @@
 
     <section id="embedding-plot">
         <plotly-plot
-            *ngIf="graphData"
-            [data]="graphData"
-            [layout]="graphLayout"
+            *ngIf="embeddingGraphData"
+            [data]="embeddingGraphData"
+            [layout]="embeddingGraphLayout"
             [useResizeHandler]="true"
             [style]="{ width: '100%', height: '100%' }"
             (hover)="onHoverAsync($event)"
@@ -83,7 +83,7 @@
         </div>
 
         <div *ngIf="!isLoadingSelection && selectedDataPoints && selectedDataPoints.length > 0" id="data-point-list">
-            <div *ngFor="let dataPoint of selectedDataPoints" class="embedding" [title]="dataPoint.attribution.labelDisplay">
+            <div *ngFor="let dataPoint of selectedDataPoints" class="data-point" [title]="dataPoint.attribution.labelDisplay">
                 <app-before-and-after-slider
                     [beforeImageSource]="dataPoint.attribution.urls[selectedColorMap.name]"
                     [afterImageSource]="dataPoint.sample.url"
@@ -92,6 +92,15 @@
                 <p><span [style.color]="dataPoint.color">&#11044;</span> Cluster {{ dataPoint.clusterIndex + 1 }}</p>
             </div>
         </div>
+    </aside>
+
+    <aside id="cluster-pane">
+        <plotly-plot
+            *ngIf="eigenValuesGraphData"
+            [data]="eigenValuesGraphData"
+            [layout]="eigenValuesGraphLayout"
+            [style]="{ width: '226px', height: '400px', 'marginLeft': '12px' }">
+        </plotly-plot>
     </aside>
 
     <footer id="status-bar">

@@ -19,6 +19,10 @@ img {
     left: 0;
 }
 
+.before-image, .after-image {
+    image-rendering: pixelated;
+}
+
 .slider-handle {
     position: absolute;
     width: 200px;

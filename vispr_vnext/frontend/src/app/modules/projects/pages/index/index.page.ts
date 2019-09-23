@@ -257,12 +257,12 @@ export class IndexPage implements OnInit {
     /**
      * Contains the data of the PlotlyJS graph.
      */
-    public graphData: Array<Plotly.Data>;
+    public embeddingGraphData: Array<Plotly.Data>;
 
     /**
      * Contains the layout of the PlotlyJS graph.
      */
-    public graphLayout: Partial<Plotly.Layout> = {
+    public embeddingGraphLayout: Partial<Plotly.Layout> = {
         autosize: true,
         dragmode: 'lasso',
         hovermode: 'closest',
@@ -284,6 +284,33 @@ export class IndexPage implements OnInit {
             showgrid: false,
             zeroline: false,
             showticklabels: false
+        },
+        paper_bgcolor: '#00000000',
+        plot_bgcolor: '#00000000'
+    };
+
+    /**
+     * Contains the data for the plot of the eigen values.
+     */
+    public eigenValuesGraphData: Array<Plotly.Data>;
+
+    /**
+     * Contains the layout of the plot of the eigen values.
+     */
+    public eigenValuesGraphLayout: Partial<Plotly.Layout> = {
+        title: 'Eigen Values',
+        margin: {
+            l: 32,
+            r: 16,
+            t: 32,
+            b: 48,
+            pad: 0
+        },
+        xaxis: {
+            autotick: false,
+            ticks: 'outside',
+            tick0: 0,
+            dtick: 5
         },
         paper_bgcolor: '#00000000',
         plot_bgcolor: '#00000000'
@@ -325,10 +352,10 @@ export class IndexPage implements OnInit {
             }
         }
 
-        this.graphData = new Array<Plotly.Data>();
+        this.embeddingGraphData = new Array<Plotly.Data>();
         for (const cluster of clusters) {
             const embeddingsInCluster = this.analysis.embedding.filter(embedding => embedding.cluster === cluster);
-            this.graphData.push({
+            this.embeddingGraphData.push({
                 name: `Cluster ${cluster}`,
                 x: embeddingsInCluster.map(embedding => embedding.value[this.horizontalAxisDimensionIndex]),
                 y: embeddingsInCluster.map(embedding => embedding.value[this.verticalAxisDimensionIndex]),
@@ -343,6 +370,17 @@ export class IndexPage implements OnInit {
                 clusterIndex: cluster
             });
         }
+
+        this.eigenValuesGraphData = new Array<Plotly.Data>();
+        this.eigenValuesGraphData.push({
+            name: 'Eigen Values',
+            x: this.analysis.eigenValues.map((_, index) => index).reverse(),
+            y: this.analysis.eigenValues,
+            type: 'bar',
+            width: 0.25,
+            hoverinfo: 'x',
+            color: 'y'
+        });
     }
 
     /**

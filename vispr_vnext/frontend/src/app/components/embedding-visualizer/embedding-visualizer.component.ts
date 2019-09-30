@@ -531,8 +531,8 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
         this.embeddingObject = new THREE.Points(pointsGeometry, pointsMaterial);
         this.scene.add(this.embeddingObject);
 
-        // Resets the camera to the center
-        this.camera.position.set(0, 0, 1);
+        // Resets the camera
+        this.cameraController.reset();
     }
 
     /**
@@ -561,7 +561,7 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
 
         // Creates the camera
         this.camera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, -10, 1000);
-        this.camera.position.z = 1;
+        this.camera.position.set(0, 0, 1);
         this.scene.add(this.camera);
 
         // Adds a camera controller for zooming and panning

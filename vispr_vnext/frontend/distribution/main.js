@@ -992,8 +992,8 @@ var EmbeddingVisualizerComponent = /** @class */ (function () {
         // Generates the scene object that contains all the data points and adds it to the scene
         this.embeddingObject = new three__WEBPACK_IMPORTED_MODULE_2__["Points"](pointsGeometry, pointsMaterial);
         this.scene.add(this.embeddingObject);
-        // Resets the camera to the center
-        this.camera.position.set(0, 0, 1);
+        // Resets the camera
+        this.cameraController.reset();
     };
     /**
      * Is invoked after the view was initialized (and the view children are available). Initializes the renderer.
@@ -1017,7 +1017,7 @@ var EmbeddingVisualizerComponent = /** @class */ (function () {
         this.scene = new three__WEBPACK_IMPORTED_MODULE_2__["Scene"]();
         // Creates the camera
         this.camera = new three__WEBPACK_IMPORTED_MODULE_2__["OrthographicCamera"](width / -2, width / 2, height / 2, height / -2, -10, 1000);
-        this.camera.position.z = 1;
+        this.camera.position.set(0, 0, 1);
         this.scene.add(this.camera);
         // Adds a camera controller for zooming and panning
         this.cameraController = new three_orbitcontrols__WEBPACK_IMPORTED_MODULE_3__(this.camera, renderTargetNativeElement);

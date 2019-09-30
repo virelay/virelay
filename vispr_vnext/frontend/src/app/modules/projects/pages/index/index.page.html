@@ -55,41 +55,38 @@
     </aside>
 
     <section id="embedding-plot">
-        <plotly-plot
-            *ngIf="embeddingGraphData"
-            [data]="embeddingGraphData"
-            [layout]="embeddingGraphLayout"
-            [useResizeHandler]="true"
-            [style]="{ width: '100%', height: '100%' }"
-            (hover)="onHoverAsync($event)"
-            (unhover)="onUnhover($event)"
-            (selected)="onSelectedAsync($event)"
-            (deselect)="onDeselect()">
-        </plotly-plot>
+        <app-embedding-visualizer
+            *ngIf="analysis"
+            backgroundColor="#EFEFEF"
+            [embedding]="analysis.embedding"
+            (onHover)="onHoverAsync($event)"
+            (onUnhover)="onUnhover($event)"
+            (onSelected)="onSelectedAsync($event)"
+            (onDeselected)="onDeselect()">
+        </app-embedding-visualizer>
 
         <img
             id="attribution-hover-preview"
             *ngIf="datasetSampleHoverPreview && isHovering"
             [src]="datasetSampleHoverPreview.url"
-            [alt]="datasetSampleHoverPreview.labelDisplay"
         />
     </section>
 
     <aside id="selected-data-points">
-        <span *ngIf="isLoadingSelection" class="spinner spinner-locally-centered"></span>
+        <span *ngIf="isLoadingAttributions" class="spinner spinner-locally-centered"></span>
 
-        <div *ngIf="!isLoadingSelection && (!selectedDataPoints || selectedDataPoints.length === 0)" id="selection-hint">
+        <div *ngIf="!isLoadingAttributions && (!selectedDataPoints || selectedDataPoints.length === 0)" id="selection-hint">
             <p>Select data points to display attributions...</p>
         </div>
 
-        <div *ngIf="!isLoadingSelection && selectedDataPoints && selectedDataPoints.length > 0" id="data-point-list">
-            <div *ngFor="let dataPoint of selectedDataPoints" class="data-point" [title]="dataPoint.attribution.labelDisplay">
+        <div *ngIf="!isLoadingAttributions && selectedDataPoints && selectedDataPoints.length > 0" id="data-point-list">
+            <div *ngFor="let selectedDataPoint of selectedDataPoints" class="data-point" [title]="selectedDataPoint.attribution.labelDisplay">
                 <app-before-and-after-slider
-                    [beforeImageSource]="dataPoint.attribution.urls[selectedColorMap.name]"
-                    [afterImageSource]="dataPoint.sample.url"
-                    [alt]="dataPoint.attribution.labelDisplay">
+                    [beforeImageSource]="selectedDataPoint.attribution.urls[selectedColorMap.name]"
+                    [afterImageSource]="selectedDataPoint.sample.url"
+                    [alt]="selectedDataPoint.attribution.labelDisplay">
                 </app-before-and-after-slider>
-                <p><span [style.color]="dataPoint.color">&#11044;</span> Cluster {{ dataPoint.clusterIndex + 1 }}</p>
+                <p><span [style.color]="selectedDataPoint.color">&#11044;</span> Cluster {{ selectedDataPoint.clusterIndex + 1 }}</p>
             </div>
         </div>
     </aside>
@@ -99,6 +96,7 @@
             *ngIf="eigenValuesGraphData"
             [data]="eigenValuesGraphData"
             [layout]="eigenValuesGraphLayout"
+            [config]="{ displayModeBar: false }"
             [style]="{ width: '226px', height: '400px', 'marginLeft': '12px' }">
         </plotly-plot>
     </aside>

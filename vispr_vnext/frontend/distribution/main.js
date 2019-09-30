@@ -49,6 +49,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/raw-loader/dist/cjs.js!./src/app/components/embedding-visualizer/embedding-visualizer.component.html":
+/*!***************************************************************************************************************************!*\
+  !*** ./node_modules/raw-loader/dist/cjs.js!./src/app/components/embedding-visualizer/embedding-visualizer.component.html ***!
+  \***************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ("\n<div class=\"container\">\n    <div #selectionBox class=\"selection-box\"></div>\n    <canvas #renderTarget></canvas>\n</div>\n");
+
+/***/ }),
+
 /***/ "./node_modules/raw-loader/dist/cjs.js!./src/app/modules/projects/pages/index/index.page.html":
 /*!****************************************************************************************************!*\
   !*** ./node_modules/raw-loader/dist/cjs.js!./src/app/modules/projects/pages/index/index.page.html ***!
@@ -58,7 +71,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("\n<span *ngIf=\"isLoading\" class=\"spinner spinner-centered\"></span>\n\n<div *ngIf=\"project\" id=\"panels-container\">\n\n    <aside id=\"options-pane\">\n        <clr-select-container>\n            <label>Analysis method</label>\n            <select clrSelect name=\"analysis-method\" [(ngModel)]=\"selectedAnalysisMethod\">\n                <option *ngIf=\"!selectedAnalysisMethod\" [ngValue]=\"null\">Select an analysis method...</option>\n                <option *ngFor=\"let analysisMethod of project.analysisMethods\" [ngValue]=\"analysisMethod\">{{ analysisMethod.name }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Category</label>\n            <select clrSelect name=\"category\" [(ngModel)]=\"selectedCategory\">\n                <option *ngIf=\"!selectedCategory\" [ngValue]=\"null\">Select a category...</option>\n                <option *ngFor=\"let category of selectedAnalysisMethod.categories\" [ngValue]=\"category\">{{ category.humanReadableName }} ({{ category.name }})</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Clustering</label>\n            <select clrSelect class=\"full-width\" name=\"clustering\" [(ngModel)]=\"selectedClustering\">\n                <option *ngIf=\"!selectedClustering\" [ngValue]=\"null\">Select a clustering...</option>\n                <option *ngFor=\"let clustering of selectedAnalysisMethod.clusterings\" [value]=\"clustering\">{{ clustering }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Embedding</label>\n            <select clrSelect name=\"embedding\" [(ngModel)]=\"selectedEmbedding\">\n                <option *ngIf=\"!selectedEmbedding\" [ngValue]=\"null\">Select a embedding...</option>\n                <option *ngFor=\"let embedding of selectedAnalysisMethod.embeddings\" [value]=\"embedding\">{{ embedding }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>X-Axis</label>\n            <select clrSelect name=\"horizontal-axis-dimension-index\" [(ngModel)]=\"horizontalAxisDimensionIndex\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>Y-Axis</label>\n            <select clrSelect name=\"vertical-axis-dimension-index\" [(ngModel)]=\"verticalAxisDimensionIndex\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"colorMaps\">\n            <label>Color map</label>\n            <select clrSelect name=\"color-map\" [(ngModel)]=\"selectedColorMap\">\n                <option *ngIf=\"!selectedColorMap\" [ngValue]=\"null\">Select a color map...</option>\n                <option *ngFor=\"let colorMap of colorMaps\" [ngValue]=\"colorMap\">{{ colorMap.humanReadableName }}</option>\n            </select>\n        </clr-select-container>\n        <img *ngIf=\"selectedColorMap\" [src]=\"selectedColorMap.url\" [alt]=\"selectedColorMap.humanReadableName\" />\n    </aside>\n\n    <section id=\"embedding-plot\">\n        <plotly-plot\n            *ngIf=\"graphData\"\n            [data]=\"graphData\"\n            [layout]=\"graphLayout\"\n            [useResizeHandler]=\"true\"\n            [style]=\"{ width: '100%', height: '100%' }\"\n            (hover)=\"onHoverAsync($event)\"\n            (unhover)=\"onUnhover($event)\"\n            (selected)=\"onSelectedAsync($event)\"\n            (deselect)=\"onDeselect()\">\n        </plotly-plot>\n\n        <img\n            id=\"attribution-hover-preview\"\n            *ngIf=\"datasetSampleHoverPreview && isHovering\"\n            [src]=\"datasetSampleHoverPreview.url\"\n            [alt]=\"datasetSampleHoverPreview.labelDisplay\"\n        />\n    </section>\n\n    <aside id=\"selected-data-points\">\n        <span *ngIf=\"isLoadingSelection\" class=\"spinner spinner-locally-centered\"></span>\n\n        <div *ngIf=\"!isLoadingSelection && (!selectedDataPoints || selectedDataPoints.length === 0)\" id=\"selection-hint\">\n            <p>Select data points to display attributions...</p>\n        </div>\n\n        <div *ngIf=\"!isLoadingSelection && selectedDataPoints && selectedDataPoints.length > 0\" id=\"data-point-list\">\n            <div *ngFor=\"let dataPoint of selectedDataPoints\" class=\"embedding\" [title]=\"dataPoint.attribution.labelDisplay\">\n                <app-before-and-after-slider\n                    [beforeImageSource]=\"dataPoint.attribution.urls[selectedColorMap.name]\"\n                    [afterImageSource]=\"dataPoint.sample.url\"\n                    [alt]=\"dataPoint.attribution.labelDisplay\">\n                </app-before-and-after-slider>\n                <p><span [style.color]=\"dataPoint.color\">&#11044;</span> Cluster {{ dataPoint.clusterIndex + 1 }}</p>\n            </div>\n        </div>\n    </aside>\n\n    <footer id=\"status-bar\">\n        <clr-icon shape=\"library\"></clr-icon> <strong>Project:</strong> {{ project.name }}\n        <clr-icon shape=\"storage\"></clr-icon> <strong>Dataset:</strong> {{ project.dataset }}\n        <clr-icon shape=\"organization\"></clr-icon> <strong>Model:</strong> {{ project.model }}\n    </footer>\n</div>\n");
+/* harmony default export */ __webpack_exports__["default"] = ("\n<span *ngIf=\"isLoading\" class=\"spinner spinner-centered\"></span>\n\n<div *ngIf=\"project\" id=\"panels-container\">\n\n    <aside id=\"options-pane\">\n        <clr-select-container>\n            <label>Analysis method</label>\n            <select clrSelect name=\"analysis-method\" [(ngModel)]=\"selectedAnalysisMethod\">\n                <option *ngIf=\"!selectedAnalysisMethod\" [ngValue]=\"null\">Select an analysis method...</option>\n                <option *ngFor=\"let analysisMethod of project.analysisMethods\" [ngValue]=\"analysisMethod\">{{ analysisMethod.name }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Category</label>\n            <select clrSelect name=\"category\" [(ngModel)]=\"selectedCategory\">\n                <option *ngIf=\"!selectedCategory\" [ngValue]=\"null\">Select a category...</option>\n                <option *ngFor=\"let category of selectedAnalysisMethod.categories\" [ngValue]=\"category\">{{ category.humanReadableName }} ({{ category.name }})</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Clustering</label>\n            <select clrSelect class=\"full-width\" name=\"clustering\" [(ngModel)]=\"selectedClustering\">\n                <option *ngIf=\"!selectedClustering\" [ngValue]=\"null\">Select a clustering...</option>\n                <option *ngFor=\"let clustering of selectedAnalysisMethod.clusterings\" [value]=\"clustering\">{{ clustering }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Embedding</label>\n            <select clrSelect name=\"embedding\" [(ngModel)]=\"selectedEmbedding\">\n                <option *ngIf=\"!selectedEmbedding\" [ngValue]=\"null\">Select a embedding...</option>\n                <option *ngFor=\"let embedding of selectedAnalysisMethod.embeddings\" [value]=\"embedding\">{{ embedding }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>X-Axis</label>\n            <select clrSelect name=\"horizontal-axis-dimension-index\" [(ngModel)]=\"horizontalAxisDimensionIndex\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>Y-Axis</label>\n            <select clrSelect name=\"vertical-axis-dimension-index\" [(ngModel)]=\"verticalAxisDimensionIndex\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"colorMaps\">\n            <label>Color map</label>\n            <select clrSelect name=\"color-map\" [(ngModel)]=\"selectedColorMap\">\n                <option *ngIf=\"!selectedColorMap\" [ngValue]=\"null\">Select a color map...</option>\n                <option *ngFor=\"let colorMap of colorMaps\" [ngValue]=\"colorMap\">{{ colorMap.humanReadableName }}</option>\n            </select>\n        </clr-select-container>\n        <img *ngIf=\"selectedColorMap\" [src]=\"selectedColorMap.url\" [alt]=\"selectedColorMap.humanReadableName\" />\n    </aside>\n\n    <section id=\"embedding-plot\">\n        <app-embedding-visualizer\n            *ngIf=\"analysis\"\n            backgroundColor=\"#EFEFEF\"\n            [embedding]=\"analysis.embedding\"\n            (onHover)=\"onHoverAsync($event)\"\n            (onUnhover)=\"onUnhover($event)\"\n            (onSelected)=\"onSelectedAsync($event)\"\n            (onDeselected)=\"onDeselect()\">\n        </app-embedding-visualizer>\n\n        <img\n            id=\"attribution-hover-preview\"\n            *ngIf=\"datasetSampleHoverPreview && isHovering\"\n            [src]=\"datasetSampleHoverPreview.url\"\n        />\n    </section>\n\n    <aside id=\"selected-data-points\">\n        <span *ngIf=\"isLoadingAttributions\" class=\"spinner spinner-locally-centered\"></span>\n\n        <div *ngIf=\"!isLoadingAttributions && (!selectedDataPoints || selectedDataPoints.length === 0)\" id=\"selection-hint\">\n            <p>Select data points to display attributions...</p>\n        </div>\n\n        <div *ngIf=\"!isLoadingAttributions && selectedDataPoints && selectedDataPoints.length > 0\" id=\"data-point-list\">\n            <div *ngFor=\"let selectedDataPoint of selectedDataPoints\" class=\"data-point\" [title]=\"selectedDataPoint.attribution.labelDisplay\">\n                <app-before-and-after-slider\n                    [beforeImageSource]=\"selectedDataPoint.attribution.urls[selectedColorMap.name]\"\n                    [afterImageSource]=\"selectedDataPoint.sample.url\"\n                    [alt]=\"selectedDataPoint.attribution.labelDisplay\">\n                </app-before-and-after-slider>\n                <p><span [style.color]=\"selectedDataPoint.color\">&#11044;</span> Cluster {{ selectedDataPoint.clusterIndex + 1 }}</p>\n            </div>\n        </div>\n    </aside>\n\n    <aside id=\"cluster-pane\">\n        <plotly-plot\n            *ngIf=\"eigenValuesGraphData\"\n            [data]=\"eigenValuesGraphData\"\n            [layout]=\"eigenValuesGraphLayout\"\n            [config]=\"{ displayModeBar: false }\"\n            [style]=\"{ width: '226px', height: '400px', 'marginLeft': '12px' }\">\n        </plotly-plot>\n    </aside>\n\n    <footer id=\"status-bar\">\n        <clr-icon shape=\"library\"></clr-icon> <strong>Project:</strong> {{ project.name }}\n        <clr-icon shape=\"storage\"></clr-icon> <strong>Dataset:</strong> {{ project.dataset }}\n        <clr-icon shape=\"organization\"></clr-icon> <strong>Model:</strong> {{ project.model }}\n    </footer>\n</div>\n");
 
 /***/ }),
 
@@ -456,7 +469,7 @@ var AppModule = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("img {\n  width: 100%;\n  vertical-align: middle;\n}\n\n.before-and-after-slider-container, img, .slider-handle {\n  overflow: hidden;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n\n.before-and-after-slider-container {\n  position: relative;\n}\n\n.before-image {\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n\n.slider-handle {\n  position: absolute;\n  width: 200px;\n  height: 100%;\n  top: 0;\n  left: 0;\n  z-index: 10;\n}\n\n.slider-handle:before, .slider-handle:after {\n  position: absolute;\n  left: 50%;\n  content: \"\";\n  background: white;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n\n.slider-handle:before {\n  top: 0;\n  transform: translateX(-50%);\n  width: 1px;\n  height: 100%;\n}\n\n.slider-handle:after {\n  top: 50%;\n  transform: translate(-50%, -50%);\n  width: 5px;\n  height: 33%;\n  border-radius: 5px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL2RuZXVtYW5uL1JlcG9zaXRvcmllcy9zcHJpbmNsL3Zpc3ByX3ZuZXh0L2Zyb250ZW5kL3NyYy9hcHAvY29tcG9uZW50cy9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvY29tcG9uZW50cy9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci5jb21wb25lbnQuc2NzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDQTtFQUNJLFdBQUE7RUFDQSxzQkFBQTtBQ0FKOztBREdBO0VBQ0ksZ0JBQUE7RUFDQSx5QkFBQTtLQUFBLHNCQUFBO01BQUEscUJBQUE7VUFBQSxpQkFBQTtBQ0FKOztBREdBO0VBQ0ksa0JBQUE7QUNBSjs7QURHQTtFQUNJLGtCQUFBO0VBQ0EsTUFBQTtFQUNBLE9BQUE7QUNBSjs7QURHQTtFQUNJLGtCQUFBO0VBQ0EsWUFBQTtFQUNBLFlBQUE7RUFDQSxNQUFBO0VBQ0EsT0FBQTtFQUNBLFdBQUE7QUNBSjs7QURFSTtFQUNJLGtCQUFBO0VBQ0EsU0FBQTtFQUNBLFdBQUE7RUFDQSxpQkFBQTtFQUNBLG9CQUFBO0VBQUEsWUFBQTtBQ0FSOztBREdJO0VBQ0ksTUFBQTtFQUNBLDJCQUFBO0VBQ0EsVUFBQTtFQUNBLFlBQUE7QUNEUjs7QURJSTtFQUNJLFFBQUE7RUFDQSxnQ0FBQTtFQUNBLFVBQUE7RUFDQSxXQUFBO0VBQ0Esa0JBQUE7QUNGUiIsImZpbGUiOiJzcmMvYXBwL2NvbXBvbmVudHMvYmVmb3JlLWFuZC1hZnRlci1zbGlkZXIvYmVmb3JlLWFuZC1hZnRlci1zbGlkZXIuY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcbmltZyB7XG4gICAgd2lkdGg6IDEwMCU7XG4gICAgdmVydGljYWwtYWxpZ246IG1pZGRsZTtcbn1cblxuLmJlZm9yZS1hbmQtYWZ0ZXItc2xpZGVyLWNvbnRhaW5lciwgaW1nLCAuc2xpZGVyLWhhbmRsZSB7XG4gICAgb3ZlcmZsb3c6IGhpZGRlbjtcbiAgICB1c2VyLXNlbGVjdDogbm9uZTtcbn1cblxuLmJlZm9yZS1hbmQtYWZ0ZXItc2xpZGVyLWNvbnRhaW5lciB7XG4gICAgcG9zaXRpb246IHJlbGF0aXZlO1xufVxuXG4uYmVmb3JlLWltYWdlIHtcbiAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gICAgdG9wOiAwO1xuICAgIGxlZnQ6IDA7XG59XG5cbi5zbGlkZXItaGFuZGxlIHtcbiAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gICAgd2lkdGg6IDIwMHB4O1xuICAgIGhlaWdodDogMTAwJTtcbiAgICB0b3A6IDA7XG4gICAgbGVmdDogMDtcbiAgICB6LWluZGV4OiAxMDtcblxuICAgICY6YmVmb3JlLCAmOmFmdGVyIHtcbiAgICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgICBsZWZ0OiA1MCU7XG4gICAgICAgIGNvbnRlbnQ6IFwiXCI7XG4gICAgICAgIGJhY2tncm91bmQ6IHdoaXRlO1xuICAgICAgICBjdXJzb3I6IGdyYWI7XG4gICAgfVxuXG4gICAgJjpiZWZvcmUge1xuICAgICAgICB0b3A6IDA7XG4gICAgICAgIHRyYW5zZm9ybTogdHJhbnNsYXRlWCgtNTAlKTtcbiAgICAgICAgd2lkdGg6IDFweDtcbiAgICAgICAgaGVpZ2h0OiAxMDAlO1xuICAgIH1cblxuICAgICY6YWZ0ZXIge1xuICAgICAgICB0b3A6IDUwJTtcbiAgICAgICAgdHJhbnNmb3JtOiB0cmFuc2xhdGUoLTUwJSwgLTUwJSk7XG4gICAgICAgIHdpZHRoOiA1cHg7XG4gICAgICAgIGhlaWdodDogMzMlO1xuICAgICAgICBib3JkZXItcmFkaXVzOiA1cHg7XG4gICAgfVxufVxuIiwiaW1nIHtcbiAgd2lkdGg6IDEwMCU7XG4gIHZlcnRpY2FsLWFsaWduOiBtaWRkbGU7XG59XG5cbi5iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci1jb250YWluZXIsIGltZywgLnNsaWRlci1oYW5kbGUge1xuICBvdmVyZmxvdzogaGlkZGVuO1xuICB1c2VyLXNlbGVjdDogbm9uZTtcbn1cblxuLmJlZm9yZS1hbmQtYWZ0ZXItc2xpZGVyLWNvbnRhaW5lciB7XG4gIHBvc2l0aW9uOiByZWxhdGl2ZTtcbn1cblxuLmJlZm9yZS1pbWFnZSB7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgdG9wOiAwO1xuICBsZWZ0OiAwO1xufVxuXG4uc2xpZGVyLWhhbmRsZSB7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgd2lkdGg6IDIwMHB4O1xuICBoZWlnaHQ6IDEwMCU7XG4gIHRvcDogMDtcbiAgbGVmdDogMDtcbiAgei1pbmRleDogMTA7XG59XG4uc2xpZGVyLWhhbmRsZTpiZWZvcmUsIC5zbGlkZXItaGFuZGxlOmFmdGVyIHtcbiAgcG9zaXRpb246IGFic29sdXRlO1xuICBsZWZ0OiA1MCU7XG4gIGNvbnRlbnQ6IFwiXCI7XG4gIGJhY2tncm91bmQ6IHdoaXRlO1xuICBjdXJzb3I6IGdyYWI7XG59XG4uc2xpZGVyLWhhbmRsZTpiZWZvcmUge1xuICB0b3A6IDA7XG4gIHRyYW5zZm9ybTogdHJhbnNsYXRlWCgtNTAlKTtcbiAgd2lkdGg6IDFweDtcbiAgaGVpZ2h0OiAxMDAlO1xufVxuLnNsaWRlci1oYW5kbGU6YWZ0ZXIge1xuICB0b3A6IDUwJTtcbiAgdHJhbnNmb3JtOiB0cmFuc2xhdGUoLTUwJSwgLTUwJSk7XG4gIHdpZHRoOiA1cHg7XG4gIGhlaWdodDogMzMlO1xuICBib3JkZXItcmFkaXVzOiA1cHg7XG59Il19 */");
+/* harmony default export */ __webpack_exports__["default"] = ("img {\n  width: 100%;\n  vertical-align: middle;\n}\n\n.before-and-after-slider-container, img, .slider-handle {\n  overflow: hidden;\n  -webkit-user-select: none;\n     -moz-user-select: none;\n      -ms-user-select: none;\n          user-select: none;\n}\n\n.before-and-after-slider-container {\n  position: relative;\n}\n\n.before-image {\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n\n.before-image, .after-image {\n  -ms-interpolation-mode: nearest-neighbor;\n      image-rendering: -moz-crisp-edges;\n      image-rendering: pixelated;\n}\n\n.slider-handle {\n  position: absolute;\n  width: 200px;\n  height: 100%;\n  top: 0;\n  left: 0;\n  z-index: 10;\n}\n\n.slider-handle:before, .slider-handle:after {\n  position: absolute;\n  left: 50%;\n  content: \"\";\n  background: white;\n  cursor: -webkit-grab;\n  cursor: grab;\n}\n\n.slider-handle:before {\n  top: 0;\n  transform: translateX(-50%);\n  width: 1px;\n  height: 100%;\n}\n\n.slider-handle:after {\n  top: 50%;\n  transform: translate(-50%, -50%);\n  width: 5px;\n  height: 33%;\n  border-radius: 5px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL2RuZXVtYW5uL1JlcG9zaXRvcmllcy9zcHJpbmNsL3Zpc3ByX3ZuZXh0L2Zyb250ZW5kL3NyYy9hcHAvY29tcG9uZW50cy9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvY29tcG9uZW50cy9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci5jb21wb25lbnQuc2NzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDQTtFQUNJLFdBQUE7RUFDQSxzQkFBQTtBQ0FKOztBREdBO0VBQ0ksZ0JBQUE7RUFDQSx5QkFBQTtLQUFBLHNCQUFBO01BQUEscUJBQUE7VUFBQSxpQkFBQTtBQ0FKOztBREdBO0VBQ0ksa0JBQUE7QUNBSjs7QURHQTtFQUNJLGtCQUFBO0VBQ0EsTUFBQTtFQUNBLE9BQUE7QUNBSjs7QURHQTtFQUNJLHdDQUFBO01BQUEsaUNBQUE7TUFBQSwwQkFBQTtBQ0FKOztBREdBO0VBQ0ksa0JBQUE7RUFDQSxZQUFBO0VBQ0EsWUFBQTtFQUNBLE1BQUE7RUFDQSxPQUFBO0VBQ0EsV0FBQTtBQ0FKOztBREVJO0VBQ0ksa0JBQUE7RUFDQSxTQUFBO0VBQ0EsV0FBQTtFQUNBLGlCQUFBO0VBQ0Esb0JBQUE7RUFBQSxZQUFBO0FDQVI7O0FER0k7RUFDSSxNQUFBO0VBQ0EsMkJBQUE7RUFDQSxVQUFBO0VBQ0EsWUFBQTtBQ0RSOztBRElJO0VBQ0ksUUFBQTtFQUNBLGdDQUFBO0VBQ0EsVUFBQTtFQUNBLFdBQUE7RUFDQSxrQkFBQTtBQ0ZSIiwiZmlsZSI6InNyYy9hcHAvY29tcG9uZW50cy9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci9iZWZvcmUtYW5kLWFmdGVyLXNsaWRlci5jb21wb25lbnQuc2NzcyIsInNvdXJjZXNDb250ZW50IjpbIlxuaW1nIHtcbiAgICB3aWR0aDogMTAwJTtcbiAgICB2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlO1xufVxuXG4uYmVmb3JlLWFuZC1hZnRlci1zbGlkZXItY29udGFpbmVyLCBpbWcsIC5zbGlkZXItaGFuZGxlIHtcbiAgICBvdmVyZmxvdzogaGlkZGVuO1xuICAgIHVzZXItc2VsZWN0OiBub25lO1xufVxuXG4uYmVmb3JlLWFuZC1hZnRlci1zbGlkZXItY29udGFpbmVyIHtcbiAgICBwb3NpdGlvbjogcmVsYXRpdmU7XG59XG5cbi5iZWZvcmUtaW1hZ2Uge1xuICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICB0b3A6IDA7XG4gICAgbGVmdDogMDtcbn1cblxuLmJlZm9yZS1pbWFnZSwgLmFmdGVyLWltYWdlIHtcbiAgICBpbWFnZS1yZW5kZXJpbmc6IHBpeGVsYXRlZDtcbn1cblxuLnNsaWRlci1oYW5kbGUge1xuICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICB3aWR0aDogMjAwcHg7XG4gICAgaGVpZ2h0OiAxMDAlO1xuICAgIHRvcDogMDtcbiAgICBsZWZ0OiAwO1xuICAgIHotaW5kZXg6IDEwO1xuXG4gICAgJjpiZWZvcmUsICY6YWZ0ZXIge1xuICAgICAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gICAgICAgIGxlZnQ6IDUwJTtcbiAgICAgICAgY29udGVudDogXCJcIjtcbiAgICAgICAgYmFja2dyb3VuZDogd2hpdGU7XG4gICAgICAgIGN1cnNvcjogZ3JhYjtcbiAgICB9XG5cbiAgICAmOmJlZm9yZSB7XG4gICAgICAgIHRvcDogMDtcbiAgICAgICAgdHJhbnNmb3JtOiB0cmFuc2xhdGVYKC01MCUpO1xuICAgICAgICB3aWR0aDogMXB4O1xuICAgICAgICBoZWlnaHQ6IDEwMCU7XG4gICAgfVxuXG4gICAgJjphZnRlciB7XG4gICAgICAgIHRvcDogNTAlO1xuICAgICAgICB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKTtcbiAgICAgICAgd2lkdGg6IDVweDtcbiAgICAgICAgaGVpZ2h0OiAzMyU7XG4gICAgICAgIGJvcmRlci1yYWRpdXM6IDVweDtcbiAgICB9XG59XG4iLCJpbWcge1xuICB3aWR0aDogMTAwJTtcbiAgdmVydGljYWwtYWxpZ246IG1pZGRsZTtcbn1cblxuLmJlZm9yZS1hbmQtYWZ0ZXItc2xpZGVyLWNvbnRhaW5lciwgaW1nLCAuc2xpZGVyLWhhbmRsZSB7XG4gIG92ZXJmbG93OiBoaWRkZW47XG4gIHVzZXItc2VsZWN0OiBub25lO1xufVxuXG4uYmVmb3JlLWFuZC1hZnRlci1zbGlkZXItY29udGFpbmVyIHtcbiAgcG9zaXRpb246IHJlbGF0aXZlO1xufVxuXG4uYmVmb3JlLWltYWdlIHtcbiAgcG9zaXRpb246IGFic29sdXRlO1xuICB0b3A6IDA7XG4gIGxlZnQ6IDA7XG59XG5cbi5iZWZvcmUtaW1hZ2UsIC5hZnRlci1pbWFnZSB7XG4gIGltYWdlLXJlbmRlcmluZzogcGl4ZWxhdGVkO1xufVxuXG4uc2xpZGVyLWhhbmRsZSB7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgd2lkdGg6IDIwMHB4O1xuICBoZWlnaHQ6IDEwMCU7XG4gIHRvcDogMDtcbiAgbGVmdDogMDtcbiAgei1pbmRleDogMTA7XG59XG4uc2xpZGVyLWhhbmRsZTpiZWZvcmUsIC5zbGlkZXItaGFuZGxlOmFmdGVyIHtcbiAgcG9zaXRpb246IGFic29sdXRlO1xuICBsZWZ0OiA1MCU7XG4gIGNvbnRlbnQ6IFwiXCI7XG4gIGJhY2tncm91bmQ6IHdoaXRlO1xuICBjdXJzb3I6IGdyYWI7XG59XG4uc2xpZGVyLWhhbmRsZTpiZWZvcmUge1xuICB0b3A6IDA7XG4gIHRyYW5zZm9ybTogdHJhbnNsYXRlWCgtNTAlKTtcbiAgd2lkdGg6IDFweDtcbiAgaGVpZ2h0OiAxMDAlO1xufVxuLnNsaWRlci1oYW5kbGU6YWZ0ZXIge1xuICB0b3A6IDUwJTtcbiAgdHJhbnNmb3JtOiB0cmFuc2xhdGUoLTUwJSwgLTUwJSk7XG4gIHdpZHRoOiA1cHg7XG4gIGhlaWdodDogMzMlO1xuICBib3JkZXItcmFkaXVzOiA1cHg7XG59Il19 */");
 
 /***/ }),
 
@@ -551,6 +564,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _before_and_after_slider_before_and_after_slider_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./before-and-after-slider/before-and-after-slider.component */ "./src/app/components/before-and-after-slider/before-and-after-slider.component.ts");
+/* harmony import */ var _embedding_visualizer_embedding_visualizer_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./embedding-visualizer/embedding-visualizer.component */ "./src/app/components/embedding-visualizer/embedding-visualizer.component.ts");
+
 
 
 
@@ -563,14 +578,515 @@ var ComponentsModule = /** @class */ (function () {
     ComponentsModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModule"])({
             declarations: [
-                _before_and_after_slider_before_and_after_slider_component__WEBPACK_IMPORTED_MODULE_2__["BeforeAndAfterSliderComponent"]
+                _before_and_after_slider_before_and_after_slider_component__WEBPACK_IMPORTED_MODULE_2__["BeforeAndAfterSliderComponent"],
+                _embedding_visualizer_embedding_visualizer_component__WEBPACK_IMPORTED_MODULE_3__["EmbeddingVisualizerComponent"]
             ],
             exports: [
-                _before_and_after_slider_before_and_after_slider_component__WEBPACK_IMPORTED_MODULE_2__["BeforeAndAfterSliderComponent"]
+                _before_and_after_slider_before_and_after_slider_component__WEBPACK_IMPORTED_MODULE_2__["BeforeAndAfterSliderComponent"],
+                _embedding_visualizer_embedding_visualizer_component__WEBPACK_IMPORTED_MODULE_3__["EmbeddingVisualizerComponent"]
             ]
         })
     ], ComponentsModule);
     return ComponentsModule;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/app/components/embedding-visualizer/embedding-visualizer.component.scss":
+/*!*************************************************************************************!*\
+  !*** ./src/app/components/embedding-visualizer/embedding-visualizer.component.scss ***!
+  \*************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (":host {\n  display: block !important;\n  position: relative;\n  width: 100%;\n  height: 100%;\n}\n\ncanvas {\n  width: 100%;\n  height: 100%;\n}\n\n.container {\n  display: block;\n  position: relative;\n  overflow: hidden;\n  width: 100%;\n  height: 100%;\n  z-index: 1;\n}\n\n.selection-box {\n  display: none;\n  position: absolute;\n  pointer-events: none;\n  border: 1px solid #55aaff;\n  background-color: rgba(75, 160, 255, 0.3);\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL2RuZXVtYW5uL1JlcG9zaXRvcmllcy9zcHJpbmNsL3Zpc3ByX3ZuZXh0L2Zyb250ZW5kL3NyYy9hcHAvY29tcG9uZW50cy9lbWJlZGRpbmctdmlzdWFsaXplci9lbWJlZGRpbmctdmlzdWFsaXplci5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvY29tcG9uZW50cy9lbWJlZGRpbmctdmlzdWFsaXplci9lbWJlZGRpbmctdmlzdWFsaXplci5jb21wb25lbnQuc2NzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFDQTtFQUNJLHlCQUFBO0VBQ0Esa0JBQUE7RUFDQSxXQUFBO0VBQ0EsWUFBQTtBQ0FKOztBREdBO0VBQ0ksV0FBQTtFQUNBLFlBQUE7QUNBSjs7QURHQTtFQUNJLGNBQUE7RUFDQSxrQkFBQTtFQUNBLGdCQUFBO0VBQ0EsV0FBQTtFQUNBLFlBQUE7RUFDQSxVQUFBO0FDQUo7O0FER0E7RUFDSSxhQUFBO0VBQ0Esa0JBQUE7RUFDQSxvQkFBQTtFQUNBLHlCQUFBO0VBQ0EseUNBQUE7QUNBSiIsImZpbGUiOiJzcmMvYXBwL2NvbXBvbmVudHMvZW1iZWRkaW5nLXZpc3VhbGl6ZXIvZW1iZWRkaW5nLXZpc3VhbGl6ZXIuY29tcG9uZW50LnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcbjpob3N0IHtcbiAgICBkaXNwbGF5OiBibG9jayAhaW1wb3J0YW50O1xuICAgIHBvc2l0aW9uOiByZWxhdGl2ZTtcbiAgICB3aWR0aDogMTAwJTtcbiAgICBoZWlnaHQ6IDEwMCU7XG59XG5cbmNhbnZhcyB7XG4gICAgd2lkdGg6IDEwMCU7XG4gICAgaGVpZ2h0OiAxMDAlO1xufVxuXG4uY29udGFpbmVyIHtcbiAgICBkaXNwbGF5OiBibG9jaztcbiAgICBwb3NpdGlvbjogcmVsYXRpdmU7XG4gICAgb3ZlcmZsb3c6IGhpZGRlbjtcbiAgICB3aWR0aDogMTAwJTtcbiAgICBoZWlnaHQ6IDEwMCU7XG4gICAgei1pbmRleDogMTtcbn1cblxuLnNlbGVjdGlvbi1ib3ggIHtcbiAgICBkaXNwbGF5OiBub25lO1xuICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICBwb2ludGVyLWV2ZW50czogbm9uZTtcbiAgICBib3JkZXI6IDFweCBzb2xpZCAjNTVhYWZmO1xuICAgIGJhY2tncm91bmQtY29sb3I6IHJnYmEoNzUsIDE2MCwgMjU1LCAwLjMpO1xufVxuIiwiOmhvc3Qge1xuICBkaXNwbGF5OiBibG9jayAhaW1wb3J0YW50O1xuICBwb3NpdGlvbjogcmVsYXRpdmU7XG4gIHdpZHRoOiAxMDAlO1xuICBoZWlnaHQ6IDEwMCU7XG59XG5cbmNhbnZhcyB7XG4gIHdpZHRoOiAxMDAlO1xuICBoZWlnaHQ6IDEwMCU7XG59XG5cbi5jb250YWluZXIge1xuICBkaXNwbGF5OiBibG9jaztcbiAgcG9zaXRpb246IHJlbGF0aXZlO1xuICBvdmVyZmxvdzogaGlkZGVuO1xuICB3aWR0aDogMTAwJTtcbiAgaGVpZ2h0OiAxMDAlO1xuICB6LWluZGV4OiAxO1xufVxuXG4uc2VsZWN0aW9uLWJveCB7XG4gIGRpc3BsYXk6IG5vbmU7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgcG9pbnRlci1ldmVudHM6IG5vbmU7XG4gIGJvcmRlcjogMXB4IHNvbGlkICM1NWFhZmY7XG4gIGJhY2tncm91bmQtY29sb3I6IHJnYmEoNzUsIDE2MCwgMjU1LCAwLjMpO1xufSJdfQ== */");
+
+/***/ }),
+
+/***/ "./src/app/components/embedding-visualizer/embedding-visualizer.component.ts":
+/*!***********************************************************************************!*\
+  !*** ./src/app/components/embedding-visualizer/embedding-visualizer.component.ts ***!
+  \***********************************************************************************/
+/*! exports provided: HoverEvent, SelectedEvent, EmbeddingVisualizerComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HoverEvent", function() { return HoverEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectedEvent", function() { return SelectedEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EmbeddingVisualizerComponent", function() { return EmbeddingVisualizerComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var three_orbitcontrols__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! three-orbitcontrols */ "./node_modules/three-orbitcontrols/OrbitControls.js");
+/* harmony import */ var three_orbitcontrols__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(three_orbitcontrols__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+/**
+ * Represents a hover event.
+ */
+var HoverEvent = /** @class */ (function () {
+    /**
+     * Initializes a new HoverEvent instance.
+     * @param dataPoint The data point that the user is hovering.
+     * @param clusterColor The color that was assigned to the cluster of the data point.
+     */
+    function HoverEvent(dataPoint, clusterColor) {
+        this.dataPoint = dataPoint;
+        this.clusterColor = clusterColor.getStyle();
+    }
+    return HoverEvent;
+}());
+
+/**
+ * Represents a selected event.
+ */
+var SelectedEvent = /** @class */ (function () {
+    /**
+     * Initializes a new SelectedEvent instance.
+     * @param dataPoints The data points that were selected.
+     * @param clusterColors The colors of the selected data points.
+     */
+    function SelectedEvent(dataPoints, clusterColors) {
+        this.dataPoints = dataPoints;
+        this.clusterColors = clusterColors;
+    }
+    return SelectedEvent;
+}());
+
+/**
+ * Represents a visualizer, which can render an embedding.
+ */
+var EmbeddingVisualizerComponent = /** @class */ (function () {
+    /**
+     * Initializes a new EmbeddingVisualizerComponent instance.
+     * @param ngZone The Angular zone, which is needed to execute some code outside of Angular.
+     */
+    function EmbeddingVisualizerComponent(ngZone) {
+        var _this = this;
+        this.ngZone = ngZone;
+        /**
+         * Contains the index of the data point that is currently being hovered by the user.
+         */
+        this.indexOfDataPointCurrentBeingHovered = null;
+        /**
+         * The event that is invoked when the user hovers a data point.
+         */
+        this.onHover = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
+        /**
+         * The event that is invoked, when the user moves the mouse away from a data point.
+         */
+        this.onUnhover = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
+        /**
+         * The event that is invoked, when the user selects data points.
+         */
+        this.onSelected = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
+        /**
+         * The event that is invoked, when the user deselects all data points.
+         */
+        this.onDeselected = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
+        /**
+         * Is invoked, when the user clicks a mouse button. When the left mouse button is clicked, then selection process is
+         * started.
+         * @param event The event arguments that contain information about the event such as the button that was clicked.
+         */
+        this.onMouseDown = function (event) {
+            // Only when the left mouse button was clicked, the selection is started, otherwise nothing needs to be done
+            if (event.buttons !== 1) {
+                return;
+            }
+            // Starts the selection
+            _this.isSelecting = true;
+            // Since the selection box is positioned absolutely, the left and top of the render target need to be subtracted
+            // from the mouse position
+            var renderTargetNativeElement = _this.renderTarget.nativeElement;
+            var boundingRectangle = renderTargetNativeElement.getBoundingClientRect();
+            // Shows the selection box
+            _this.selectionBoxRectangle = {
+                x: event.clientX - boundingRectangle.left,
+                y: event.clientY - boundingRectangle.top,
+                startX: event.clientX - boundingRectangle.left,
+                startY: event.clientY - boundingRectangle.top
+            };
+            _this.updateSelectionBox();
+        };
+        /**
+         * Is invoked, when the user moves the mouse over the window. This is used for making selections.
+         */
+        this.onMouseMoveWindow = function (event) {
+            // When the user is performing a selection, then the selection box must be updated
+            if (_this.isSelecting) {
+                // Since the selection box is positioned absolutely, the left and top of the render target need to be subtracted
+                // from the mouse position
+                var renderTargetNativeElement = _this.renderTarget.nativeElement;
+                var boundingRectangle = renderTargetNativeElement.getBoundingClientRect();
+                // Updates the selection box
+                _this.selectionBoxRectangle.x = event.clientX - boundingRectangle.left;
+                _this.selectionBoxRectangle.y = event.clientY - boundingRectangle.top;
+                _this.updateSelectionBox();
+            }
+        };
+        /**
+         * Is invoked, when the user releases a mouse button. Stops the selection process.
+         */
+        this.onMouseUp = function () {
+            // If the user wasn't selecting, then nothing needs to be done
+            if (!_this.isSelecting) {
+                return;
+            }
+            // Hides the selection box
+            var selectionBoxNativeElement = _this.selectionBox.nativeElement;
+            selectionBoxNativeElement.style.display = 'none';
+            // Stops the selection
+            _this.isSelecting = false;
+            _this.selectionBoxRectangle = null;
+            _this.updateSelectionBox();
+            // Checks if the user selected data points or deselected everything
+            if (_this.selectedDataPointIndices.length !== 0) {
+                // Gets the data points that have been selected
+                var selectedDataPoints = _this.embedding.filter(function (_, index) { return _this.selectedDataPointIndices.indexOf(index) !== -1; });
+                // Invokes the selected event
+                _this.onSelected.emit(new SelectedEvent(selectedDataPoints, selectedDataPoints.map(function (dataPoint) { return (new three__WEBPACK_IMPORTED_MODULE_2__["Color"]()).setHSL((360 / _this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5).getStyle(); })));
+            }
+            else {
+                // Since the user deselected everything, the colors of the data points have to be reset to their initial
+                // saturation to indicate that nothing is selected
+                for (var index = 0; index < _this.embedding.length; index++) {
+                    var dataPoint = _this.embedding[index];
+                    _this.embeddingObject.geometry.colors[index] = (new three__WEBPACK_IMPORTED_MODULE_2__["Color"]()).setHSL((360 / _this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5);
+                }
+                _this.embeddingObject.geometry.colorsNeedUpdate = true;
+                // Invokes the deselected event
+                _this.onDeselected.emit();
+            }
+        };
+        /**
+         * Is invoked, when the user moves the mouse over the render target. This is used to detect the data point the user
+         * is hovering over.
+         * @param event The event arguments that contain information about the event such as mouse position.
+         */
+        this.onMouseMoveRenderTarget = function (event) {
+            // If the component has not been initialized or no embedding has been specified, there is nothing that the user
+            // can hover over
+            if (!_this.isInitialized || !_this.embedding) {
+                return;
+            }
+            // When the user is simultaneously using any mouse buttons, then the hover events are not emitted
+            if (event.buttons !== 0) {
+                if (_this.indexOfDataPointCurrentBeingHovered != null) {
+                    _this.onUnhover.emit();
+                }
+                _this.indexOfDataPointCurrentBeingHovered = null;
+                return;
+            }
+            // Gets a reference to the render target
+            var renderTargetNativeElement = _this.renderTarget.nativeElement;
+            // Determines the size of the render target
+            var width = renderTargetNativeElement.clientWidth;
+            var height = renderTargetNativeElement.clientHeight;
+            // Determines the position of the mouse in camera space
+            var boundingRectangle = event.target.getBoundingClientRect();
+            var mouseX = ((event.clientX - boundingRectangle.left) / width) * 2 - 1;
+            var mouseY = -((event.clientY - boundingRectangle.top) / height) * 2 + 1;
+            var mouseVector = new three__WEBPACK_IMPORTED_MODULE_2__["Vector3"](mouseX, mouseY, 0);
+            // Casts a ray from the camera through the mouse and checks if any of the data points intersect with the ray
+            var rayCaster = new three__WEBPACK_IMPORTED_MODULE_2__["Raycaster"]();
+            rayCaster.params.Points.threshold = 5 / _this.camera.zoom;
+            rayCaster.setFromCamera(mouseVector, _this.camera);
+            var intersections = rayCaster.intersectObject(_this.embeddingObject);
+            if (intersections.length > 0) {
+                if (_this.indexOfDataPointCurrentBeingHovered !== intersections[0].index) {
+                    var dataPoint = _this.embedding[intersections[0].index];
+                    var clusterColor = _this.embeddingObject.geometry.colors[intersections[0].index];
+                    _this.indexOfDataPointCurrentBeingHovered = intersections[0].index;
+                    _this.onHover.emit(new HoverEvent(dataPoint, clusterColor));
+                }
+            }
+            else {
+                if (_this.indexOfDataPointCurrentBeingHovered != null) {
+                    _this.onUnhover.emit();
+                }
+                _this.indexOfDataPointCurrentBeingHovered = null;
+            }
+        };
+        /**
+         * Renders the scene.
+         */
+        this.render = function () {
+            requestAnimationFrame(_this.render);
+            _this.renderer.render(_this.scene, _this.camera);
+        };
+    }
+    Object.defineProperty(EmbeddingVisualizerComponent.prototype, "embedding", {
+        /**
+         * Gets the embedding that is displayed in the visualizer.
+         */
+        get: function () {
+            return this._embedding;
+        },
+        /**
+         * Sets the embedding that is displayed in the visualizer.
+         */
+        set: function (value) {
+            this._embedding = value;
+            this.updateVisualizer();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Is invoked when the window was resized. Updates the camera and the renderer to the new canvas size.
+     */
+    EmbeddingVisualizerComponent.prototype.onWindowResize = function () {
+        // Gets a reference to the canvas that has probably also been resized due to the window resize
+        var renderTargetNativeElement = this.renderTarget.nativeElement;
+        // Determines the size of the render target (in this case the parent element is used, because the canvas itself
+        // gets a fixed size from the renderer and therefore never resizes unless the renderer is updated)
+        var width = renderTargetNativeElement.parentElement.clientWidth;
+        var height = renderTargetNativeElement.parentElement.clientHeight;
+        // Updates the camera and the renderer to the size
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        // Updates the renderer
+        this.renderer.setSize(width, height);
+    };
+    /**
+     * Updates the position of the selection box.
+     */
+    EmbeddingVisualizerComponent.prototype.updateSelectionBox = function () {
+        // If nothing is currently selected, then the selection box is hidden, otherwise it is shown
+        var selectionBoxNativeElement = this.selectionBox.nativeElement;
+        if (!this.isSelecting) {
+            selectionBoxNativeElement.style.display = 'none';
+            return;
+        }
+        selectionBoxNativeElement.style.display = 'block';
+        // Updates the selection box
+        var left = Math.min(this.selectionBoxRectangle.x, this.selectionBoxRectangle.startX);
+        var top = Math.min(this.selectionBoxRectangle.y, this.selectionBoxRectangle.startY);
+        var width = Math.abs(this.selectionBoxRectangle.x - this.selectionBoxRectangle.startX);
+        var height = Math.abs(this.selectionBoxRectangle.y - this.selectionBoxRectangle.startY);
+        selectionBoxNativeElement.style.left = left + "px";
+        selectionBoxNativeElement.style.top = top + "px";
+        selectionBoxNativeElement.style.width = width + "px";
+        selectionBoxNativeElement.style.height = height + "px";
+        // Determines the size of the render target
+        var renderTargetNativeElement = this.renderTarget.nativeElement;
+        var renderTargetWidth = renderTargetNativeElement.clientWidth;
+        var renderTargetHeight = renderTargetNativeElement.clientHeight;
+        // Determines the positions of the corners of the selection box in camera space
+        var right = (Math.max(this.selectionBoxRectangle.x, this.selectionBoxRectangle.startX) / renderTargetWidth) * 2 - 1;
+        var bottom = -(Math.max(this.selectionBoxRectangle.y, this.selectionBoxRectangle.startY) / renderTargetHeight) * 2 + 1;
+        var topLeftVector = new three__WEBPACK_IMPORTED_MODULE_2__["Vector3"]((left / renderTargetWidth) * 2 - 1, -(top / renderTargetHeight) * 2 + 1, 0);
+        var bottomRightVector = new three__WEBPACK_IMPORTED_MODULE_2__["Vector3"](right, bottom, 0);
+        // Brings the vertices of the corners of the selection box into the world space
+        topLeftVector.unproject(this.camera);
+        bottomRightVector.unproject(this.camera);
+        // Determines which embedding objects are inside the selection box
+        this.selectedDataPointIndices = new Array();
+        for (var index = 0; index < this.embedding.length; index++) {
+            var vector = this.embeddingObject.geometry.vertices[index];
+            if (vector.x > topLeftVector.x && vector.x < bottomRightVector.x && vector.y < topLeftVector.y && vector.y > bottomRightVector.y) {
+                this.selectedDataPointIndices.push(index);
+            }
+        }
+        // Increases the saturation of the data points that are selected and decreases the saturation of the rest
+        for (var index = 0; index < this.embedding.length; index++) {
+            var dataPoint = this.embedding[index];
+            if (this.selectedDataPointIndices.indexOf(index) === -1) {
+                this.embeddingObject.geometry.colors[index] = (new three__WEBPACK_IMPORTED_MODULE_2__["Color"]()).setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+            }
+            else {
+                this.embeddingObject.geometry.colors[index] = (new three__WEBPACK_IMPORTED_MODULE_2__["Color"]()).setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+            }
+        }
+        this.embeddingObject.geometry.colorsNeedUpdate = true;
+    };
+    /**
+     * Updates the visualization of the embedding.
+     */
+    EmbeddingVisualizerComponent.prototype.updateVisualizer = function () {
+        var e_1, _a, e_2, _b;
+        // If the component has not been initialized or no embedding has been specified, then the visualizer cannot be
+        // updated
+        if (!this.isInitialized || !this.embedding) {
+            return;
+        }
+        // If there is an embedding that is currently being visualized, then the object is remove from the scene
+        if (this.embeddingObject) {
+            this.scene.remove(this.embeddingObject);
+        }
+        // Determines the total number of clusters, which is needed to determine the number of colors that are needed
+        // for the visualization
+        var clusters = new Array();
+        try {
+            for (var _c = tslib__WEBPACK_IMPORTED_MODULE_0__["__values"](this.embedding.map(function (dataPoint) { return dataPoint.cluster; })), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var cluster = _d.value;
+                if (clusters.indexOf(cluster) === -1) {
+                    clusters.push(cluster);
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        this.numberOfClusters = clusters.length;
+        // Gets a reference to the render target
+        var renderTargetNativeElement = this.renderTarget.nativeElement;
+        // Determines the size of the render target
+        var width = renderTargetNativeElement.clientWidth * 0.95 / 2;
+        var height = renderTargetNativeElement.clientHeight * 0.95 / 2;
+        // Creates the scene object for the data points
+        var maximumX = 0;
+        var maximumY = 0;
+        var pointsGeometry = new three__WEBPACK_IMPORTED_MODULE_2__["Geometry"]();
+        try {
+            for (var _e = tslib__WEBPACK_IMPORTED_MODULE_0__["__values"](this.embedding), _f = _e.next(); !_f.done; _f = _e.next()) {
+                var dataPoint = _f.value;
+                // Determines X and Y positions of the points that are the farthest away from the origin, this information
+                // is used to scale the data points so that they fill out the whole viewport
+                if (Math.abs(dataPoint.value[0]) > maximumX) {
+                    maximumX = Math.abs(dataPoint.value[0]);
+                }
+                if (Math.abs(dataPoint.value[1]) > maximumY) {
+                    maximumY = Math.abs(dataPoint.value[1]);
+                }
+                // Creates a new vertex for the data point
+                var vertex = new three__WEBPACK_IMPORTED_MODULE_2__["Vector3"](dataPoint.value[0], dataPoint.value[1], -1);
+                pointsGeometry.vertices.push(vertex);
+                // Generates a color for the data point based on its cluster
+                var color = new three__WEBPACK_IMPORTED_MODULE_2__["Color"]();
+                color.setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.75, 0.5);
+                pointsGeometry.colors.push(color);
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        // Scales all data points so that they fill out the whole viewport
+        pointsGeometry.scale(width / maximumX, height / maximumY, 1);
+        // Creates the material for the points (setting the size attenuation to false means that the points always have
+        // the same size no matter the zoom level)
+        var pointsMaterial = new three__WEBPACK_IMPORTED_MODULE_2__["PointsMaterial"]({
+            size: 8,
+            sizeAttenuation: false,
+            vertexColors: three__WEBPACK_IMPORTED_MODULE_2__["VertexColors"],
+            map: this.dataPointTexture,
+            transparent: true,
+            depthTest: false
+        });
+        // Generates the scene object that contains all the data points and adds it to the scene
+        this.embeddingObject = new three__WEBPACK_IMPORTED_MODULE_2__["Points"](pointsGeometry, pointsMaterial);
+        this.scene.add(this.embeddingObject);
+        // Resets the camera to the center
+        this.camera.position.set(0, 0, 1);
+    };
+    /**
+     * Is invoked after the view was initialized (and the view children are available). Initializes the renderer.
+     */
+    EmbeddingVisualizerComponent.prototype.ngAfterViewInit = function () {
+        var _this = this;
+        // Gets a reference to the canvas onto which the embedding will be rendered
+        var renderTargetNativeElement = this.renderTarget.nativeElement;
+        // Determines the size of the render target
+        var width = renderTargetNativeElement.clientWidth;
+        var height = renderTargetNativeElement.clientHeight;
+        // Creates the renderer
+        this.renderer = new three__WEBPACK_IMPORTED_MODULE_2__["WebGLRenderer"]({
+            canvas: renderTargetNativeElement,
+            antialias: true
+        });
+        this.renderer.setSize(width, height);
+        var backgroundColor = new three__WEBPACK_IMPORTED_MODULE_2__["Color"]().setStyle(this.backgroundColor || '#FFFFFF');
+        this.renderer.setClearColor(backgroundColor);
+        // Creates the scene
+        this.scene = new three__WEBPACK_IMPORTED_MODULE_2__["Scene"]();
+        // Creates the camera
+        this.camera = new three__WEBPACK_IMPORTED_MODULE_2__["OrthographicCamera"](width / -2, width / 2, height / 2, height / -2, -10, 1000);
+        this.camera.position.z = 1;
+        this.scene.add(this.camera);
+        // Adds a camera controller for zooming and panning
+        this.cameraController = new three_orbitcontrols__WEBPACK_IMPORTED_MODULE_3__(this.camera, renderTargetNativeElement);
+        this.cameraController.minZoom = 0.5;
+        this.cameraController.maxZoom = 5.0;
+        this.cameraController.screenSpacePanning = true;
+        this.cameraController.enableRotate = false;
+        // Loads the texture that is used to display the data points
+        this.dataPointTexture = new three__WEBPACK_IMPORTED_MODULE_2__["TextureLoader"]().load('assets/images/circle-sprite.png');
+        // This should be run outside angular zones, because it could trigger heavy change detection cycles
+        this.ngZone.runOutsideAngular(function () {
+            // Subscribes to the window resize event, in which case the camera and the renderer have to be updated
+            window.addEventListener('resize', function () { return _this.onWindowResize(); });
+            // Starts the rendering
+            _this.render();
+        });
+        // Subscribes to the mouse move event of the canvas, which is used to raise the hover events
+        renderTargetNativeElement.addEventListener('mousemove', this.onMouseMoveRenderTarget);
+        // Subscribes to the mouse events, which are used for making a selection
+        renderTargetNativeElement.addEventListener('mousedown', this.onMouseDown);
+        window.addEventListener('mousemove', this.onMouseMoveWindow);
+        window.addEventListener('mouseup', this.onMouseUp);
+        // The initialization has finished
+        this.isInitialized = true;
+        this.updateVisualizer();
+    };
+    /**
+     * Is invoked when the component is being destroyed. Aborts the animation.
+     */
+    EmbeddingVisualizerComponent.prototype.ngOnDestroy = function () {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
+    };
+    EmbeddingVisualizerComponent.ctorParameters = function () { return [
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] }
+    ]; };
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])('renderTarget', { static: false })
+    ], EmbeddingVisualizerComponent.prototype, "renderTarget", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])('selectionBox', { static: false })
+    ], EmbeddingVisualizerComponent.prototype, "selectionBox", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
+    ], EmbeddingVisualizerComponent.prototype, "embedding", null);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
+    ], EmbeddingVisualizerComponent.prototype, "backgroundColor", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])()
+    ], EmbeddingVisualizerComponent.prototype, "onHover", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])()
+    ], EmbeddingVisualizerComponent.prototype, "onUnhover", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])()
+    ], EmbeddingVisualizerComponent.prototype, "onSelected", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])()
+    ], EmbeddingVisualizerComponent.prototype, "onDeselected", void 0);
+    EmbeddingVisualizerComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
+            selector: 'app-embedding-visualizer',
+            template: tslib__WEBPACK_IMPORTED_MODULE_0__["__importDefault"](__webpack_require__(/*! raw-loader!./embedding-visualizer.component.html */ "./node_modules/raw-loader/dist/cjs.js!./src/app/components/embedding-visualizer/embedding-visualizer.component.html")).default,
+            styles: [tslib__WEBPACK_IMPORTED_MODULE_0__["__importDefault"](__webpack_require__(/*! ./embedding-visualizer.component.scss */ "./src/app/components/embedding-visualizer/embedding-visualizer.component.scss")).default]
+        })
+    ], EmbeddingVisualizerComponent);
+    return EmbeddingVisualizerComponent;
 }());
 
 
@@ -586,7 +1102,7 @@ var ComponentsModule = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#panels-container {\n  display: grid;\n  grid-template-rows: 85px 1fr 35px;\n  grid-template-columns: 1fr 250px;\n  grid-template-areas: \"options-pane options-pane\" \"embedding-plot selected-data-points\" \"status-bar status-bar\";\n}\n#panels-container #embedding-plot {\n  grid-area: embedding-plot;\n  width: calc(100vw - 250px);\n  height: calc(100vh - 180px);\n}\n#panels-container #embedding-plot #attribution-hover-preview {\n  position: absolute;\n  top: 169px;\n  left: 24px;\n  z-index: 9999;\n}\n#panels-container #options-pane {\n  grid-area: options-pane;\n  display: flex;\n  align-items: center;\n  background-color: #EFEFEF;\n  margin: 0;\n  z-index: 1;\n  overflow-x: auto;\n  overflow-y: hidden;\n}\n#panels-container #options-pane clr-select-container, #panels-container #options-pane img {\n  margin: 0 0 0 24px;\n}\n#panels-container #options-pane img {\n  padding-right: 24px;\n  width: 174px;\n  height: 40px;\n}\n#panels-container #selected-data-points {\n  grid-area: selected-data-points;\n  height: calc(100vh - 180px);\n  background-color: #EFEFEF;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n#panels-container #selected-data-points .spinner-locally-centered {\n  position: relative;\n  top: calc(50% - 1.5rem);\n  left: calc(50% - 1.5rem);\n}\n#panels-container #selected-data-points #selection-hint {\n  display: table;\n  height: calc(100% - 12px);\n  margin: 0 12px 12px 12px;\n  border: 1px dashed silver;\n  border-radius: 5px;\n  text-align: center;\n}\n#panels-container #selected-data-points #selection-hint p {\n  vertical-align: middle;\n  display: table-cell;\n}\n#panels-container #selected-data-points #data-point-list {\n  margin: 12px;\n}\n#panels-container #selected-data-points #data-point-list:first-child {\n  margin-top: 0;\n}\n#panels-container #selected-data-points #data-point-list .embedding {\n  margin-bottom: 12px;\n}\n#panels-container #selected-data-points #data-point-list .embedding:last-child {\n  margin-bottom: 0;\n}\n#panels-container #selected-data-points #data-point-list p {\n  margin-top: 6px;\n  text-align: center;\n}\n#panels-container #status-bar {\n  grid-area: status-bar;\n  display: flex;\n  align-items: center;\n  padding-left: 1rem;\n  z-index: 1;\n  background-color: #271335;\n  color: white;\n}\n#panels-container #status-bar strong {\n  margin-left: 5px;\n  margin-right: 5px;\n}\n#panels-container #status-bar clr-icon:not(:first-child) {\n  margin-left: 20px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL2RuZXVtYW5uL1JlcG9zaXRvcmllcy9zcHJpbmNsL3Zpc3ByX3ZuZXh0L2Zyb250ZW5kL3NyYy9hcHAvbW9kdWxlcy9wcm9qZWN0cy9wYWdlcy9pbmRleC9pbmRleC5wYWdlLnNjc3MiLCJzcmMvYXBwL21vZHVsZXMvcHJvamVjdHMvcGFnZXMvaW5kZXgvaW5kZXgucGFnZS5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBO0VBQ0ksYUFBQTtFQUNBLGlDQUFBO0VBQ0EsZ0NBQUE7RUFDQSw4R0FDSTtBQ0RSO0FETUk7RUFDSSx5QkFBQTtFQUNBLDBCQUFBO0VBQ0EsMkJBQUE7QUNKUjtBRE1RO0VBQ0ksa0JBQUE7RUFDQSxVQUFBO0VBQ0EsVUFBQTtFQUNBLGFBQUE7QUNKWjtBRFFJO0VBQ0ksdUJBQUE7RUFFQSxhQUFBO0VBQ0EsbUJBQUE7RUFFQSx5QkFBQTtFQUNBLFNBQUE7RUFDQSxVQUFBO0VBRUEsZ0JBQUE7RUFDQSxrQkFBQTtBQ1RSO0FEV1E7RUFDSSxrQkFBQTtBQ1RaO0FEWVE7RUFDSSxtQkFBQTtFQUNBLFlBQUE7RUFDQSxZQUFBO0FDVlo7QURjSTtFQUNJLCtCQUFBO0VBQ0EsMkJBQUE7RUFFQSx5QkFBQTtFQUVBLGtCQUFBO0VBQ0EsZ0JBQUE7QUNkUjtBRGdCUTtFQUNJLGtCQUFBO0VBQ0EsdUJBQUE7RUFDQSx3QkFBQTtBQ2RaO0FEaUJRO0VBQ0ksY0FBQTtFQUVBLHlCQUFBO0VBQ0Esd0JBQUE7RUFFQSx5QkFBQTtFQUNBLGtCQUFBO0VBRUEsa0JBQUE7QUNsQlo7QURvQlk7RUFDSSxzQkFBQTtFQUNBLG1CQUFBO0FDbEJoQjtBRHNCUTtFQUNJLFlBQUE7QUNwQlo7QURzQlk7RUFDSSxhQUFBO0FDcEJoQjtBRHVCWTtFQUNJLG1CQUFBO0FDckJoQjtBRHVCZ0I7RUFDSSxnQkFBQTtBQ3JCcEI7QUR5Qlk7RUFDSSxlQUFBO0VBQ0Esa0JBQUE7QUN2QmhCO0FENEJJO0VBQ0kscUJBQUE7RUFFQSxhQUFBO0VBQ0EsbUJBQUE7RUFFQSxrQkFBQTtFQUNBLFVBQUE7RUFDQSx5QkFBQTtFQUNBLFlBQUE7QUM1QlI7QUQ4QlE7RUFDSSxnQkFBQTtFQUNBLGlCQUFBO0FDNUJaO0FEZ0NZO0VBQ0ksaUJBQUE7QUM5QmhCIiwiZmlsZSI6InNyYy9hcHAvbW9kdWxlcy9wcm9qZWN0cy9wYWdlcy9pbmRleC9pbmRleC5wYWdlLnNjc3MiLCJzb3VyY2VzQ29udGVudCI6WyJcbiNwYW5lbHMtY29udGFpbmVyIHtcbiAgICBkaXNwbGF5OiBncmlkO1xuICAgIGdyaWQtdGVtcGxhdGUtcm93czogODVweCAxZnIgMzVweDtcbiAgICBncmlkLXRlbXBsYXRlLWNvbHVtbnM6IDFmciAyNTBweDtcbiAgICBncmlkLXRlbXBsYXRlLWFyZWFzOlxuICAgICAgICBcIm9wdGlvbnMtcGFuZSBvcHRpb25zLXBhbmVcIlxuICAgICAgICBcImVtYmVkZGluZy1wbG90IHNlbGVjdGVkLWRhdGEtcG9pbnRzXCJcbiAgICAgICAgXCJzdGF0dXMtYmFyIHN0YXR1cy1iYXJcIlxuICAgIDtcblxuICAgICNlbWJlZGRpbmctcGxvdCB7XG4gICAgICAgIGdyaWQtYXJlYTogZW1iZWRkaW5nLXBsb3Q7XG4gICAgICAgIHdpZHRoOiBjYWxjKDEwMHZ3IC0gMjUwcHgpO1xuICAgICAgICBoZWlnaHQ6IGNhbGMoMTAwdmggLSAxODBweCk7XG5cbiAgICAgICAgI2F0dHJpYnV0aW9uLWhvdmVyLXByZXZpZXcge1xuICAgICAgICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgICAgICAgdG9wOiAxNjlweDtcbiAgICAgICAgICAgIGxlZnQ6IDI0cHg7XG4gICAgICAgICAgICB6LWluZGV4OiA5OTk5O1xuICAgICAgICB9XG4gICAgfVxuXG4gICAgI29wdGlvbnMtcGFuZSB7XG4gICAgICAgIGdyaWQtYXJlYTogb3B0aW9ucy1wYW5lO1xuXG4gICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG5cbiAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogI0VGRUZFRjtcbiAgICAgICAgbWFyZ2luOiAwO1xuICAgICAgICB6LWluZGV4OiAxO1xuXG4gICAgICAgIG92ZXJmbG93LXg6IGF1dG87XG4gICAgICAgIG92ZXJmbG93LXk6IGhpZGRlbjtcblxuICAgICAgICBjbHItc2VsZWN0LWNvbnRhaW5lciwgaW1nIHtcbiAgICAgICAgICAgIG1hcmdpbjogMCAwIDAgMjRweDtcbiAgICAgICAgfVxuXG4gICAgICAgIGltZyB7XG4gICAgICAgICAgICBwYWRkaW5nLXJpZ2h0OiAyNHB4O1xuICAgICAgICAgICAgd2lkdGg6IDE3NHB4O1xuICAgICAgICAgICAgaGVpZ2h0OiA0MHB4O1xuICAgICAgICB9XG4gICAgfVxuXG4gICAgI3NlbGVjdGVkLWRhdGEtcG9pbnRzIHtcbiAgICAgICAgZ3JpZC1hcmVhOiBzZWxlY3RlZC1kYXRhLXBvaW50cztcbiAgICAgICAgaGVpZ2h0OiBjYWxjKDEwMHZoIC0gMTgwcHgpO1xuXG4gICAgICAgIGJhY2tncm91bmQtY29sb3I6ICNFRkVGRUY7XG5cbiAgICAgICAgb3ZlcmZsb3cteDogaGlkZGVuO1xuICAgICAgICBvdmVyZmxvdy15OiBhdXRvO1xuXG4gICAgICAgIC5zcGlubmVyLWxvY2FsbHktY2VudGVyZWQge1xuICAgICAgICAgICAgcG9zaXRpb246IHJlbGF0aXZlO1xuICAgICAgICAgICAgdG9wOiBjYWxjKDUwJSAtIDEuNXJlbSk7XG4gICAgICAgICAgICBsZWZ0OiBjYWxjKDUwJSAtIDEuNXJlbSk7XG4gICAgICAgIH1cblxuICAgICAgICAjc2VsZWN0aW9uLWhpbnQge1xuICAgICAgICAgICAgZGlzcGxheTogdGFibGU7XG5cbiAgICAgICAgICAgIGhlaWdodDogY2FsYygxMDAlIC0gMTJweCk7XG4gICAgICAgICAgICBtYXJnaW46IDAgMTJweCAxMnB4IDEycHg7XG5cbiAgICAgICAgICAgIGJvcmRlcjogMXB4IGRhc2hlZCByZ2IoMTkyLCAxOTIsIDE5Mik7XG4gICAgICAgICAgICBib3JkZXItcmFkaXVzOiA1cHg7XG5cbiAgICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcblxuICAgICAgICAgICAgcCB7XG4gICAgICAgICAgICAgICAgdmVydGljYWwtYWxpZ246IG1pZGRsZTtcbiAgICAgICAgICAgICAgICBkaXNwbGF5OiB0YWJsZS1jZWxsO1xuICAgICAgICAgICAgfVxuICAgICAgICB9XG5cbiAgICAgICAgI2RhdGEtcG9pbnQtbGlzdCB7XG4gICAgICAgICAgICBtYXJnaW46IDEycHg7XG5cbiAgICAgICAgICAgICY6Zmlyc3QtY2hpbGQge1xuICAgICAgICAgICAgICAgIG1hcmdpbi10b3A6IDA7XG4gICAgICAgICAgICB9XG5cbiAgICAgICAgICAgIC5lbWJlZGRpbmcge1xuICAgICAgICAgICAgICAgIG1hcmdpbi1ib3R0b206IDEycHg7XG5cbiAgICAgICAgICAgICAgICAmOmxhc3QtY2hpbGQge1xuICAgICAgICAgICAgICAgICAgICBtYXJnaW4tYm90dG9tOiAwO1xuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIH1cblxuICAgICAgICAgICAgcCB7XG4gICAgICAgICAgICAgICAgbWFyZ2luLXRvcDogNnB4O1xuICAgICAgICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgIH1cblxuICAgICNzdGF0dXMtYmFyIHtcbiAgICAgICAgZ3JpZC1hcmVhOiBzdGF0dXMtYmFyO1xuXG4gICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG5cbiAgICAgICAgcGFkZGluZy1sZWZ0OiAxcmVtO1xuICAgICAgICB6LWluZGV4OiAxO1xuICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjcxMzM1O1xuICAgICAgICBjb2xvcjogd2hpdGU7XG5cbiAgICAgICAgc3Ryb25nIHtcbiAgICAgICAgICAgIG1hcmdpbi1sZWZ0OiA1cHg7XG4gICAgICAgICAgICBtYXJnaW4tcmlnaHQ6IDVweDtcbiAgICAgICAgfVxuXG4gICAgICAgIGNsci1pY29uIHtcbiAgICAgICAgICAgICY6bm90KDpmaXJzdC1jaGlsZCkge1xuICAgICAgICAgICAgICAgIG1hcmdpbi1sZWZ0OiAyMHB4O1xuICAgICAgICAgICAgfVxuICAgICAgICB9XG4gICAgfVxufVxuIiwiI3BhbmVscy1jb250YWluZXIge1xuICBkaXNwbGF5OiBncmlkO1xuICBncmlkLXRlbXBsYXRlLXJvd3M6IDg1cHggMWZyIDM1cHg7XG4gIGdyaWQtdGVtcGxhdGUtY29sdW1uczogMWZyIDI1MHB4O1xuICBncmlkLXRlbXBsYXRlLWFyZWFzOiBcIm9wdGlvbnMtcGFuZSBvcHRpb25zLXBhbmVcIiBcImVtYmVkZGluZy1wbG90IHNlbGVjdGVkLWRhdGEtcG9pbnRzXCIgXCJzdGF0dXMtYmFyIHN0YXR1cy1iYXJcIjtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNlbWJlZGRpbmctcGxvdCB7XG4gIGdyaWQtYXJlYTogZW1iZWRkaW5nLXBsb3Q7XG4gIHdpZHRoOiBjYWxjKDEwMHZ3IC0gMjUwcHgpO1xuICBoZWlnaHQ6IGNhbGMoMTAwdmggLSAxODBweCk7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjZW1iZWRkaW5nLXBsb3QgI2F0dHJpYnV0aW9uLWhvdmVyLXByZXZpZXcge1xuICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gIHRvcDogMTY5cHg7XG4gIGxlZnQ6IDI0cHg7XG4gIHotaW5kZXg6IDk5OTk7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjb3B0aW9ucy1wYW5lIHtcbiAgZ3JpZC1hcmVhOiBvcHRpb25zLXBhbmU7XG4gIGRpc3BsYXk6IGZsZXg7XG4gIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gIGJhY2tncm91bmQtY29sb3I6ICNFRkVGRUY7XG4gIG1hcmdpbjogMDtcbiAgei1pbmRleDogMTtcbiAgb3ZlcmZsb3cteDogYXV0bztcbiAgb3ZlcmZsb3cteTogaGlkZGVuO1xufVxuI3BhbmVscy1jb250YWluZXIgI29wdGlvbnMtcGFuZSBjbHItc2VsZWN0LWNvbnRhaW5lciwgI3BhbmVscy1jb250YWluZXIgI29wdGlvbnMtcGFuZSBpbWcge1xuICBtYXJnaW46IDAgMCAwIDI0cHg7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjb3B0aW9ucy1wYW5lIGltZyB7XG4gIHBhZGRpbmctcmlnaHQ6IDI0cHg7XG4gIHdpZHRoOiAxNzRweDtcbiAgaGVpZ2h0OiA0MHB4O1xufVxuI3BhbmVscy1jb250YWluZXIgI3NlbGVjdGVkLWRhdGEtcG9pbnRzIHtcbiAgZ3JpZC1hcmVhOiBzZWxlY3RlZC1kYXRhLXBvaW50cztcbiAgaGVpZ2h0OiBjYWxjKDEwMHZoIC0gMTgwcHgpO1xuICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUZFRkVGO1xuICBvdmVyZmxvdy14OiBoaWRkZW47XG4gIG92ZXJmbG93LXk6IGF1dG87XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc2VsZWN0ZWQtZGF0YS1wb2ludHMgLnNwaW5uZXItbG9jYWxseS1jZW50ZXJlZCB7XG4gIHBvc2l0aW9uOiByZWxhdGl2ZTtcbiAgdG9wOiBjYWxjKDUwJSAtIDEuNXJlbSk7XG4gIGxlZnQ6IGNhbGMoNTAlIC0gMS41cmVtKTtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjc2VsZWN0aW9uLWhpbnQge1xuICBkaXNwbGF5OiB0YWJsZTtcbiAgaGVpZ2h0OiBjYWxjKDEwMCUgLSAxMnB4KTtcbiAgbWFyZ2luOiAwIDEycHggMTJweCAxMnB4O1xuICBib3JkZXI6IDFweCBkYXNoZWQgc2lsdmVyO1xuICBib3JkZXItcmFkaXVzOiA1cHg7XG4gIHRleHQtYWxpZ246IGNlbnRlcjtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjc2VsZWN0aW9uLWhpbnQgcCB7XG4gIHZlcnRpY2FsLWFsaWduOiBtaWRkbGU7XG4gIGRpc3BsYXk6IHRhYmxlLWNlbGw7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc2VsZWN0ZWQtZGF0YS1wb2ludHMgI2RhdGEtcG9pbnQtbGlzdCB7XG4gIG1hcmdpbjogMTJweDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjZGF0YS1wb2ludC1saXN0OmZpcnN0LWNoaWxkIHtcbiAgbWFyZ2luLXRvcDogMDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjZGF0YS1wb2ludC1saXN0IC5lbWJlZGRpbmcge1xuICBtYXJnaW4tYm90dG9tOiAxMnB4O1xufVxuI3BhbmVscy1jb250YWluZXIgI3NlbGVjdGVkLWRhdGEtcG9pbnRzICNkYXRhLXBvaW50LWxpc3QgLmVtYmVkZGluZzpsYXN0LWNoaWxkIHtcbiAgbWFyZ2luLWJvdHRvbTogMDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjZGF0YS1wb2ludC1saXN0IHAge1xuICBtYXJnaW4tdG9wOiA2cHg7XG4gIHRleHQtYWxpZ246IGNlbnRlcjtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzdGF0dXMtYmFyIHtcbiAgZ3JpZC1hcmVhOiBzdGF0dXMtYmFyO1xuICBkaXNwbGF5OiBmbGV4O1xuICBhbGlnbi1pdGVtczogY2VudGVyO1xuICBwYWRkaW5nLWxlZnQ6IDFyZW07XG4gIHotaW5kZXg6IDE7XG4gIGJhY2tncm91bmQtY29sb3I6ICMyNzEzMzU7XG4gIGNvbG9yOiB3aGl0ZTtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzdGF0dXMtYmFyIHN0cm9uZyB7XG4gIG1hcmdpbi1sZWZ0OiA1cHg7XG4gIG1hcmdpbi1yaWdodDogNXB4O1xufVxuI3BhbmVscy1jb250YWluZXIgI3N0YXR1cy1iYXIgY2xyLWljb246bm90KDpmaXJzdC1jaGlsZCkge1xuICBtYXJnaW4tbGVmdDogMjBweDtcbn0iXX0= */");
+/* harmony default export */ __webpack_exports__["default"] = ("#panels-container {\n  display: grid;\n  grid-template-rows: 85px 1fr 250px 35px;\n  grid-template-columns: 1fr 250px;\n  grid-template-areas: \"options-pane options-pane\" \"embedding-plot cluster-pane\" \"selected-data-points selected-data-points\" \"status-bar status-bar\";\n}\n#panels-container #cluster-pane {\n  grid-area: cluster-pane;\n  background-color: #EFEFEF;\n}\n#panels-container #embedding-plot {\n  grid-area: embedding-plot;\n  width: calc(100vw - 250px);\n  height: calc(100vh - 430px);\n  background-color: #EFEFEF;\n}\n#panels-container #embedding-plot #attribution-hover-preview {\n  position: absolute;\n  top: 169px;\n  left: 24px;\n  min-width: 128px;\n  min-height: 128px;\n  max-width: 256px;\n  max-height: 256px;\n  z-index: 9999;\n  -ms-interpolation-mode: nearest-neighbor;\n      image-rendering: -moz-crisp-edges;\n      image-rendering: pixelated;\n}\n#panels-container #options-pane {\n  grid-area: options-pane;\n  display: flex;\n  align-items: center;\n  background-color: #EFEFEF;\n  margin: 0;\n  z-index: 1;\n  overflow-x: auto;\n  overflow-y: hidden;\n}\n#panels-container #options-pane clr-select-container, #panels-container #options-pane img {\n  margin: 0 0 0 24px;\n}\n#panels-container #options-pane img {\n  padding-right: 24px;\n  width: 174px;\n  height: 40px;\n}\n#panels-container #selected-data-points {\n  grid-area: selected-data-points;\n  height: 100%;\n  width: 100%;\n  background-color: #EFEFEF;\n  overflow-x: auto;\n  overflow-y: hidden;\n  white-space: nowrap;\n}\n#panels-container #selected-data-points .spinner-locally-centered {\n  position: relative;\n  top: calc(50% - 1.5rem);\n  left: calc(50% - 1.5rem);\n}\n#panels-container #selected-data-points #selection-hint {\n  display: table;\n  height: calc(100% - 24px);\n  width: calc(100% - 24px);\n  margin: 12px 12px 12px 12px;\n  border: 1px dashed silver;\n  border-radius: 5px;\n  text-align: center;\n}\n#panels-container #selected-data-points #selection-hint p {\n  vertical-align: middle;\n  display: table-cell;\n}\n#panels-container #selected-data-points #data-point-list {\n  display: flex;\n  align-items: center;\n  height: 226px;\n  margin: 12px;\n}\n#panels-container #selected-data-points #data-point-list .data-point {\n  min-width: 180px;\n  min-height: 210px;\n  max-width: 180px;\n  max-height: 210px;\n  margin-left: 12px;\n}\n#panels-container #selected-data-points #data-point-list .data-point:first-child {\n  margin-left: 0;\n}\n#panels-container #selected-data-points #data-point-list .data-point:last-child {\n  margin-right: 12px;\n}\n#panels-container #selected-data-points #data-point-list p {\n  margin-top: 6px;\n  text-align: center;\n}\n#panels-container #status-bar {\n  grid-area: status-bar;\n  display: flex;\n  align-items: center;\n  padding-left: 1rem;\n  z-index: 1;\n  background-color: #271335;\n  color: white;\n}\n#panels-container #status-bar strong {\n  margin-left: 5px;\n  margin-right: 5px;\n}\n#panels-container #status-bar clr-icon:not(:first-child) {\n  margin-left: 20px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL2RuZXVtYW5uL1JlcG9zaXRvcmllcy9zcHJpbmNsL3Zpc3ByX3ZuZXh0L2Zyb250ZW5kL3NyYy9hcHAvbW9kdWxlcy9wcm9qZWN0cy9wYWdlcy9pbmRleC9pbmRleC5wYWdlLnNjc3MiLCJzcmMvYXBwL21vZHVsZXMvcHJvamVjdHMvcGFnZXMvaW5kZXgvaW5kZXgucGFnZS5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBO0VBQ0ksYUFBQTtFQUNBLHVDQUFBO0VBQ0EsZ0NBQUE7RUFDQSxrSkFDSTtBQ0RSO0FET0k7RUFDSSx1QkFBQTtFQUVBLHlCQUFBO0FDTlI7QURTSTtFQUNJLHlCQUFBO0VBQ0EsMEJBQUE7RUFDQSwyQkFBQTtFQUVBLHlCQUFBO0FDUlI7QURVUTtFQUNJLGtCQUFBO0VBRUEsVUFBQTtFQUNBLFVBQUE7RUFDQSxnQkFBQTtFQUNBLGlCQUFBO0VBQ0EsZ0JBQUE7RUFDQSxpQkFBQTtFQUVBLGFBQUE7RUFFQSx3Q0FBQTtNQUFBLGlDQUFBO01BQUEsMEJBQUE7QUNYWjtBRGVJO0VBQ0ksdUJBQUE7RUFFQSxhQUFBO0VBQ0EsbUJBQUE7RUFFQSx5QkFBQTtFQUNBLFNBQUE7RUFDQSxVQUFBO0VBRUEsZ0JBQUE7RUFDQSxrQkFBQTtBQ2hCUjtBRGtCUTtFQUNJLGtCQUFBO0FDaEJaO0FEbUJRO0VBQ0ksbUJBQUE7RUFDQSxZQUFBO0VBQ0EsWUFBQTtBQ2pCWjtBRHFCSTtFQUNJLCtCQUFBO0VBQ0EsWUFBQTtFQUNBLFdBQUE7RUFFQSx5QkFBQTtFQUVBLGdCQUFBO0VBQ0Esa0JBQUE7RUFDQSxtQkFBQTtBQ3JCUjtBRHVCUTtFQUNJLGtCQUFBO0VBQ0EsdUJBQUE7RUFDQSx3QkFBQTtBQ3JCWjtBRHdCUTtFQUNJLGNBQUE7RUFFQSx5QkFBQTtFQUNBLHdCQUFBO0VBQ0EsMkJBQUE7RUFFQSx5QkFBQTtFQUNBLGtCQUFBO0VBRUEsa0JBQUE7QUN6Qlo7QUQyQlk7RUFDSSxzQkFBQTtFQUNBLG1CQUFBO0FDekJoQjtBRDZCUTtFQUNJLGFBQUE7RUFDQSxtQkFBQTtFQUVBLGFBQUE7RUFDQSxZQUFBO0FDNUJaO0FEOEJZO0VBQ0ksZ0JBQUE7RUFDQSxpQkFBQTtFQUNBLGdCQUFBO0VBQ0EsaUJBQUE7RUFFQSxpQkFBQTtBQzdCaEI7QUQrQmdCO0VBQ0ksY0FBQTtBQzdCcEI7QURnQ2dCO0VBQ0ksa0JBQUE7QUM5QnBCO0FEa0NZO0VBQ0ksZUFBQTtFQUNBLGtCQUFBO0FDaENoQjtBRHFDSTtFQUNJLHFCQUFBO0VBRUEsYUFBQTtFQUNBLG1CQUFBO0VBRUEsa0JBQUE7RUFDQSxVQUFBO0VBQ0EseUJBQUE7RUFDQSxZQUFBO0FDckNSO0FEdUNRO0VBQ0ksZ0JBQUE7RUFDQSxpQkFBQTtBQ3JDWjtBRHlDWTtFQUNJLGlCQUFBO0FDdkNoQiIsImZpbGUiOiJzcmMvYXBwL21vZHVsZXMvcHJvamVjdHMvcGFnZXMvaW5kZXgvaW5kZXgucGFnZS5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiXG4jcGFuZWxzLWNvbnRhaW5lciB7XG4gICAgZGlzcGxheTogZ3JpZDtcbiAgICBncmlkLXRlbXBsYXRlLXJvd3M6IDg1cHggMWZyIDI1MHB4IDM1cHg7XG4gICAgZ3JpZC10ZW1wbGF0ZS1jb2x1bW5zOiAxZnIgMjUwcHg7XG4gICAgZ3JpZC10ZW1wbGF0ZS1hcmVhczpcbiAgICAgICAgXCJvcHRpb25zLXBhbmUgb3B0aW9ucy1wYW5lXCJcbiAgICAgICAgXCJlbWJlZGRpbmctcGxvdCBjbHVzdGVyLXBhbmVcIlxuICAgICAgICBcInNlbGVjdGVkLWRhdGEtcG9pbnRzIHNlbGVjdGVkLWRhdGEtcG9pbnRzXCJcbiAgICAgICAgXCJzdGF0dXMtYmFyIHN0YXR1cy1iYXJcIlxuICAgIDtcblxuICAgICNjbHVzdGVyLXBhbmUge1xuICAgICAgICBncmlkLWFyZWE6IGNsdXN0ZXItcGFuZTtcblxuICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUZFRkVGO1xuICAgIH1cblxuICAgICNlbWJlZGRpbmctcGxvdCB7XG4gICAgICAgIGdyaWQtYXJlYTogZW1iZWRkaW5nLXBsb3Q7XG4gICAgICAgIHdpZHRoOiBjYWxjKDEwMHZ3IC0gMjUwcHgpO1xuICAgICAgICBoZWlnaHQ6IGNhbGMoMTAwdmggLSA0MzBweCk7XG5cbiAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogI0VGRUZFRjtcblxuICAgICAgICAjYXR0cmlidXRpb24taG92ZXItcHJldmlldyB7XG4gICAgICAgICAgICBwb3NpdGlvbjogYWJzb2x1dGU7XG5cbiAgICAgICAgICAgIHRvcDogMTY5cHg7XG4gICAgICAgICAgICBsZWZ0OiAyNHB4O1xuICAgICAgICAgICAgbWluLXdpZHRoOiAxMjhweDtcbiAgICAgICAgICAgIG1pbi1oZWlnaHQ6IDEyOHB4O1xuICAgICAgICAgICAgbWF4LXdpZHRoOiAyNTZweDtcbiAgICAgICAgICAgIG1heC1oZWlnaHQ6IDI1NnB4O1xuXG4gICAgICAgICAgICB6LWluZGV4OiA5OTk5O1xuXG4gICAgICAgICAgICBpbWFnZS1yZW5kZXJpbmc6IHBpeGVsYXRlZDtcbiAgICAgICAgfVxuICAgIH1cblxuICAgICNvcHRpb25zLXBhbmUge1xuICAgICAgICBncmlkLWFyZWE6IG9wdGlvbnMtcGFuZTtcblxuICAgICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuXG4gICAgICAgIGJhY2tncm91bmQtY29sb3I6ICNFRkVGRUY7XG4gICAgICAgIG1hcmdpbjogMDtcbiAgICAgICAgei1pbmRleDogMTtcblxuICAgICAgICBvdmVyZmxvdy14OiBhdXRvO1xuICAgICAgICBvdmVyZmxvdy15OiBoaWRkZW47XG5cbiAgICAgICAgY2xyLXNlbGVjdC1jb250YWluZXIsIGltZyB7XG4gICAgICAgICAgICBtYXJnaW46IDAgMCAwIDI0cHg7XG4gICAgICAgIH1cblxuICAgICAgICBpbWcge1xuICAgICAgICAgICAgcGFkZGluZy1yaWdodDogMjRweDtcbiAgICAgICAgICAgIHdpZHRoOiAxNzRweDtcbiAgICAgICAgICAgIGhlaWdodDogNDBweDtcbiAgICAgICAgfVxuICAgIH1cblxuICAgICNzZWxlY3RlZC1kYXRhLXBvaW50cyB7XG4gICAgICAgIGdyaWQtYXJlYTogc2VsZWN0ZWQtZGF0YS1wb2ludHM7XG4gICAgICAgIGhlaWdodDogMTAwJTtcbiAgICAgICAgd2lkdGg6IDEwMCU7XG5cbiAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogI0VGRUZFRjtcblxuICAgICAgICBvdmVyZmxvdy14OiBhdXRvO1xuICAgICAgICBvdmVyZmxvdy15OiBoaWRkZW47XG4gICAgICAgIHdoaXRlLXNwYWNlOiBub3dyYXA7XG5cbiAgICAgICAgLnNwaW5uZXItbG9jYWxseS1jZW50ZXJlZCB7XG4gICAgICAgICAgICBwb3NpdGlvbjogcmVsYXRpdmU7XG4gICAgICAgICAgICB0b3A6IGNhbGMoNTAlIC0gMS41cmVtKTtcbiAgICAgICAgICAgIGxlZnQ6IGNhbGMoNTAlIC0gMS41cmVtKTtcbiAgICAgICAgfVxuXG4gICAgICAgICNzZWxlY3Rpb24taGludCB7XG4gICAgICAgICAgICBkaXNwbGF5OiB0YWJsZTtcblxuICAgICAgICAgICAgaGVpZ2h0OiBjYWxjKDEwMCUgLSAyNHB4KTtcbiAgICAgICAgICAgIHdpZHRoOiBjYWxjKDEwMCUgLSAyNHB4KTtcbiAgICAgICAgICAgIG1hcmdpbjogMTJweCAxMnB4IDEycHggMTJweDtcblxuICAgICAgICAgICAgYm9yZGVyOiAxcHggZGFzaGVkIHJnYigxOTIsIDE5MiwgMTkyKTtcbiAgICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDVweDtcblxuICAgICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyO1xuXG4gICAgICAgICAgICBwIHtcbiAgICAgICAgICAgICAgICB2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlO1xuICAgICAgICAgICAgICAgIGRpc3BsYXk6IHRhYmxlLWNlbGw7XG4gICAgICAgICAgICB9XG4gICAgICAgIH1cblxuICAgICAgICAjZGF0YS1wb2ludC1saXN0IHtcbiAgICAgICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyO1xuXG4gICAgICAgICAgICBoZWlnaHQ6IDIyNnB4O1xuICAgICAgICAgICAgbWFyZ2luOiAxMnB4O1xuXG4gICAgICAgICAgICAuZGF0YS1wb2ludCB7XG4gICAgICAgICAgICAgICAgbWluLXdpZHRoOiAxODBweDtcbiAgICAgICAgICAgICAgICBtaW4taGVpZ2h0OiAyMTBweDtcbiAgICAgICAgICAgICAgICBtYXgtd2lkdGg6IDE4MHB4O1xuICAgICAgICAgICAgICAgIG1heC1oZWlnaHQ6IDIxMHB4O1xuXG4gICAgICAgICAgICAgICAgbWFyZ2luLWxlZnQ6IDEycHg7XG5cbiAgICAgICAgICAgICAgICAmOmZpcnN0LWNoaWxkIHtcbiAgICAgICAgICAgICAgICAgICAgbWFyZ2luLWxlZnQ6IDA7XG4gICAgICAgICAgICAgICAgfVxuXG4gICAgICAgICAgICAgICAgJjpsYXN0LWNoaWxkIHtcbiAgICAgICAgICAgICAgICAgICAgbWFyZ2luLXJpZ2h0OiAxMnB4O1xuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIH1cblxuICAgICAgICAgICAgcCB7XG4gICAgICAgICAgICAgICAgbWFyZ2luLXRvcDogNnB4O1xuICAgICAgICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgIH1cblxuICAgICNzdGF0dXMtYmFyIHtcbiAgICAgICAgZ3JpZC1hcmVhOiBzdGF0dXMtYmFyO1xuXG4gICAgICAgIGRpc3BsYXk6IGZsZXg7XG4gICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG5cbiAgICAgICAgcGFkZGluZy1sZWZ0OiAxcmVtO1xuICAgICAgICB6LWluZGV4OiAxO1xuICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjcxMzM1O1xuICAgICAgICBjb2xvcjogd2hpdGU7XG5cbiAgICAgICAgc3Ryb25nIHtcbiAgICAgICAgICAgIG1hcmdpbi1sZWZ0OiA1cHg7XG4gICAgICAgICAgICBtYXJnaW4tcmlnaHQ6IDVweDtcbiAgICAgICAgfVxuXG4gICAgICAgIGNsci1pY29uIHtcbiAgICAgICAgICAgICY6bm90KDpmaXJzdC1jaGlsZCkge1xuICAgICAgICAgICAgICAgIG1hcmdpbi1sZWZ0OiAyMHB4O1xuICAgICAgICAgICAgfVxuICAgICAgICB9XG4gICAgfVxufVxuIiwiI3BhbmVscy1jb250YWluZXIge1xuICBkaXNwbGF5OiBncmlkO1xuICBncmlkLXRlbXBsYXRlLXJvd3M6IDg1cHggMWZyIDI1MHB4IDM1cHg7XG4gIGdyaWQtdGVtcGxhdGUtY29sdW1uczogMWZyIDI1MHB4O1xuICBncmlkLXRlbXBsYXRlLWFyZWFzOiBcIm9wdGlvbnMtcGFuZSBvcHRpb25zLXBhbmVcIiBcImVtYmVkZGluZy1wbG90IGNsdXN0ZXItcGFuZVwiIFwic2VsZWN0ZWQtZGF0YS1wb2ludHMgc2VsZWN0ZWQtZGF0YS1wb2ludHNcIiBcInN0YXR1cy1iYXIgc3RhdHVzLWJhclwiO1xufVxuI3BhbmVscy1jb250YWluZXIgI2NsdXN0ZXItcGFuZSB7XG4gIGdyaWQtYXJlYTogY2x1c3Rlci1wYW5lO1xuICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUZFRkVGO1xufVxuI3BhbmVscy1jb250YWluZXIgI2VtYmVkZGluZy1wbG90IHtcbiAgZ3JpZC1hcmVhOiBlbWJlZGRpbmctcGxvdDtcbiAgd2lkdGg6IGNhbGMoMTAwdncgLSAyNTBweCk7XG4gIGhlaWdodDogY2FsYygxMDB2aCAtIDQzMHB4KTtcbiAgYmFja2dyb3VuZC1jb2xvcjogI0VGRUZFRjtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNlbWJlZGRpbmctcGxvdCAjYXR0cmlidXRpb24taG92ZXItcHJldmlldyB7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgdG9wOiAxNjlweDtcbiAgbGVmdDogMjRweDtcbiAgbWluLXdpZHRoOiAxMjhweDtcbiAgbWluLWhlaWdodDogMTI4cHg7XG4gIG1heC13aWR0aDogMjU2cHg7XG4gIG1heC1oZWlnaHQ6IDI1NnB4O1xuICB6LWluZGV4OiA5OTk5O1xuICBpbWFnZS1yZW5kZXJpbmc6IHBpeGVsYXRlZDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNvcHRpb25zLXBhbmUge1xuICBncmlkLWFyZWE6IG9wdGlvbnMtcGFuZTtcbiAgZGlzcGxheTogZmxleDtcbiAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgYmFja2dyb3VuZC1jb2xvcjogI0VGRUZFRjtcbiAgbWFyZ2luOiAwO1xuICB6LWluZGV4OiAxO1xuICBvdmVyZmxvdy14OiBhdXRvO1xuICBvdmVyZmxvdy15OiBoaWRkZW47XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjb3B0aW9ucy1wYW5lIGNsci1zZWxlY3QtY29udGFpbmVyLCAjcGFuZWxzLWNvbnRhaW5lciAjb3B0aW9ucy1wYW5lIGltZyB7XG4gIG1hcmdpbjogMCAwIDAgMjRweDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNvcHRpb25zLXBhbmUgaW1nIHtcbiAgcGFkZGluZy1yaWdodDogMjRweDtcbiAgd2lkdGg6IDE3NHB4O1xuICBoZWlnaHQ6IDQwcHg7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc2VsZWN0ZWQtZGF0YS1wb2ludHMge1xuICBncmlkLWFyZWE6IHNlbGVjdGVkLWRhdGEtcG9pbnRzO1xuICBoZWlnaHQ6IDEwMCU7XG4gIHdpZHRoOiAxMDAlO1xuICBiYWNrZ3JvdW5kLWNvbG9yOiAjRUZFRkVGO1xuICBvdmVyZmxvdy14OiBhdXRvO1xuICBvdmVyZmxvdy15OiBoaWRkZW47XG4gIHdoaXRlLXNwYWNlOiBub3dyYXA7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc2VsZWN0ZWQtZGF0YS1wb2ludHMgLnNwaW5uZXItbG9jYWxseS1jZW50ZXJlZCB7XG4gIHBvc2l0aW9uOiByZWxhdGl2ZTtcbiAgdG9wOiBjYWxjKDUwJSAtIDEuNXJlbSk7XG4gIGxlZnQ6IGNhbGMoNTAlIC0gMS41cmVtKTtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjc2VsZWN0aW9uLWhpbnQge1xuICBkaXNwbGF5OiB0YWJsZTtcbiAgaGVpZ2h0OiBjYWxjKDEwMCUgLSAyNHB4KTtcbiAgd2lkdGg6IGNhbGMoMTAwJSAtIDI0cHgpO1xuICBtYXJnaW46IDEycHggMTJweCAxMnB4IDEycHg7XG4gIGJvcmRlcjogMXB4IGRhc2hlZCBzaWx2ZXI7XG4gIGJvcmRlci1yYWRpdXM6IDVweDtcbiAgdGV4dC1hbGlnbjogY2VudGVyO1xufVxuI3BhbmVscy1jb250YWluZXIgI3NlbGVjdGVkLWRhdGEtcG9pbnRzICNzZWxlY3Rpb24taGludCBwIHtcbiAgdmVydGljYWwtYWxpZ246IG1pZGRsZTtcbiAgZGlzcGxheTogdGFibGUtY2VsbDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjZGF0YS1wb2ludC1saXN0IHtcbiAgZGlzcGxheTogZmxleDtcbiAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgaGVpZ2h0OiAyMjZweDtcbiAgbWFyZ2luOiAxMnB4O1xufVxuI3BhbmVscy1jb250YWluZXIgI3NlbGVjdGVkLWRhdGEtcG9pbnRzICNkYXRhLXBvaW50LWxpc3QgLmRhdGEtcG9pbnQge1xuICBtaW4td2lkdGg6IDE4MHB4O1xuICBtaW4taGVpZ2h0OiAyMTBweDtcbiAgbWF4LXdpZHRoOiAxODBweDtcbiAgbWF4LWhlaWdodDogMjEwcHg7XG4gIG1hcmdpbi1sZWZ0OiAxMnB4O1xufVxuI3BhbmVscy1jb250YWluZXIgI3NlbGVjdGVkLWRhdGEtcG9pbnRzICNkYXRhLXBvaW50LWxpc3QgLmRhdGEtcG9pbnQ6Zmlyc3QtY2hpbGQge1xuICBtYXJnaW4tbGVmdDogMDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzZWxlY3RlZC1kYXRhLXBvaW50cyAjZGF0YS1wb2ludC1saXN0IC5kYXRhLXBvaW50Omxhc3QtY2hpbGQge1xuICBtYXJnaW4tcmlnaHQ6IDEycHg7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc2VsZWN0ZWQtZGF0YS1wb2ludHMgI2RhdGEtcG9pbnQtbGlzdCBwIHtcbiAgbWFyZ2luLXRvcDogNnB4O1xuICB0ZXh0LWFsaWduOiBjZW50ZXI7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc3RhdHVzLWJhciB7XG4gIGdyaWQtYXJlYTogc3RhdHVzLWJhcjtcbiAgZGlzcGxheTogZmxleDtcbiAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgcGFkZGluZy1sZWZ0OiAxcmVtO1xuICB6LWluZGV4OiAxO1xuICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjcxMzM1O1xuICBjb2xvcjogd2hpdGU7XG59XG4jcGFuZWxzLWNvbnRhaW5lciAjc3RhdHVzLWJhciBzdHJvbmcge1xuICBtYXJnaW4tbGVmdDogNXB4O1xuICBtYXJnaW4tcmlnaHQ6IDVweDtcbn1cbiNwYW5lbHMtY29udGFpbmVyICNzdGF0dXMtYmFyIGNsci1pY29uOm5vdCg6Zmlyc3QtY2hpbGQpIHtcbiAgbWFyZ2luLWxlZnQ6IDIwcHg7XG59Il19 */");
 
 /***/ }),
 
@@ -650,7 +1166,7 @@ var IndexPage = /** @class */ (function () {
         /**
          * Contains the layout of the PlotlyJS graph.
          */
-        this.graphLayout = {
+        this.embeddingGraphLayout = {
             autosize: true,
             dragmode: 'lasso',
             hovermode: 'closest',
@@ -672,6 +1188,31 @@ var IndexPage = /** @class */ (function () {
                 showgrid: false,
                 zeroline: false,
                 showticklabels: false
+            },
+            paper_bgcolor: '#00000000',
+            plot_bgcolor: '#00000000'
+        };
+        /**
+         * Contains the layout of the plot of the eigen values.
+         */
+        this.eigenValuesGraphLayout = {
+            title: 'Eigen Values',
+            margin: {
+                l: 32,
+                r: 16,
+                t: 32,
+                b: 48,
+                pad: 0
+            },
+            xaxis: {
+                autotick: false,
+                ticks: 'outside',
+                tick0: 0,
+                dtick: 5,
+                fixedrange: true
+            },
+            yaxis: {
+                fixedrange: true
             },
             paper_bgcolor: '#00000000',
             plot_bgcolor: '#00000000'
@@ -835,7 +1376,7 @@ var IndexPage = /** @class */ (function () {
      * @param total The total number of clusters.
      */
     IndexPage.prototype.generateClusterColor = function (index, total) {
-        return d3__WEBPACK_IMPORTED_MODULE_8__["hsl"](360 / total * index, 1.0, 0.5).toString();
+        return d3__WEBPACK_IMPORTED_MODULE_8__["hsl"](360 / total * index, 0.8, 0.5).toString();
     };
     /**
      * Refreshes the plot.
@@ -862,10 +1403,10 @@ var IndexPage = /** @class */ (function () {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        this.graphData = new Array();
+        this.embeddingGraphData = new Array();
         var _loop_1 = function (cluster) {
             var embeddingsInCluster = this_1.analysis.embedding.filter(function (embedding) { return embedding.cluster === cluster; });
-            this_1.graphData.push({
+            this_1.embeddingGraphData.push({
                 name: "Cluster " + cluster,
                 x: embeddingsInCluster.map(function (embedding) { return embedding.value[_this.horizontalAxisDimensionIndex]; }),
                 y: embeddingsInCluster.map(function (embedding) { return embedding.value[_this.verticalAxisDimensionIndex]; }),
@@ -894,6 +1435,16 @@ var IndexPage = /** @class */ (function () {
             }
             finally { if (e_2) throw e_2.error; }
         }
+        this.eigenValuesGraphData = new Array();
+        this.eigenValuesGraphData.push({
+            name: 'Eigen Values',
+            x: this.analysis.eigenValues.map(function (_, index) { return index; }).reverse(),
+            y: this.analysis.eigenValues,
+            type: 'bar',
+            width: 0.25,
+            hoverinfo: 'x',
+            color: 'y'
+        });
     };
     /**
      * Reloads the project and all its information.
@@ -910,14 +1461,14 @@ var IndexPage = /** @class */ (function () {
                     case 1:
                         _a.project = _b.sent();
                         this.selectedDataPoints = null;
-                        this.selectedAnalysisMethod = this.project.analysisMethods[0];
-                        this.selectedCategory = this.selectedAnalysisMethod.categories[0];
-                        this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+                        this._selectedAnalysisMethod = this.project.analysisMethods[0];
+                        this._selectedCategory = this.selectedAnalysisMethod.categories[0];
+                        this._selectedClustering = this.selectedAnalysisMethod.clusterings[0];
                         if (this.selectedAnalysisMethod.embeddings.filter(function (embedding) { return embedding === 'tsne'; }).length > 0) {
-                            this.selectedEmbedding = 'tsne';
+                            this._selectedEmbedding = 'tsne';
                         }
                         else {
-                            this.selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
+                            this._selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
                         }
                         return [4 /*yield*/, this.refreshAnalysisAsync()];
                     case 2:
@@ -993,17 +1544,17 @@ var IndexPage = /** @class */ (function () {
     };
     /**
      * Is invoked when the user hovers the mouse over an embedding.
-     * @param eventInfo The event object that contains the information about the embedding that the user hovered over.
+     * @param event The event object that contains the information about the embedding that the user hovered over.
      */
-    IndexPage.prototype.onHoverAsync = function (eventInfo) {
+    IndexPage.prototype.onHoverAsync = function (event) {
         return tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](this, void 0, void 0, function () {
-            var attributionIndex, attribution, _a;
+            var embedding, attribution, _a;
             return tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"](this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         this.isHovering = true;
-                        attributionIndex = eventInfo.points[0].data.attributionIndices[eventInfo.points[0].pointIndex];
-                        return [4 /*yield*/, this.attributionsService.getAsync(this.project.id, attributionIndex)];
+                        embedding = event.dataPoint;
+                        return [4 /*yield*/, this.attributionsService.getAsync(this.project.id, embedding.attributionIndex)];
                     case 1:
                         attribution = _b.sent();
                         _a = this;
@@ -1028,7 +1579,7 @@ var IndexPage = /** @class */ (function () {
      */
     IndexPage.prototype.onSelectedAsync = function (eventInfo) {
         return tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](this, void 0, void 0, function () {
-            var attributionIndices, attributions, datasetSamples, _loop_2, this_2, index;
+            var dataPoints, attributionIndices, attributions, datasetSamples, _loop_2, this_2, index;
             var _this = this;
             return tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"](this, function (_a) {
                 switch (_a.label) {
@@ -1038,10 +1589,9 @@ var IndexPage = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         // Gets the attributions of the data points that were selected
-                        this.isLoadingSelection = true;
-                        console.log(eventInfo.points.map(function (p) { return p.data.marker.color; }));
-                        attributionIndices = eventInfo.points.map(function (dataPoint) { return dataPoint.data.attributionIndices[dataPoint.pointIndex]; });
-                        attributionIndices = attributionIndices.slice(0, 20);
+                        this.isLoadingAttributions = true;
+                        dataPoints = eventInfo.dataPoints;
+                        attributionIndices = dataPoints.map(function (dataPoint) { return dataPoint.attributionIndex; }).slice(0, 20);
                         return [4 /*yield*/, Promise.all(attributionIndices.map(function (index) { return _this.attributionsService.getAsync(_this.project.id, index); }))];
                     case 1:
                         attributions = _a.sent();
@@ -1054,15 +1604,15 @@ var IndexPage = /** @class */ (function () {
                             this_2.selectedDataPoints.push({
                                 attribution: attributions[index],
                                 sample: datasetSamples.filter(function (sample) { return sample.index === attributions[index].index; })[0],
-                                color: eventInfo.points[index].data.marker.color,
-                                clusterIndex: eventInfo.points[index].data.clusterIndex
+                                color: eventInfo.clusterColors[index],
+                                clusterIndex: eventInfo.dataPoints[index].cluster
                             });
                         };
                         this_2 = this;
                         for (index = 0; index < attributions.length; index++) {
                             _loop_2(index);
                         }
-                        this.isLoadingSelection = false;
+                        this.isLoadingAttributions = false;
                         return [2 /*return*/];
                 }
             });

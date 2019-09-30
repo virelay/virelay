@@ -16,6 +16,8 @@ import { Attribution } from 'src/services/attributions/attribution';
 import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 import { ColorMap } from 'src/services/colorMaps/color-map';
 import * as d3 from 'd3';
+import { HoverEvent, SelectedEvent } from 'src/app/components/embedding-visualizer/embedding-visualizer.component';
+import { Embedding } from 'src/services/analyses/embedding';
 
 /**
  * Represents the index page of a project
@@ -54,7 +56,7 @@ export class IndexPage implements OnInit {
      * Contains a value that determines whether the selected attributions and dataset samples are currently being loaded
      * from the RESTful API.
      */
-    public isLoadingSelection: boolean;
+    public isLoadingAttributions: boolean;
 
     /**
      * Contains the ID of the project.
@@ -310,14 +312,18 @@ export class IndexPage implements OnInit {
             autotick: false,
             ticks: 'outside',
             tick0: 0,
-            dtick: 5
+            dtick: 5,
+            fixedrange: true
+        },
+        yaxis: {
+            fixedrange: true
         },
         paper_bgcolor: '#00000000',
         plot_bgcolor: '#00000000'
     };
 
     /**
-     * Contains the data points that were selected by the user.
+     * Contains the attributions for the data points selected by the user.
      */
     public selectedDataPoints: Array<{
         attribution: Attribution,
@@ -454,13 +460,13 @@ export class IndexPage implements OnInit {
 
     /**
      * Is invoked when the user hovers the mouse over an embedding.
-     * @param eventInfo The event object that contains the information about the embedding that the user hovered over.
+     * @param event The event object that contains the information about the embedding that the user hovered over.
      */
-    public async onHoverAsync(eventInfo: any): Promise<void> {
+    public async onHoverAsync(event: HoverEvent): Promise<void> {
 
         this.isHovering = true;
-        const attributionIndex = eventInfo.points[0].data.attributionIndices[eventInfo.points[0].pointIndex];
-        const attribution = await this.attributionsService.getAsync(this.project.id, attributionIndex);
+        const embedding = event.dataPoint as Embedding;
+        const attribution = await this.attributionsService.getAsync(this.project.id, embedding.attributionIndex);
         this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
     }
 
@@ -476,7 +482,7 @@ export class IndexPage implements OnInit {
      * Is invoked when the user selects embeddings.
      * @param eventInfo The event object that contains the information about the embeddings that were selected.
      */
-    public async onSelectedAsync(eventInfo?: any): Promise<void> {
+    public async onSelectedAsync(eventInfo: SelectedEvent): Promise<void> {
 
         // When nothing was selected, then nothing needs to be loaded (this sometimes happens when deselecting)
         if (!eventInfo) {
@@ -484,12 +490,9 @@ export class IndexPage implements OnInit {
         }
 
         // Gets the attributions of the data points that were selected
-        this.isLoadingSelection = true;
-        console.log(eventInfo.points.map(p => p.data.marker.color));
-        let attributionIndices: Array<number> = eventInfo.points.map(
-            dataPoint => dataPoint.data.attributionIndices[dataPoint.pointIndex]
-        );
-        attributionIndices = attributionIndices.slice(0, 20);
+        this.isLoadingAttributions = true;
+        const dataPoints = eventInfo.dataPoints as Array<Embedding>;
+        const attributionIndices = dataPoints.map(dataPoint => dataPoint.attributionIndex).slice(0, 20);
         const attributions = await Promise.all(attributionIndices.map(
             index => this.attributionsService.getAsync(this.project.id, index)
         ));
@@ -505,11 +508,11 @@ export class IndexPage implements OnInit {
             this.selectedDataPoints.push({
                 attribution: attributions[index],
                 sample: datasetSamples.filter(sample => sample.index === attributions[index].index)[0],
-                color: eventInfo.points[index].data.marker.color,
-                clusterIndex: eventInfo.points[index].data.clusterIndex
+                color: eventInfo.clusterColors[index],
+                clusterIndex: eventInfo.dataPoints[index].cluster
             });
         }
-        this.isLoadingSelection = false;
+        this.isLoadingAttributions = false;
     }
 
     /**

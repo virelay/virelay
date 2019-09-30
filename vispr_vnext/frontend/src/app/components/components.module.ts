@@ -2,16 +2,19 @@
 import { NgModule } from '@angular/core';
 
 import { BeforeAndAfterSliderComponent } from './before-and-after-slider/before-and-after-slider.component';
+import { EmbeddingVisualizerComponent } from './embedding-visualizer/embedding-visualizer.component';
 
 /**
  * Represents the module for application-wide components.
  */
 @NgModule({
     declarations: [
-        BeforeAndAfterSliderComponent
+        BeforeAndAfterSliderComponent,
+        EmbeddingVisualizerComponent
     ],
     exports: [
-        BeforeAndAfterSliderComponent
+        BeforeAndAfterSliderComponent,
+        EmbeddingVisualizerComponent
     ]
 })
 export class ComponentsModule { }

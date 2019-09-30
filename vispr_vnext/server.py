@@ -521,7 +521,7 @@ class Server:
         width = int(flask.request.args.get('width', 200))
         height = int(flask.request.args.get('height', 20))
 
-        heatmap = numpy.linspace(0.0, 1.0, num=width)
+        heatmap = numpy.linspace(-1.0, 1.0, num=width)
         heatmap = numpy.repeat([heatmap], height, axis=0)
         heatmap = render_heatmap(heatmap, color_map)
 

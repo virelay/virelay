@@ -87,7 +87,7 @@ def main(
     }
     server_application = ServerApplication(input_path, attribution_path, analysis_path, wnids, wordmap, database_path)
     server = Server({
-        '/': server_application.setup_up_bokeh_document
+        '/': server_application.setup_bokeh_document
     }, **server_kwargs)
     server.io_loop.add_callback(server.show, '/')
     server.run_until_shutdown()

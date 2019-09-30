@@ -34,13 +34,13 @@
         </clr-select-container>
         <clr-select-container *ngIf="embeddingDimensions && embeddingDimensions.length > 2">
             <label>X-Axis</label>
-            <select clrSelect name="horizontal-axis-dimension-index" [(ngModel)]="horizontalAxisDimensionIndex">
+            <select clrSelect name="horizontal-axis-dimension-index" [(ngModel)]="firstDimension">
                 <option *ngFor="let index of embeddingDimensions" [value]="index">{{ index }}</option>
             </select>
         </clr-select-container>
         <clr-select-container *ngIf="embeddingDimensions && embeddingDimensions.length > 2">
             <label>Y-Axis</label>
-            <select clrSelect name="vertical-axis-dimension-index" [(ngModel)]="verticalAxisDimensionIndex">
+            <select clrSelect name="vertical-axis-dimension-index" [(ngModel)]="secondDimension">
                 <option *ngFor="let index of embeddingDimensions" [value]="index">{{ index }}</option>
             </select>
         </clr-select-container>
@@ -59,6 +59,8 @@
             *ngIf="analysis"
             backgroundColor="#EFEFEF"
             [embedding]="analysis.embedding"
+            [firstDimension]="firstDimension"
+            [secondDimension]="secondDimension"
             (onHover)="onHoverAsync($event)"
             (onUnhover)="onUnhover($event)"
             (onSelected)="onSelectedAsync($event)"

@@ -91,42 +91,12 @@ export class IndexPage implements OnInit {
     /**
      * Contains the index of the dimension of the embedding that is to be displayed in the plot.
      */
-    private _horizontalAxisDimensionIndex = 0;
-
-    /**
-     * Gets the index of the dimension of the embedding that is to be displayed in the plot.
-     */
-    public get horizontalAxisDimensionIndex(): number {
-        return this._horizontalAxisDimensionIndex;
-    }
-
-    /**
-     * Sets the index of the dimension of the embedding that is to be displayed in the plot.
-     */
-    public set horizontalAxisDimensionIndex(value: number) {
-        this._horizontalAxisDimensionIndex = value;
-        this.refreshPlot();
-    }
+    public firstDimension = 0;
 
     /**
      * Contains the index of the dimension of the embedding that is to be displayed in the plot.
      */
-    private _verticalAxisDimensionIndex = 1;
-
-    /**
-     * Gets the index of the dimension of the embedding that is to be displayed in the plot.
-     */
-    public get verticalAxisDimensionIndex(): number {
-        return this._verticalAxisDimensionIndex;
-    }
-
-    /**
-     * Sets the index of the dimension of the embedding that is to be displayed in the plot.
-     */
-    public set verticalAxisDimensionIndex(value: number) {
-        this._verticalAxisDimensionIndex = value;
-        this.refreshPlot();
-    }
+    public secondDimension = 1;
 
     /**
      * Contains the color maps from which the user can choose one for rendering the heatmaps.
@@ -228,8 +198,8 @@ export class IndexPage implements OnInit {
      */
     public set selectedEmbedding(value: string) {
         this._selectedEmbedding = value;
-        this._horizontalAxisDimensionIndex = 0;
-        this._verticalAxisDimensionIndex = 1;
+        this.firstDimension = 0;
+        this.secondDimension = 1;
         if (value) {
             this.refreshAnalysisAsync();
         }
@@ -253,43 +223,8 @@ export class IndexPage implements OnInit {
      */
     public set analysis(value: Analysis) {
         this._analysis = value;
-        this.refreshPlot();
+        this.refreshEigenValuePlot();
     }
-
-    /**
-     * Contains the data of the PlotlyJS graph.
-     */
-    public embeddingGraphData: Array<Plotly.Data>;
-
-    /**
-     * Contains the layout of the PlotlyJS graph.
-     */
-    public embeddingGraphLayout: Partial<Plotly.Layout> = {
-        autosize: true,
-        dragmode: 'lasso',
-        hovermode: 'closest',
-        hoverdistance: 1,
-        showlegend: false,
-        margin: {
-            l: 0,
-            r: 0,
-            t: 0,
-            b: 0,
-            pad: 0
-        },
-        xaxis: {
-            showgrid: false,
-            zeroline: false,
-            showticklabels: false
-        },
-        yaxis: {
-            showgrid: false,
-            zeroline: false,
-            showticklabels: false
-        },
-        paper_bgcolor: '#00000000',
-        plot_bgcolor: '#00000000'
-    };
 
     /**
      * Contains the data for the plot of the eigen values.
@@ -333,48 +268,12 @@ export class IndexPage implements OnInit {
     }>;
 
     /**
-     * Generates a unique color for the specified cluster (ploty.js, unfortunately only uses 10 different colors by
-     * default, but there are options for more clusters in VISPR).
-     * @param index The index of the cluster for which the color is to be generated.
-     * @param total The total number of clusters.
+     * Refreshes the eigen value plot.
      */
-    private generateClusterColor(index: number, total: number): string {
-        return d3.hsl(360 / total * index, 0.8, 0.5).toString();
-    }
-
-    /**
-     * Refreshes the plot.
-     */
-    private refreshPlot(): void {
+    private refreshEigenValuePlot(): void {
 
         if (!this.analysis) {
             return;
-        }
-
-        const clusters = new Array<number>();
-        for (const cluster of this.analysis.embedding.map(embedding => embedding.cluster)) {
-            if (clusters.indexOf(cluster) === -1) {
-                clusters.push(cluster);
-            }
-        }
-
-        this.embeddingGraphData = new Array<Plotly.Data>();
-        for (const cluster of clusters) {
-            const embeddingsInCluster = this.analysis.embedding.filter(embedding => embedding.cluster === cluster);
-            this.embeddingGraphData.push({
-                name: `Cluster ${cluster}`,
-                x: embeddingsInCluster.map(embedding => embedding.value[this.horizontalAxisDimensionIndex]),
-                y: embeddingsInCluster.map(embedding => embedding.value[this.verticalAxisDimensionIndex]),
-                type: 'scatter',
-                mode: 'markers',
-                marker: {
-                    size: 12,
-                    color: this.generateClusterColor(cluster, clusters.length)
-                },
-                hoverinfo: 'none',
-                attributionIndices: embeddingsInCluster.map(embedding => embedding.attributionIndex),
-                clusterIndex: cluster
-            });
         }
 
         this.eigenValuesGraphData = new Array<Plotly.Data>();

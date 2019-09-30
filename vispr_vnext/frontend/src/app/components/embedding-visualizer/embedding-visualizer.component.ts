@@ -145,6 +145,11 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
     private selectionBoxRectangle: { x: number; y: number; startX: number; startY: number; };
 
     /**
+     * Contains the indices of the data points that have been selected by the user.
+     */
+    private selectedDataPointIndices: Array<number>;
+
+    /**
      * Contains a reference to the HTML element that represents the render target.
      */
     @ViewChild('renderTarget', { static: false })
@@ -155,11 +160,6 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
      */
     @ViewChild('selectionBox', { static: false })
     public selectionBox: ElementRef;
-
-    /**
-     * Contains the indices of the data points that have been selected by the user.
-     */
-    private selectedDataPointIndices: Array<number>;
 
     /**
      * Contains the number of clusters that are present in the embedding.
@@ -184,6 +184,50 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
     @Input()
     public set embedding(value: Array<DataPoint>) {
         this._embedding = value;
+        this.updateVisualizer();
+    }
+
+    /**
+     * Contains the first dimension of the embedding that is being visualized. Only two dimensions can be displayed at a
+     * time, if the embedding is multi-dimensional, then this is the dimension that is displayed on the x-axis.
+     */
+    private _firstDimension = 0;
+
+    /**
+     * Gets the first dimension of the embedding that is being visualized.
+     */
+    public get firstDimension(): number {
+        return this._firstDimension;
+    }
+
+    /**
+     * Sets the first dimension of the embedding that is being visualized.
+     */
+    @Input()
+    public set firstDimension(value: number) {
+        this._firstDimension = value;
+        this.updateVisualizer();
+    }
+
+    /**
+     * Contains the second dimension of the embedding that is being visualized. Only two dimensions can be displayed at
+     * a time, if the embedding is multi-dimensional, then this is the dimension that is displayed on the y-axis.
+     */
+    private _secondDimension = 1;
+
+    /**
+     * Gets the second dimension of the embedding that is being visualized.
+     */
+    public get secondDimension(): number {
+        return this._secondDimension;
+    }
+
+    /**
+     * Sets the second dimension of the embedding that is being visualized.
+     */
+    @Input()
+    public set secondDimension(value: number) {
+        this._secondDimension = value;
         this.updateVisualizer();
     }
 
@@ -496,15 +540,19 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
 
             // Determines X and Y positions of the points that are the farthest away from the origin, this information
             // is used to scale the data points so that they fill out the whole viewport
-            if (Math.abs(dataPoint.value[0]) > maximumX) {
-                maximumX = Math.abs(dataPoint.value[0]);
+            if (Math.abs(dataPoint.value[this.firstDimension]) > maximumX) {
+                maximumX = Math.abs(dataPoint.value[this.firstDimension]);
             }
-            if (Math.abs(dataPoint.value[1]) > maximumY) {
-                maximumY = Math.abs(dataPoint.value[1]);
+            if (Math.abs(dataPoint.value[this.secondDimension]) > maximumY) {
+                maximumY = Math.abs(dataPoint.value[this.secondDimension]);
             }
 
             // Creates a new vertex for the data point
-            const vertex = new THREE.Vector3(dataPoint.value[0], dataPoint.value[1], -1);
+            const vertex = new THREE.Vector3(
+                dataPoint.value[this.firstDimension],
+                dataPoint.value[this.secondDimension],
+                -1
+            );
             pointsGeometry.vertices.push(vertex);
 
             // Generates a color for the data point based on its cluster

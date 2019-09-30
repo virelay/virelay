@@ -71,7 +71,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("\n<span *ngIf=\"isLoading\" class=\"spinner spinner-centered\"></span>\n\n<div *ngIf=\"project\" id=\"panels-container\">\n\n    <aside id=\"options-pane\">\n        <clr-select-container>\n            <label>Analysis method</label>\n            <select clrSelect name=\"analysis-method\" [(ngModel)]=\"selectedAnalysisMethod\">\n                <option *ngIf=\"!selectedAnalysisMethod\" [ngValue]=\"null\">Select an analysis method...</option>\n                <option *ngFor=\"let analysisMethod of project.analysisMethods\" [ngValue]=\"analysisMethod\">{{ analysisMethod.name }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Category</label>\n            <select clrSelect name=\"category\" [(ngModel)]=\"selectedCategory\">\n                <option *ngIf=\"!selectedCategory\" [ngValue]=\"null\">Select a category...</option>\n                <option *ngFor=\"let category of selectedAnalysisMethod.categories\" [ngValue]=\"category\">{{ category.humanReadableName }} ({{ category.name }})</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Clustering</label>\n            <select clrSelect class=\"full-width\" name=\"clustering\" [(ngModel)]=\"selectedClustering\">\n                <option *ngIf=\"!selectedClustering\" [ngValue]=\"null\">Select a clustering...</option>\n                <option *ngFor=\"let clustering of selectedAnalysisMethod.clusterings\" [value]=\"clustering\">{{ clustering }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Embedding</label>\n            <select clrSelect name=\"embedding\" [(ngModel)]=\"selectedEmbedding\">\n                <option *ngIf=\"!selectedEmbedding\" [ngValue]=\"null\">Select a embedding...</option>\n                <option *ngFor=\"let embedding of selectedAnalysisMethod.embeddings\" [value]=\"embedding\">{{ embedding }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>X-Axis</label>\n            <select clrSelect name=\"horizontal-axis-dimension-index\" [(ngModel)]=\"horizontalAxisDimensionIndex\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>Y-Axis</label>\n            <select clrSelect name=\"vertical-axis-dimension-index\" [(ngModel)]=\"verticalAxisDimensionIndex\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"colorMaps\">\n            <label>Color map</label>\n            <select clrSelect name=\"color-map\" [(ngModel)]=\"selectedColorMap\">\n                <option *ngIf=\"!selectedColorMap\" [ngValue]=\"null\">Select a color map...</option>\n                <option *ngFor=\"let colorMap of colorMaps\" [ngValue]=\"colorMap\">{{ colorMap.humanReadableName }}</option>\n            </select>\n        </clr-select-container>\n        <img *ngIf=\"selectedColorMap\" [src]=\"selectedColorMap.url\" [alt]=\"selectedColorMap.humanReadableName\" />\n    </aside>\n\n    <section id=\"embedding-plot\">\n        <app-embedding-visualizer\n            *ngIf=\"analysis\"\n            backgroundColor=\"#EFEFEF\"\n            [embedding]=\"analysis.embedding\"\n            (onHover)=\"onHoverAsync($event)\"\n            (onUnhover)=\"onUnhover($event)\"\n            (onSelected)=\"onSelectedAsync($event)\"\n            (onDeselected)=\"onDeselect()\">\n        </app-embedding-visualizer>\n\n        <img\n            id=\"attribution-hover-preview\"\n            *ngIf=\"datasetSampleHoverPreview && isHovering\"\n            [src]=\"datasetSampleHoverPreview.url\"\n        />\n    </section>\n\n    <aside id=\"selected-data-points\">\n        <span *ngIf=\"isLoadingAttributions\" class=\"spinner spinner-locally-centered\"></span>\n\n        <div *ngIf=\"!isLoadingAttributions && (!selectedDataPoints || selectedDataPoints.length === 0)\" id=\"selection-hint\">\n            <p>Select data points to display attributions...</p>\n        </div>\n\n        <div *ngIf=\"!isLoadingAttributions && selectedDataPoints && selectedDataPoints.length > 0\" id=\"data-point-list\">\n            <div *ngFor=\"let selectedDataPoint of selectedDataPoints\" class=\"data-point\" [title]=\"selectedDataPoint.attribution.labelDisplay\">\n                <app-before-and-after-slider\n                    [beforeImageSource]=\"selectedDataPoint.attribution.urls[selectedColorMap.name]\"\n                    [afterImageSource]=\"selectedDataPoint.sample.url\"\n                    [alt]=\"selectedDataPoint.attribution.labelDisplay\">\n                </app-before-and-after-slider>\n                <p><span [style.color]=\"selectedDataPoint.color\">&#11044;</span> Cluster {{ selectedDataPoint.clusterIndex + 1 }}</p>\n            </div>\n        </div>\n    </aside>\n\n    <aside id=\"cluster-pane\">\n        <plotly-plot\n            *ngIf=\"eigenValuesGraphData\"\n            [data]=\"eigenValuesGraphData\"\n            [layout]=\"eigenValuesGraphLayout\"\n            [config]=\"{ displayModeBar: false }\"\n            [style]=\"{ width: '226px', height: '400px', 'marginLeft': '12px' }\">\n        </plotly-plot>\n    </aside>\n\n    <footer id=\"status-bar\">\n        <clr-icon shape=\"library\"></clr-icon> <strong>Project:</strong> {{ project.name }}\n        <clr-icon shape=\"storage\"></clr-icon> <strong>Dataset:</strong> {{ project.dataset }}\n        <clr-icon shape=\"organization\"></clr-icon> <strong>Model:</strong> {{ project.model }}\n    </footer>\n</div>\n");
+/* harmony default export */ __webpack_exports__["default"] = ("\n<span *ngIf=\"isLoading\" class=\"spinner spinner-centered\"></span>\n\n<div *ngIf=\"project\" id=\"panels-container\">\n\n    <aside id=\"options-pane\">\n        <clr-select-container>\n            <label>Analysis method</label>\n            <select clrSelect name=\"analysis-method\" [(ngModel)]=\"selectedAnalysisMethod\">\n                <option *ngIf=\"!selectedAnalysisMethod\" [ngValue]=\"null\">Select an analysis method...</option>\n                <option *ngFor=\"let analysisMethod of project.analysisMethods\" [ngValue]=\"analysisMethod\">{{ analysisMethod.name }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Category</label>\n            <select clrSelect name=\"category\" [(ngModel)]=\"selectedCategory\">\n                <option *ngIf=\"!selectedCategory\" [ngValue]=\"null\">Select a category...</option>\n                <option *ngFor=\"let category of selectedAnalysisMethod.categories\" [ngValue]=\"category\">{{ category.humanReadableName }} ({{ category.name }})</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Clustering</label>\n            <select clrSelect class=\"full-width\" name=\"clustering\" [(ngModel)]=\"selectedClustering\">\n                <option *ngIf=\"!selectedClustering\" [ngValue]=\"null\">Select a clustering...</option>\n                <option *ngFor=\"let clustering of selectedAnalysisMethod.clusterings\" [value]=\"clustering\">{{ clustering }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"selectedAnalysisMethod\">\n            <label>Embedding</label>\n            <select clrSelect name=\"embedding\" [(ngModel)]=\"selectedEmbedding\">\n                <option *ngIf=\"!selectedEmbedding\" [ngValue]=\"null\">Select a embedding...</option>\n                <option *ngFor=\"let embedding of selectedAnalysisMethod.embeddings\" [value]=\"embedding\">{{ embedding }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>X-Axis</label>\n            <select clrSelect name=\"horizontal-axis-dimension-index\" [(ngModel)]=\"firstDimension\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"embeddingDimensions && embeddingDimensions.length > 2\">\n            <label>Y-Axis</label>\n            <select clrSelect name=\"vertical-axis-dimension-index\" [(ngModel)]=\"secondDimension\">\n                <option *ngFor=\"let index of embeddingDimensions\" [value]=\"index\">{{ index }}</option>\n            </select>\n        </clr-select-container>\n        <clr-select-container *ngIf=\"colorMaps\">\n            <label>Color map</label>\n            <select clrSelect name=\"color-map\" [(ngModel)]=\"selectedColorMap\">\n                <option *ngIf=\"!selectedColorMap\" [ngValue]=\"null\">Select a color map...</option>\n                <option *ngFor=\"let colorMap of colorMaps\" [ngValue]=\"colorMap\">{{ colorMap.humanReadableName }}</option>\n            </select>\n        </clr-select-container>\n        <img *ngIf=\"selectedColorMap\" [src]=\"selectedColorMap.url\" [alt]=\"selectedColorMap.humanReadableName\" />\n    </aside>\n\n    <section id=\"embedding-plot\">\n        <app-embedding-visualizer\n            *ngIf=\"analysis\"\n            backgroundColor=\"#EFEFEF\"\n            [embedding]=\"analysis.embedding\"\n            [firstDimension]=\"firstDimension\"\n            [secondDimension]=\"secondDimension\"\n            (onHover)=\"onHoverAsync($event)\"\n            (onUnhover)=\"onUnhover($event)\"\n            (onSelected)=\"onSelectedAsync($event)\"\n            (onDeselected)=\"onDeselect()\">\n        </app-embedding-visualizer>\n\n        <img\n            id=\"attribution-hover-preview\"\n            *ngIf=\"datasetSampleHoverPreview && isHovering\"\n            [src]=\"datasetSampleHoverPreview.url\"\n        />\n    </section>\n\n    <aside id=\"selected-data-points\">\n        <span *ngIf=\"isLoadingAttributions\" class=\"spinner spinner-locally-centered\"></span>\n\n        <div *ngIf=\"!isLoadingAttributions && (!selectedDataPoints || selectedDataPoints.length === 0)\" id=\"selection-hint\">\n            <p>Select data points to display attributions...</p>\n        </div>\n\n        <div *ngIf=\"!isLoadingAttributions && selectedDataPoints && selectedDataPoints.length > 0\" id=\"data-point-list\">\n            <div *ngFor=\"let selectedDataPoint of selectedDataPoints\" class=\"data-point\" [title]=\"selectedDataPoint.attribution.labelDisplay\">\n                <app-before-and-after-slider\n                    [beforeImageSource]=\"selectedDataPoint.attribution.urls[selectedColorMap.name]\"\n                    [afterImageSource]=\"selectedDataPoint.sample.url\"\n                    [alt]=\"selectedDataPoint.attribution.labelDisplay\">\n                </app-before-and-after-slider>\n                <p><span [style.color]=\"selectedDataPoint.color\">&#11044;</span> Cluster {{ selectedDataPoint.clusterIndex + 1 }}</p>\n            </div>\n        </div>\n    </aside>\n\n    <aside id=\"cluster-pane\">\n        <plotly-plot\n            *ngIf=\"eigenValuesGraphData\"\n            [data]=\"eigenValuesGraphData\"\n            [layout]=\"eigenValuesGraphLayout\"\n            [config]=\"{ displayModeBar: false }\"\n            [style]=\"{ width: '226px', height: '400px', 'marginLeft': '12px' }\">\n        </plotly-plot>\n    </aside>\n\n    <footer id=\"status-bar\">\n        <clr-icon shape=\"library\"></clr-icon> <strong>Project:</strong> {{ project.name }}\n        <clr-icon shape=\"storage\"></clr-icon> <strong>Dataset:</strong> {{ project.dataset }}\n        <clr-icon shape=\"organization\"></clr-icon> <strong>Model:</strong> {{ project.model }}\n    </footer>\n</div>\n");
 
 /***/ }),
 
@@ -676,6 +676,16 @@ var EmbeddingVisualizerComponent = /** @class */ (function () {
          */
         this.indexOfDataPointCurrentBeingHovered = null;
         /**
+         * Contains the first dimension of the embedding that is being visualized. Only two dimensions can be displayed at a
+         * time, if the embedding is multi-dimensional, then this is the dimension that is displayed on the x-axis.
+         */
+        this._firstDimension = 0;
+        /**
+         * Contains the second dimension of the embedding that is being visualized. Only two dimensions can be displayed at
+         * a time, if the embedding is multi-dimensional, then this is the dimension that is displayed on the y-axis.
+         */
+        this._secondDimension = 1;
+        /**
          * The event that is invoked when the user hovers a data point.
          */
         this.onHover = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
@@ -840,6 +850,40 @@ var EmbeddingVisualizerComponent = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(EmbeddingVisualizerComponent.prototype, "firstDimension", {
+        /**
+         * Gets the first dimension of the embedding that is being visualized.
+         */
+        get: function () {
+            return this._firstDimension;
+        },
+        /**
+         * Sets the first dimension of the embedding that is being visualized.
+         */
+        set: function (value) {
+            this._firstDimension = value;
+            this.updateVisualizer();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(EmbeddingVisualizerComponent.prototype, "secondDimension", {
+        /**
+         * Gets the second dimension of the embedding that is being visualized.
+         */
+        get: function () {
+            return this._secondDimension;
+        },
+        /**
+         * Sets the second dimension of the embedding that is being visualized.
+         */
+        set: function (value) {
+            this._secondDimension = value;
+            this.updateVisualizer();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Is invoked when the window was resized. Updates the camera and the renderer to the new canvas size.
      */
@@ -955,14 +999,14 @@ var EmbeddingVisualizerComponent = /** @class */ (function () {
                 var dataPoint = _f.value;
                 // Determines X and Y positions of the points that are the farthest away from the origin, this information
                 // is used to scale the data points so that they fill out the whole viewport
-                if (Math.abs(dataPoint.value[0]) > maximumX) {
-                    maximumX = Math.abs(dataPoint.value[0]);
+                if (Math.abs(dataPoint.value[this.firstDimension]) > maximumX) {
+                    maximumX = Math.abs(dataPoint.value[this.firstDimension]);
                 }
-                if (Math.abs(dataPoint.value[1]) > maximumY) {
-                    maximumY = Math.abs(dataPoint.value[1]);
+                if (Math.abs(dataPoint.value[this.secondDimension]) > maximumY) {
+                    maximumY = Math.abs(dataPoint.value[this.secondDimension]);
                 }
                 // Creates a new vertex for the data point
-                var vertex = new three__WEBPACK_IMPORTED_MODULE_2__["Vector3"](dataPoint.value[0], dataPoint.value[1], -1);
+                var vertex = new three__WEBPACK_IMPORTED_MODULE_2__["Vector3"](dataPoint.value[this.firstDimension], dataPoint.value[this.secondDimension], -1);
                 pointsGeometry.vertices.push(vertex);
                 // Generates a color for the data point based on its cluster
                 var color = new three__WEBPACK_IMPORTED_MODULE_2__["Color"]();
@@ -1066,6 +1110,12 @@ var EmbeddingVisualizerComponent = /** @class */ (function () {
     ], EmbeddingVisualizerComponent.prototype, "embedding", null);
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
+    ], EmbeddingVisualizerComponent.prototype, "firstDimension", null);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
+    ], EmbeddingVisualizerComponent.prototype, "secondDimension", null);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
     ], EmbeddingVisualizerComponent.prototype, "backgroundColor", void 0);
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])()
@@ -1124,9 +1174,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var src_services_attributions_attributions_service__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! src/services/attributions/attributions.service */ "./src/services/attributions/attributions.service.ts");
 /* harmony import */ var src_services_dataset_dataset_service__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! src/services/dataset/dataset.service */ "./src/services/dataset/dataset.service.ts");
 /* harmony import */ var src_services_colorMaps_color_maps_service__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! src/services/colorMaps/color-maps.service */ "./src/services/colorMaps/color-maps.service.ts");
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! d3 */ "./node_modules/d3/d3.js");
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_8__);
-
 
 
 
@@ -1158,40 +1205,11 @@ var IndexPage = /** @class */ (function () {
         /**
          * Contains the index of the dimension of the embedding that is to be displayed in the plot.
          */
-        this._horizontalAxisDimensionIndex = 0;
+        this.firstDimension = 0;
         /**
          * Contains the index of the dimension of the embedding that is to be displayed in the plot.
          */
-        this._verticalAxisDimensionIndex = 1;
-        /**
-         * Contains the layout of the PlotlyJS graph.
-         */
-        this.embeddingGraphLayout = {
-            autosize: true,
-            dragmode: 'lasso',
-            hovermode: 'closest',
-            hoverdistance: 1,
-            showlegend: false,
-            margin: {
-                l: 0,
-                r: 0,
-                t: 0,
-                b: 0,
-                pad: 0
-            },
-            xaxis: {
-                showgrid: false,
-                zeroline: false,
-                showticklabels: false
-            },
-            yaxis: {
-                showgrid: false,
-                zeroline: false,
-                showticklabels: false
-            },
-            paper_bgcolor: '#00000000',
-            plot_bgcolor: '#00000000'
-        };
+        this.secondDimension = 1;
         /**
          * Contains the layout of the plot of the eigen values.
          */
@@ -1227,40 +1245,6 @@ var IndexPage = /** @class */ (function () {
                 return new Array();
             }
             return new Array(this.analysis.embedding[0].value.length).fill(0).map(function (_, index) { return index; });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(IndexPage.prototype, "horizontalAxisDimensionIndex", {
-        /**
-         * Gets the index of the dimension of the embedding that is to be displayed in the plot.
-         */
-        get: function () {
-            return this._horizontalAxisDimensionIndex;
-        },
-        /**
-         * Sets the index of the dimension of the embedding that is to be displayed in the plot.
-         */
-        set: function (value) {
-            this._horizontalAxisDimensionIndex = value;
-            this.refreshPlot();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(IndexPage.prototype, "verticalAxisDimensionIndex", {
-        /**
-         * Gets the index of the dimension of the embedding that is to be displayed in the plot.
-         */
-        get: function () {
-            return this._verticalAxisDimensionIndex;
-        },
-        /**
-         * Sets the index of the dimension of the embedding that is to be displayed in the plot.
-         */
-        set: function (value) {
-            this._verticalAxisDimensionIndex = value;
-            this.refreshPlot();
         },
         enumerable: true,
         configurable: true
@@ -1342,8 +1326,8 @@ var IndexPage = /** @class */ (function () {
          */
         set: function (value) {
             this._selectedEmbedding = value;
-            this._horizontalAxisDimensionIndex = 0;
-            this._verticalAxisDimensionIndex = 1;
+            this.firstDimension = 0;
+            this.secondDimension = 1;
             if (value) {
                 this.refreshAnalysisAsync();
             }
@@ -1364,76 +1348,17 @@ var IndexPage = /** @class */ (function () {
          */
         set: function (value) {
             this._analysis = value;
-            this.refreshPlot();
+            this.refreshEigenValuePlot();
         },
         enumerable: true,
         configurable: true
     });
     /**
-     * Generates a unique color for the specified cluster (ploty.js, unfortunately only uses 10 different colors by
-     * default, but there are options for more clusters in VISPR).
-     * @param index The index of the cluster for which the color is to be generated.
-     * @param total The total number of clusters.
+     * Refreshes the eigen value plot.
      */
-    IndexPage.prototype.generateClusterColor = function (index, total) {
-        return d3__WEBPACK_IMPORTED_MODULE_8__["hsl"](360 / total * index, 0.8, 0.5).toString();
-    };
-    /**
-     * Refreshes the plot.
-     */
-    IndexPage.prototype.refreshPlot = function () {
-        var e_1, _a, e_2, _b;
-        var _this = this;
+    IndexPage.prototype.refreshEigenValuePlot = function () {
         if (!this.analysis) {
             return;
-        }
-        var clusters = new Array();
-        try {
-            for (var _c = tslib__WEBPACK_IMPORTED_MODULE_0__["__values"](this.analysis.embedding.map(function (embedding) { return embedding.cluster; })), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var cluster = _d.value;
-                if (clusters.indexOf(cluster) === -1) {
-                    clusters.push(cluster);
-                }
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        this.embeddingGraphData = new Array();
-        var _loop_1 = function (cluster) {
-            var embeddingsInCluster = this_1.analysis.embedding.filter(function (embedding) { return embedding.cluster === cluster; });
-            this_1.embeddingGraphData.push({
-                name: "Cluster " + cluster,
-                x: embeddingsInCluster.map(function (embedding) { return embedding.value[_this.horizontalAxisDimensionIndex]; }),
-                y: embeddingsInCluster.map(function (embedding) { return embedding.value[_this.verticalAxisDimensionIndex]; }),
-                type: 'scatter',
-                mode: 'markers',
-                marker: {
-                    size: 12,
-                    color: this_1.generateClusterColor(cluster, clusters.length)
-                },
-                hoverinfo: 'none',
-                attributionIndices: embeddingsInCluster.map(function (embedding) { return embedding.attributionIndex; }),
-                clusterIndex: cluster
-            });
-        };
-        var this_1 = this;
-        try {
-            for (var clusters_1 = tslib__WEBPACK_IMPORTED_MODULE_0__["__values"](clusters), clusters_1_1 = clusters_1.next(); !clusters_1_1.done; clusters_1_1 = clusters_1.next()) {
-                var cluster = clusters_1_1.value;
-                _loop_1(cluster);
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (clusters_1_1 && !clusters_1_1.done && (_b = clusters_1.return)) _b.call(clusters_1);
-            }
-            finally { if (e_2) throw e_2.error; }
         }
         this.eigenValuesGraphData = new Array();
         this.eigenValuesGraphData.push({
@@ -1579,7 +1504,7 @@ var IndexPage = /** @class */ (function () {
      */
     IndexPage.prototype.onSelectedAsync = function (eventInfo) {
         return tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](this, void 0, void 0, function () {
-            var dataPoints, attributionIndices, attributions, datasetSamples, _loop_2, this_2, index;
+            var dataPoints, attributionIndices, attributions, datasetSamples, _loop_1, this_1, index;
             var _this = this;
             return tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"](this, function (_a) {
                 switch (_a.label) {
@@ -1600,17 +1525,17 @@ var IndexPage = /** @class */ (function () {
                         datasetSamples = _a.sent();
                         // Assigns the dataset sample to their respective attribution
                         this.selectedDataPoints = [];
-                        _loop_2 = function (index) {
-                            this_2.selectedDataPoints.push({
+                        _loop_1 = function (index) {
+                            this_1.selectedDataPoints.push({
                                 attribution: attributions[index],
                                 sample: datasetSamples.filter(function (sample) { return sample.index === attributions[index].index; })[0],
                                 color: eventInfo.clusterColors[index],
                                 clusterIndex: eventInfo.dataPoints[index].cluster
                             });
                         };
-                        this_2 = this;
+                        this_1 = this;
                         for (index = 0; index < attributions.length; index++) {
-                            _loop_2(index);
+                            _loop_1(index);
                         }
                         this.isLoadingAttributions = false;
                         return [2 /*return*/];

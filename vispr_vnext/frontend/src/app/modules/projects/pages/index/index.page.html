@@ -57,14 +57,13 @@
     <section id="embedding-plot">
         <app-embedding-visualizer
             *ngIf="analysis"
+            [(ngModel)]="selectedDataPoints"
             backgroundColor="#EFEFEF"
             [embedding]="analysis.embedding"
             [firstDimension]="firstDimension"
             [secondDimension]="secondDimension"
             (onHover)="onHoverAsync($event)"
-            (onUnhover)="onUnhover($event)"
-            (onSelected)="onSelectedAsync($event)"
-            (onDeselected)="onDeselect()">
+            (onUnhover)="onUnhover($event)">
         </app-embedding-visualizer>
 
         <img
@@ -74,21 +73,21 @@
         />
     </section>
 
-    <aside id="selected-data-points">
+    <aside id="selected-attributions">
         <span *ngIf="isLoadingAttributions" class="spinner spinner-locally-centered"></span>
 
         <div *ngIf="!isLoadingAttributions && (!selectedDataPoints || selectedDataPoints.length === 0)" id="selection-hint">
             <p>Select data points to display attributions...</p>
         </div>
 
-        <div *ngIf="!isLoadingAttributions && selectedDataPoints && selectedDataPoints.length > 0" id="data-point-list">
-            <div *ngFor="let selectedDataPoint of selectedDataPoints" class="data-point" [title]="selectedDataPoint.attribution.labelDisplay">
+        <div *ngIf="!isLoadingAttributions && selectedAttributions && selectedAttributions.length > 0" id="selected-attribution-list">
+            <div *ngFor="let selectedAttribution of selectedAttributions" class="selected-attribution" [title]="selectedAttribution.attribution.labelDisplay">
                 <app-before-and-after-slider
-                    [beforeImageSource]="selectedDataPoint.attribution.urls[selectedColorMap.name]"
-                    [afterImageSource]="selectedDataPoint.sample.url"
-                    [alt]="selectedDataPoint.attribution.labelDisplay">
+                    [beforeImageSource]="selectedAttribution.attribution.urls[selectedColorMap.name]"
+                    [afterImageSource]="selectedAttribution.sample.url"
+                    [alt]="selectedAttribution.attribution.labelDisplay">
                 </app-before-and-after-slider>
-                <p><span [style.color]="selectedDataPoint.color">&#11044;</span> Cluster {{ selectedDataPoint.clusterIndex + 1 }}</p>
+                <p><span [style.color]="selectedAttribution.color">&#11044;</span> Cluster {{ selectedAttribution.clusterIndex + 1 }}</p>
             </div>
         </div>
     </aside>

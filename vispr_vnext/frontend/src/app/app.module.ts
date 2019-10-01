@@ -13,6 +13,7 @@ import { AnalysesService } from 'src/services/analyses/analyses.service';
 import { AttributionsService } from 'src/services/attributions/attributions.service';
 import { DatasetService } from 'src/services/dataset/dataset.service';
 import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
     declarations: [
@@ -20,6 +21,7 @@ import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
     ],
     imports: [
         BrowserModule,
+        FormsModule,
         HttpClientModule,
         ClarityModule,
         BrowserAnimationsModule,

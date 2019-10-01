@@ -15,9 +15,9 @@ import { DatasetService } from 'src/services/dataset/dataset.service';
 import { Attribution } from 'src/services/attributions/attribution';
 import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 import { ColorMap } from 'src/services/colorMaps/color-map';
-import * as d3 from 'd3';
-import { HoverEvent, SelectedEvent } from 'src/app/components/embedding-visualizer/embedding-visualizer.component';
+import { HoverEvent, DataPoint } from 'src/app/components/embedding-visualizer/embedding-visualizer.component';
 import { Embedding } from 'src/services/analyses/embedding';
+import * as THREE from 'three';
 
 /**
  * Represents the index page of a project
@@ -197,13 +197,24 @@ export class IndexPage implements OnInit {
      * Sets the name of the selected embedding.
      */
     public set selectedEmbedding(value: string) {
+
+        // Sets the new value
         this._selectedEmbedding = value;
+
+        // Resets the dimensions that are to be displayed
         this.firstDimension = 0;
         this.secondDimension = 1;
+
+        // Refreshes the analysis
         if (value) {
             this.refreshAnalysisAsync();
         }
     }
+
+    /**
+     * Contains the number of clusters in the embedding in the analysis.
+     */
+    private numberOfClusters: number;
 
     /**
      * Contains the current analysis.
@@ -222,7 +233,23 @@ export class IndexPage implements OnInit {
      * @param value The
      */
     public set analysis(value: Analysis) {
+
+        // Stores the new value
         this._analysis = value;
+
+        // Determines the total number of clusters, which is needed to determine the number of colors that are needed
+        // for the visualization
+        if (this.analysis.embedding) {
+            const clusters = new Array<number>();
+            for (const cluster of this.analysis.embedding.map(dataPoint => dataPoint.cluster)) {
+                if (clusters.indexOf(cluster) === -1) {
+                    clusters.push(cluster);
+                }
+            }
+            this.numberOfClusters = clusters.length;
+        }
+
+        // Refreshes the plot that displays the eigen values
         this.refreshEigenValuePlot();
     }
 
@@ -258,9 +285,29 @@ export class IndexPage implements OnInit {
     };
 
     /**
+     * Contains the data points that were selected by the user.
+     */
+    private _selectedDataPoints: Array<DataPoint>;
+
+    /**
+     * Gets the data points that were selected by the user.
+     */
+    public get selectedDataPoints(): Array<DataPoint> {
+        return this._selectedDataPoints;
+    }
+
+    /**
+     * Sets the data points that were selected by the user.
+     */
+    public set selectedDataPoints(value: Array<DataPoint>) {
+        this._selectedDataPoints = value;
+        this.refreshAttributionsAsync();
+    }
+
+    /**
      * Contains the attributions for the data points selected by the user.
      */
-    public selectedDataPoints: Array<{
+    public selectedAttributions: Array<{
         attribution: Attribution,
         sample: Sample,
         color: string,
@@ -334,6 +381,43 @@ export class IndexPage implements OnInit {
     }
 
     /**
+     * Is invoked when the user selects data points. Updates the attributions that are displayed
+     */
+    public async refreshAttributionsAsync(): Promise<void> {
+
+        // Checks if any data points were selected, if not, then the attributions can be removed
+        if (!this.selectedDataPoints || this.selectedDataPoints.length === 0) {
+            this.selectedAttributions = null;
+            return;
+        }
+
+        // Gets the attributions of the data points that were selected
+        this.isLoadingAttributions = true;
+        const dataPoints = this.selectedDataPoints as Array<Embedding>;
+        const attributionIndices = dataPoints.map(dataPoint => dataPoint.attributionIndex).slice(0, 20);
+        const attributions = await Promise.all(attributionIndices.map(
+            index => this.attributionsService.getAsync(this.project.id, index)
+        ));
+
+        // Gets the dataset samples for which the attributions were generated
+        const datasetSamples: Array<Sample> = await Promise.all(attributions.map(
+            attribution => this.datasetService.getAsync(this.project.id, attribution.index)
+        ));
+
+        // Assigns the dataset sample to their respective attribution
+        this.selectedAttributions = [];
+        for (let index = 0; index < attributions.length; index++) {
+            this.selectedAttributions.push({
+                attribution: attributions[index],
+                sample: datasetSamples.filter(sample => sample.index === attributions[index].index)[0],
+                color: new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoints[index].cluster) / 360, 0.5, 0.5).getStyle(),
+                clusterIndex: dataPoints[index].cluster
+            });
+        }
+        this.isLoadingAttributions = false;
+    }
+
+    /**
      * Is invoked when the component is initialized. Retrieves the ID of the project from the URL and loads it
      */
     public async ngOnInit(): Promise<void> {
@@ -375,49 +459,5 @@ export class IndexPage implements OnInit {
     public onUnhover(): void {
         this.isHovering = false;
         this.datasetSampleHoverPreview = null;
-    }
-
-    /**
-     * Is invoked when the user selects embeddings.
-     * @param eventInfo The event object that contains the information about the embeddings that were selected.
-     */
-    public async onSelectedAsync(eventInfo: SelectedEvent): Promise<void> {
-
-        // When nothing was selected, then nothing needs to be loaded (this sometimes happens when deselecting)
-        if (!eventInfo) {
-            return;
-        }
-
-        // Gets the attributions of the data points that were selected
-        this.isLoadingAttributions = true;
-        const dataPoints = eventInfo.dataPoints as Array<Embedding>;
-        const attributionIndices = dataPoints.map(dataPoint => dataPoint.attributionIndex).slice(0, 20);
-        const attributions = await Promise.all(attributionIndices.map(
-            index => this.attributionsService.getAsync(this.project.id, index)
-        ));
-
-        // Gets the dataset samples for which the attributions were generated
-        const datasetSamples: Array<Sample> = await Promise.all(attributions.map(
-            attribution => this.datasetService.getAsync(this.project.id, attribution.index)
-        ));
-
-        // Assigns the dataset sample to their respective attribution
-        this.selectedDataPoints = [];
-        for (let index = 0; index < attributions.length; index++) {
-            this.selectedDataPoints.push({
-                attribution: attributions[index],
-                sample: datasetSamples.filter(sample => sample.index === attributions[index].index)[0],
-                color: eventInfo.clusterColors[index],
-                clusterIndex: eventInfo.dataPoints[index].cluster
-            });
-        }
-        this.isLoadingAttributions = false;
-    }
-
-    /**
-     * Is invoked, when the user deselects everything.
-     */
-    public onDeselect(): void {
-        this.selectedDataPoints = null;
     }
 }

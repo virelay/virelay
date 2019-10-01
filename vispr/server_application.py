@@ -511,7 +511,6 @@ class ServerApplication:
         # of the images (the attribution images are rendered above the respective original image, changing the alpha
         # reveals the original image or hides it behind the attribution image), and saving the currently selected
         # elements as interesting results
-
         class_names = [self.wnids[i] for i in self.class_ids]
         self.category_select = Select(
             value=self.data.selected.category,

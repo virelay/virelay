@@ -1,5 +1,6 @@
 
-import { ElementRef, ViewChild, Component, AfterViewInit, NgZone, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
+import { ElementRef, ViewChild, Component, AfterViewInit, NgZone, OnDestroy, Input, EventEmitter, Output, forwardRef } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import * as THREE from 'three';
 import * as OrbitControls from 'three-orbitcontrols';
@@ -10,14 +11,14 @@ import * as OrbitControls from 'three-orbitcontrols';
 export interface DataPoint {
 
     /**
-     * Contains the index of the cluster to which the data point belongs.
-     */
-    cluster: number;
-
-    /**
      * Contains the value of the data point.
      */
     value: Array<number>;
+
+    /**
+     * Contains the index of the cluster to which the data point belongs.
+     */
+    cluster: number;
 }
 
 /**
@@ -47,40 +48,19 @@ export class HoverEvent {
 }
 
 /**
- * Represents a selected event.
- */
-export class SelectedEvent {
-
-    /**
-     * Initializes a new SelectedEvent instance.
-     * @param dataPoints The data points that were selected.
-     * @param clusterColors The colors of the selected data points.
-     */
-    public constructor(dataPoints: Array<DataPoint>, clusterColors: Array<string>) {
-        this.dataPoints = dataPoints;
-        this.clusterColors = clusterColors;
-    }
-
-    /**
-     * Contains the data points that were selected.
-     */
-    public dataPoints: Array<DataPoint>;
-
-    /**
-     * Contains the colors of the selected data points.
-     */
-    public clusterColors: Array<string>;
-}
-
-/**
  * Represents a visualizer, which can render an embedding.
  */
 @Component({
     selector: 'app-embedding-visualizer',
     styleUrls: ['embedding-visualizer.component.scss'],
-    templateUrl: 'embedding-visualizer.component.html'
+    templateUrl: 'embedding-visualizer.component.html',
+    providers: [{
+        provide: NG_VALUE_ACCESSOR,
+        useExisting: forwardRef(() => EmbeddingVisualizerComponent),
+        multi: true
+    }]
 })
-export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
+export class EmbeddingVisualizerComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
 
     /**
      * Initializes a new EmbeddingVisualizerComponent instance.
@@ -150,6 +130,11 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
     private selectedDataPointIndices: Array<number>;
 
     /**
+     * Contains the data points that have been selected by the user.
+     */
+    private selectedDataPoints: Array<DataPoint>;
+
+    /**
      * Contains a reference to the HTML element that represents the render target.
      */
     @ViewChild('renderTarget', { static: false })
@@ -160,6 +145,12 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
      */
     @ViewChild('selectionBox', { static: false })
     public selectionBox: ElementRef;
+
+    /**
+     * Contains a value that determines whether the visualizer is disabled.
+     */
+    @Input()
+    public disabled: boolean;
 
     /**
      * Contains the number of clusters that are present in the embedding.
@@ -183,7 +174,23 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
      */
     @Input()
     public set embedding(value: Array<DataPoint>) {
+
+        // Stores the new value
         this._embedding = value;
+
+        // Determines the total number of clusters, which is needed to determine the number of colors that are needed
+        // for the visualization
+        if (this.embedding) {
+            const clusters = new Array<number>();
+            for (const cluster of this.embedding.map(dataPoint => dataPoint.cluster)) {
+                if (clusters.indexOf(cluster) === -1) {
+                    clusters.push(cluster);
+                }
+            }
+            this.numberOfClusters = clusters.length;
+        }
+
+        // Updates the visualizer with the new data points
         this.updateVisualizer();
     }
 
@@ -250,16 +257,14 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
     public onUnhover: EventEmitter<any> = new EventEmitter();
 
     /**
-     * The event that is invoked, when the user selects data points.
+     * Is invoked when the selected data points change.
      */
-    @Output()
-    public onSelected: EventEmitter<SelectedEvent> = new EventEmitter<SelectedEvent>();
+    private onSelectedDataPointsChange = (_: Array<DataPoint>) => {};
 
     /**
-     * The event that is invoked, when the user deselects all data points.
+     * Is invoked when the selected data points were "touched" (which in this case is nothing more then changed).
      */
-    @Output()
-    public onDeselected: EventEmitter<any> = new EventEmitter();
+    private onSelectedDataPointsTouched = () => {};
 
     /**
      * Is invoked when the window was resized. Updates the camera and the renderer to the new canvas size.
@@ -333,9 +338,9 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
         for (let index = 0; index < this.embedding.length; index++) {
             const dataPoint = this.embedding[index];
             if (this.selectedDataPointIndices.indexOf(index) === -1) {
-                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = (new THREE.Color()).setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
             } else {
-                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = (new THREE.Color()).setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
             }
         }
         (this.embeddingObject.geometry as THREE.Geometry).colorsNeedUpdate = true;
@@ -401,39 +406,14 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
             return;
         }
 
-        // Hides the selection box
-        const selectionBoxNativeElement: HTMLDivElement = this.selectionBox.nativeElement;
-        selectionBoxNativeElement.style.display = 'none';
-
         // Stops the selection
         this.isSelecting = false;
         this.selectionBoxRectangle = null;
         this.updateSelectionBox();
 
-        // Checks if the user selected data points or deselected everything
-        if (this.selectedDataPointIndices.length !== 0) {
-
-            // Gets the data points that have been selected
-            const selectedDataPoints = this.embedding.filter((_, index) => this.selectedDataPointIndices.indexOf(index) !== -1);
-
-            // Invokes the selected event
-            this.onSelected.emit(new SelectedEvent(
-                selectedDataPoints,
-                selectedDataPoints.map(dataPoint => (new THREE.Color()).setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5).getStyle())
-            ));
-        } else {
-
-            // Since the user deselected everything, the colors of the data points have to be reset to their initial
-            // saturation to indicate that nothing is selected
-            for (let index = 0; index < this.embedding.length; index++) {
-                const dataPoint = this.embedding[index];
-                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = (new THREE.Color()).setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5);
-            }
-            (this.embeddingObject.geometry as THREE.Geometry).colorsNeedUpdate = true;
-
-            // Invokes the deselected event
-            this.onDeselected.emit();
-        }
+        // Gets the data points that have been selected and writes them
+        const selectedDataPoints = this.embedding.filter((_, index) => this.selectedDataPointIndices.indexOf(index) !== -1);
+        this.writeValue(selectedDataPoints);
     }
 
     /**
@@ -515,16 +495,6 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
             this.scene.remove(this.embeddingObject);
         }
 
-        // Determines the total number of clusters, which is needed to determine the number of colors that are needed
-        // for the visualization
-        const clusters = new Array<number>();
-        for (const cluster of this.embedding.map(dataPoint => dataPoint.cluster)) {
-            if (clusters.indexOf(cluster) === -1) {
-                clusters.push(cluster);
-            }
-        }
-        this.numberOfClusters = clusters.length;
-
         // Gets a reference to the render target
         const renderTargetNativeElement: HTMLCanvasElement = this.renderTarget.nativeElement;
 
@@ -556,8 +526,7 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
             pointsGeometry.vertices.push(vertex);
 
             // Generates a color for the data point based on its cluster
-            const color = new THREE.Color();
-            color.setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.75, 0.5);
+            const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.75, 0.5);
             pointsGeometry.colors.push(color);
         }
 
@@ -652,5 +621,65 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
         }
+    }
+
+    /**
+     * Changes the selected data points.
+     * @param value The new selected data points.
+     */
+    public writeValue(value: Array<DataPoint>): void {
+
+        // Stores the selected data points
+        this.selectedDataPoints = value ? value : new Array<DataPoint>();
+
+        // Checks if the user selected data points or deselected everything, if the user selected data points, then the
+        // saturation of the selected data points is increased and the saturation of the data points that are not
+        // selected is decreased, if the user deselected everything, then the saturation of the data points is reset
+        if (this.embeddingObject) {
+            if (this.selectedDataPoints.length !== 0) {
+                for (let index = 0; index < this.embedding.length; index++) {
+                    const dataPoint = this.embedding[index];
+                    if (this.selectedDataPoints.indexOf(dataPoint) === -1) {
+                        (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+                    } else {
+                        (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+                    }
+                }
+            } else {
+                for (let index = 0; index < this.embedding.length; index++) {
+                    const dataPoint = this.embedding[index];
+                    (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5);
+                }
+            }
+            (this.embeddingObject.geometry as THREE.Geometry).colorsNeedUpdate = true;
+        }
+
+        // Propagates the change
+        this.onSelectedDataPointsChange(this.selectedDataPoints);
+        this.onSelectedDataPointsTouched();
+    }
+
+    /**
+     * Registers a callback, which is invoked, when the selected data points change.
+     * @param callback The callback that is invoked, when the selected data points change.
+     */
+    public registerOnChange(callback: (value: Array<DataPoint>) => void): void {
+        this.onSelectedDataPointsChange = callback;
+    }
+
+    /**
+     * Registers a callback, which is invoked, when the selected data points were touched.
+     * @param callback The callback that is invoked, when the selected data points were touched.
+     */
+    public registerOnTouched(callback: () => void): void {
+        this.onSelectedDataPointsTouched = callback;
+    }
+
+    /**
+     * Sets whether the visualizer is enabled or disabled.
+     * @param isDisabled Determines whether the visualizer is disabled.
+     */
+    public setDisabledState?(isDisabled: boolean): void {
+        this.disabled = isDisabled;
     }
 }

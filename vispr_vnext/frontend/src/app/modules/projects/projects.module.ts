@@ -27,9 +27,9 @@ PlotlyModule.plotlyjs = PlotlyJS;
     ],
     imports: [
         BrowserModule,
+        FormsModule,
         ClarityModule,
         PlotlyModule,
-        FormsModule,
         ComponentsModule,
         RouterModule.forChild(projectRoutes)
     ],

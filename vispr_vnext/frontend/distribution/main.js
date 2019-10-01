@@ -1302,8 +1302,15 @@ var IndexPage = /** @class */ (function () {
         set: function (value) {
             this._selectedAnalysisMethod = value;
             if (value) {
+                this.selectedDataPoints = null;
                 this.selectedCategory = this.selectedAnalysisMethod.categories[0];
-                this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+                var initialClustering = this.selectedAnalysisMethod.clusterings.filter(function (clustering) { return parseInt(clustering, 10) === 10; });
+                if (initialClustering.length > 0) {
+                    this.selectedClustering = initialClustering[0];
+                }
+                else {
+                    this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+                }
                 if (this.selectedAnalysisMethod.embeddings.filter(function (embedding) { return embedding === 'tsne'; }).length > 0) {
                     this.selectedEmbedding = 'tsne';
                 }
@@ -1468,7 +1475,7 @@ var IndexPage = /** @class */ (function () {
      */
     IndexPage.prototype.refreshProjectAsync = function () {
         return tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](this, void 0, void 0, function () {
-            var _a;
+            var _a, initialClustering;
             return tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"](this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1480,7 +1487,13 @@ var IndexPage = /** @class */ (function () {
                         this.selectedDataPoints = null;
                         this._selectedAnalysisMethod = this.project.analysisMethods[0];
                         this._selectedCategory = this.selectedAnalysisMethod.categories[0];
-                        this._selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+                        initialClustering = this.selectedAnalysisMethod.clusterings.filter(function (clustering) { return parseInt(clustering, 10) === 10; });
+                        if (initialClustering.length > 0) {
+                            this.selectedClustering = initialClustering[0];
+                        }
+                        else {
+                            this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+                        }
                         if (this.selectedAnalysisMethod.embeddings.filter(function (embedding) { return embedding === 'tsne'; }).length > 0) {
                             this._selectedEmbedding = 'tsne';
                         }

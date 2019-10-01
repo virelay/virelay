@@ -126,8 +126,14 @@ export class IndexPage implements OnInit {
     public set selectedAnalysisMethod(value: AnalysisMethod) {
         this._selectedAnalysisMethod = value;
         if (value) {
+            this.selectedDataPoints = null;
             this.selectedCategory = this.selectedAnalysisMethod.categories[0];
-            this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+            const initialClustering = this.selectedAnalysisMethod.clusterings.filter(clustering => parseInt(clustering, 10) === 10);
+            if (initialClustering.length > 0) {
+                this.selectedClustering = initialClustering[0];
+            } else {
+                this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+            }
             if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
                 this.selectedEmbedding = 'tsne';
             } else {
@@ -357,12 +363,18 @@ export class IndexPage implements OnInit {
         this.selectedDataPoints = null;
         this._selectedAnalysisMethod = this.project.analysisMethods[0];
         this._selectedCategory = this.selectedAnalysisMethod.categories[0];
-        this._selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+        const initialClustering = this.selectedAnalysisMethod.clusterings.filter(clustering => parseInt(clustering, 10) === 10);
+        if (initialClustering.length > 0) {
+            this.selectedClustering = initialClustering[0];
+        } else {
+            this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+        }
         if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
             this._selectedEmbedding = 'tsne';
         } else {
             this._selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
         }
+
         await this.refreshAnalysisAsync();
         this.isLoading = false;
     }

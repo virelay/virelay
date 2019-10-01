@@ -100,6 +100,12 @@
             [config]="{ displayModeBar: false }"
             [style]="{ width: '226px', height: '400px', 'marginLeft': '12px' }">
         </plotly-plot>
+
+        <div class="cluster-selection-buttons-container">
+            <button *ngFor="let cluster of availableClusters" class="btn btn-outline" (click)="selectCluster(cluster.index)">
+                <span [style.color]="cluster.color">&#11044;</span> Select cluster {{ cluster.index + 1 }}
+            </button>
+        </div>
     </aside>
 
     <footer id="status-bar">

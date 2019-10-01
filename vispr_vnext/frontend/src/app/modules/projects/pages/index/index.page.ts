@@ -217,6 +217,11 @@ export class IndexPage implements OnInit {
     private numberOfClusters: number;
 
     /**
+     * Gets a list of all the clusters with their respective colors.
+     */
+    public availableClusters: Array<{ index: number; color: string; }>;
+
+    /**
      * Contains the current analysis.
      */
     private _analysis: Analysis;
@@ -246,7 +251,14 @@ export class IndexPage implements OnInit {
                     clusters.push(cluster);
                 }
             }
+            clusters.sort();
             this.numberOfClusters = clusters.length;
+            this.availableClusters = clusters.map(cluster => {
+                return {
+                    index: cluster,
+                    color: new THREE.Color().setHSL((360 / this.numberOfClusters * cluster) / 360, 0.5, 0.5).getStyle()
+                };
+            });
         }
 
         // Refreshes the plot that displays the eigen values
@@ -383,7 +395,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when the user selects data points. Updates the attributions that are displayed
      */
-    public async refreshAttributionsAsync(): Promise<void> {
+    private async refreshAttributionsAsync(): Promise<void> {
 
         // Checks if any data points were selected, if not, then the attributions can be removed
         if (!this.selectedDataPoints || this.selectedDataPoints.length === 0) {
@@ -410,7 +422,7 @@ export class IndexPage implements OnInit {
             this.selectedAttributions.push({
                 attribution: attributions[index],
                 sample: datasetSamples.filter(sample => sample.index === attributions[index].index)[0],
-                color: new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoints[index].cluster) / 360, 0.5, 0.5).getStyle(),
+                color: this.availableClusters.filter(cluster => cluster.index === dataPoints[index].cluster)[0].color,
                 clusterIndex: dataPoints[index].cluster
             });
         }
@@ -459,5 +471,14 @@ export class IndexPage implements OnInit {
     public onUnhover(): void {
         this.isHovering = false;
         this.datasetSampleHoverPreview = null;
+    }
+
+    /**
+     * Selects the data points of the cluster with the specified index.
+     * @param index The index of the cluster that is to be selected.
+     */
+    public selectCluster(index: number) {
+        const dataPointsOfCluster = this.analysis.embedding.filter(dataPoint => dataPoint.cluster === index);
+        this.selectedDataPoints = dataPointsOfCluster;
     }
 }

@@ -14,6 +14,22 @@
         grid-area: cluster-pane;
 
         background-color: #EFEFEF;
+
+        height: calc(100vh - 430px);
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        .cluster-selection-buttons-container {
+
+            button {
+                margin-right: 0;
+                width: 200px;
+            }
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
     }
 
     #embedding-plot {

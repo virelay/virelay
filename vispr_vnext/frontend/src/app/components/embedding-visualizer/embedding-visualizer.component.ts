@@ -531,7 +531,8 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
         }
 
         // Scales all data points so that they fill out the whole viewport
-        pointsGeometry.scale(width / maximumX, height / maximumY, 1);
+        const scaleFactor = Math.min(width / maximumX, height / maximumY);
+        pointsGeometry.scale(scaleFactor, scaleFactor, 1);
 
         // Creates the material for the points (setting the size attenuation to false means that the points always have
         // the same size no matter the zoom level)

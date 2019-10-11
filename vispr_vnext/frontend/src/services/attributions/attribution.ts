@@ -17,10 +17,8 @@ export class Attribution {
             this.prediction = attribution.prediction;
             this.width = attribution.width;
             this.height = attribution.height;
-            this.url = attribution.url;
             this.urls = attribution.urls;
             if (baseUrl) {
-                this.url = baseUrl + this.url;
                 for (const colorMap in this.urls) {
                     if (this.urls.hasOwnProperty(colorMap)) {
                         this.urls[colorMap] = baseUrl + this.urls[colorMap];
@@ -64,11 +62,6 @@ export class Attribution {
      * The height of the attribution heatmap image.
      */
     public height: number;
-
-    /**
-     * Contains the URL to the heatmap for the attribution with a default color map.
-     */
-    public url: string;
 
     /**
      * Contains the URLs to the heatmaps for the attribution for all supported color maps.

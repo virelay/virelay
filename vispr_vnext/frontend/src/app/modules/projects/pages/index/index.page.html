@@ -81,11 +81,7 @@
 
         <div *ngIf="!isLoadingAttributions && selectedAttributions && selectedAttributions.length > 0" id="selected-attribution-list">
             <div *ngFor="let selectedAttribution of selectedAttributions" class="selected-attribution" [title]="selectedAttribution.attribution.labelDisplay">
-                <app-before-and-after-slider
-                    [beforeImageSource]="selectedAttribution.attribution.urls[selectedColorMap.name]"
-                    [afterImageSource]="selectedAttribution.sample.url"
-                    [alt]="selectedAttribution.attribution.labelDisplay">
-                </app-before-and-after-slider>
+                <img [src]="selectedAttribution.attribution.urls[selectedColorMap.name]" [alt]="selectedAttribution.attribution.labelDisplay">
                 <p><span [style.color]="selectedAttribution.color">&#11044;</span> Cluster {{ selectedAttribution.clusterIndex + 1 }}</p>
             </div>
         </div>

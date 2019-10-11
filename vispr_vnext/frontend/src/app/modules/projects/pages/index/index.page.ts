@@ -319,7 +319,7 @@ export class IndexPage implements OnInit {
      */
     public set selectedDataPoints(value: Array<DataPoint>) {
         this._selectedDataPoints = value;
-        this.refreshAttributionsAsync();
+        this.refreshAttributionsOfSelecteddataPointsAsync();
     }
 
     /**
@@ -327,7 +327,6 @@ export class IndexPage implements OnInit {
      */
     public selectedAttributions: Array<{
         attribution: Attribution,
-        sample: Sample,
         color: string,
         clusterIndex: number
     }>;
@@ -407,7 +406,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when the user selects data points. Updates the attributions that are displayed
      */
-    private async refreshAttributionsAsync(): Promise<void> {
+    private async refreshAttributionsOfSelecteddataPointsAsync(): Promise<void> {
 
         // Checks if any data points were selected, if not, then the attributions can be removed
         if (!this.selectedDataPoints || this.selectedDataPoints.length === 0) {
@@ -420,12 +419,7 @@ export class IndexPage implements OnInit {
         const dataPoints = this.selectedDataPoints as Array<Embedding>;
         const attributionIndices = dataPoints.map(dataPoint => dataPoint.attributionIndex).slice(0, 20);
         const attributions = await Promise.all(attributionIndices.map(
-            index => this.attributionsService.getAsync(this.project.id, index)
-        ));
-
-        // Gets the dataset samples for which the attributions were generated
-        const datasetSamples: Array<Sample> = await Promise.all(attributions.map(
-            attribution => this.datasetService.getAsync(this.project.id, attribution.index)
+            index => this.attributionsService.getAsync(this.project.id, index, true)
         ));
 
         // Assigns the dataset sample to their respective attribution
@@ -433,7 +427,6 @@ export class IndexPage implements OnInit {
         for (let index = 0; index < attributions.length; index++) {
             this.selectedAttributions.push({
                 attribution: attributions[index],
-                sample: datasetSamples.filter(sample => sample.index === attributions[index].index)[0],
                 color: this.availableClusters.filter(cluster => cluster.index === dataPoints[index].cluster)[0].color,
                 clusterIndex: dataPoints[index].cluster
             });
@@ -473,7 +466,7 @@ export class IndexPage implements OnInit {
 
         this.isHovering = true;
         const embedding = event.dataPoint as Embedding;
-        const attribution = await this.attributionsService.getAsync(this.project.id, embedding.attributionIndex);
+        const attribution = await this.attributionsService.getAsync(this.project.id, embedding.attributionIndex, false);
         this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
     }
 

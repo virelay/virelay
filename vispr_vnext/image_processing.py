@@ -4,6 +4,7 @@ import math
 
 import numpy
 import matplotlib.cm
+from PIL import Image
 
 
 def add_border(image, new_width, new_height, method):
@@ -97,12 +98,14 @@ def center_crop(image, new_width, new_height):
     return image[left_crop:new_width + right_crop, top_crop:new_height + bottom_crop, :]
 
 
-def render_heatmap(data, color_map):
+def render_heatmap(attribution_data, color_map):
     """
     Takes the raw attribution data and converts it so that the data can be visualized as a heatmap.
 
     Parameters
     ----------
+        attribution_data: numpy.ndarray
+            The raw attribution data for which the heatmap is to be rendered.
         color_map: str
             The name of color map that is to be used to render the heatmap.
 
@@ -130,20 +133,67 @@ def render_heatmap(data, color_map):
     }
 
     # Checks if the raw attribution has more than one channel, in that case the channels are summed up
-    if len(data.shape) == 3 and data.shape[-1] > 1:
-        data = numpy.sum(data, axis=2)
+    if len(attribution_data.shape) == 3 and attribution_data.shape[-1] > 1:
+        attribution_data = numpy.sum(attribution_data, axis=2)
 
     # Checks the name of the color map and renders the heatmap image accordingly, if the color map is not supported,
     # then an exception is raised
     if color_map in custom_color_maps:
-        heatmap_image = custom_color_maps[color_map](data)
+        heatmap_image = custom_color_maps[color_map](attribution_data)
     elif color_map in matplotlib_color_maps:
-        heatmap_image = generate_heatmap_image_using_matplotlib(data, matplotlib_color_maps[color_map])
+        heatmap_image = generate_heatmap_image_using_matplotlib(attribution_data, matplotlib_color_maps[color_map])
     else:
         raise ValueError('The color map "{0}" is not supported.'.format(color_map))
     heatmap_image *= 255.0
     heatmap_image = heatmap_image.astype(numpy.uint8)
     return heatmap_image
+
+
+def render_superimposed_heatmap(attribution_data, superimpose, color_map):
+    """
+    Renders the heatmap an superimposes it onto the specified image.
+
+    Parameters
+    ----------
+        attribution_data: numpy.ndarray
+            The raw attribution data for which the heatmap is to be rendered.
+        superimpose: numpy.ndarray
+            An image onto which the image is to be superimposed.
+        color_map: str
+            The name of color map that is to be used to render the heatmap.
+
+    Raises
+    ------
+        ValueError
+            If the specified color map is unknown, then a ValueError is raised.
+    """
+
+    # Checks if the raw attribution has more than one channel, in that case the channels are summed up
+    if len(attribution_data.shape) == 3 and attribution_data.shape[-1] > 1:
+        attribution_data = numpy.sum(attribution_data, axis=2)
+
+    # Renders the heatmap
+    heatmap = render_heatmap(attribution_data, color_map)
+    heatmap = Image.fromarray(heatmap, 'RGB')
+
+    # Takes the attribution data, and normalizes it to the range [0, 1], this will be used as the alpha channel top
+    # superimpose the heatmap onto the specified image, the positive and negative parts of the attribution data are
+    # considered separately, because otherwise the negative attributions would show up less significantly than the
+    # positive attributions
+    positive_attributions_mask = numpy.clip(attribution_data, 0, numpy.max(attribution_data))
+    positive_attributions_mask = positive_attributions_mask / numpy.max(positive_attributions_mask) * 0.5
+    positive_attributions_mask = Image.fromarray((positive_attributions_mask * 255).astype(numpy.uint8), 'L')
+    negative_attributions_mask = numpy.clip(attribution_data * -1, 0, numpy.max(attribution_data * -1))
+    negative_attributions_mask = negative_attributions_mask / numpy.max(negative_attributions_mask) * 0.5
+    negative_attributions_mask = Image.fromarray((negative_attributions_mask * 255).astype(numpy.uint8), 'L')
+
+    # Superimposes the positive and the negative attributions onto the specified image
+    superimpose = Image.fromarray(superimpose.astype(numpy.uint8), 'RGB')
+    superimposed_heatmap = Image.composite(heatmap, superimpose, positive_attributions_mask)
+    superimposed_heatmap = Image.composite(heatmap, superimposed_heatmap, positive_attributions_mask)
+
+    # Returns the rendered heatmap
+    return superimposed_heatmap
 
 
 def generate_heatmap_image_using_matplotlib(raw_heatmap, color_map_name):

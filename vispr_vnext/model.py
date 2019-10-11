@@ -11,7 +11,7 @@ import h5py
 import numpy
 from PIL import Image
 
-from .image_processing import add_border, center_crop, render_heatmap
+from .image_processing import add_border, center_crop, render_heatmap, render_superimposed_heatmap
 
 
 class Project:
@@ -466,7 +466,7 @@ class Attribution:
         if numpy.argmin(self.data.shape) == 0:
             self.data = numpy.moveaxis(self.data, [0, 1, 2], [2, 0, 1])
 
-    def render_heatmap(self, color_map):
+    def render_heatmap(self, color_map, superimpose=None):
         """
         Takes the raw attribution data and converts it so that the data can be visualized as a heatmap.
 
@@ -474,6 +474,8 @@ class Attribution:
         ----------
             color_map: str
                 The name of color map that is to be used to render the heatmap.
+            superimpose: numpy.ndarray
+                An optional image onto which the heatmap should be superimposed.
 
         Raises
         ------
@@ -481,7 +483,10 @@ class Attribution:
                 If the specified color map is unknown, then a ValueError is raised.
         """
 
-        return render_heatmap(self.data, color_map)
+        if superimpose is not None:
+            return render_superimposed_heatmap(self.data, superimpose, color_map)
+        else:
+            return render_heatmap(self.data, color_map)
 
 
 class AnalysisDatabase:

@@ -350,13 +350,14 @@ class Server:
             'prediction': numpy.array(attribution.prediction).tolist(),
             'width': attribution.data.shape[0],
             'height': attribution.data.shape[1],
-            'url': flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
             'urls': {}
         }
+        superimpose = flask.request.args.get('superimpose', 'false')
         for color_map in self.color_maps:
-            attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}'.format(
+            attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}&superimpose={2}'.format(
                 flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
-                color_map
+                color_map,
+                superimpose
             )
 
         # Returns the retrieved attribution
@@ -391,12 +392,23 @@ class Server:
         except LookupError as error:
             return self.http_not_found(error)
 
+        # If the user wants the heatmap to be superimposed onto its original image, then the sample has to be loaded
+        superimpose = flask.request.args.get('superimpose', 'false').upper() == 'TRUE'
+        if superimpose:
+            try:
+                sample = project.get_sample(attribution.index)
+            except LookupError as error:
+                return self.http_not_found(error)
+
         # Gets the color map that is to be used to convert the raw attribution to a heatmap from the URL parameters, if
         # none was specified, then it defaults to Black Fire-Red
         color_map_name = flask.request.args.get('colorMap', 'black-fire-red')
 
         # Renders the heatmap and returns it
-        heatmap = attribution.render_heatmap(color_map_name)
+        if superimpose:
+            heatmap = attribution.render_heatmap(color_map_name, superimpose=sample.data)
+        else:
+            heatmap = attribution.render_heatmap(color_map_name)
         return self.send_image_file(heatmap)
 
     def get_analysis(self, project_id, analysis_method_name):
@@ -610,7 +622,8 @@ class Server:
                 Returns a response, which contains the specified image as a JPEG encoded image file.
         """
 
-        image = Image.fromarray(image)
+        if type(image) is numpy.ndarray:
+            image = Image.fromarray(image)
         in_memory_image_file = io.BytesIO()
         image.save(in_memory_image_file, format='JPEG', quality=70)
         in_memory_image_file.seek(0)

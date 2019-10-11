@@ -81,6 +81,8 @@
 
     #selected-attributions {
         grid-area: selected-attributions;
+
+        position: relative;
         height: 100%;
         width: 100%;
 
@@ -91,22 +93,23 @@
         white-space: nowrap;
 
         .spinner-locally-centered {
-            position: relative;
+            position: absolute;
             top: calc(50% - 1.5rem);
             left: calc(50% - 1.5rem);
         }
 
         #selection-hint {
+            position: absolute;
             display: table;
-
-            height: calc(100% - 24px);
-            width: calc(100% - 24px);
-            margin: 12px 12px 12px 12px;
 
             border: 1px dashed rgb(192, 192, 192);
             border-radius: 5px;
 
             text-align: center;
+
+            height: calc(100% - 24px);
+            width: calc(100% - 24px);
+            margin: 12px 12px 12px 12px;
 
             p {
                 vertical-align: middle;

@@ -118,6 +118,11 @@ class Server:
                 lambda: flask.send_file(os.path.join(frontend_path, 'favicon.ico'))
             )
             self.app.add_url_rule(
+                '/<string:file_name>.css',
+                'serve_frontend_css',
+                lambda file_name: flask.send_file(os.path.join(frontend_path, '{0}.css').format(file_name))
+            )
+            self.app.add_url_rule(
                 '/<string:file_name>.js',
                 'serve_frontend_javascript',
                 lambda file_name: flask.send_file(os.path.join(frontend_path, '{0}.js').format(file_name))
@@ -158,7 +163,7 @@ class Server:
         # run, so we have to set a timer, which will run on a different thread and start the thread after the server,
         # hopefully, has started)
         if not self.is_in_debug_mode:
-            threading.Timer(1, lambda: webbrowser.open_new_tab('http://localhost:8080')).start()
+            threading.Timer(1, lambda: webbrowser.open_new_tab('http://localhost:{0}'.format(str(port)))).start()
 
         # When the application is started in debug mode, then the frontend is not served from the same host and port,
         # therefore CORS must be activated

@@ -150,7 +150,7 @@ class Project:
             if attribution_database.has_attribution(index):
                 return attribution_database.get_attribution(index)
 
-        raise LookupError('Not attribution with the specified index {0} could be found.'.format(index))
+        raise LookupError('No attribution with the specified index {0} could be found.'.format(index))
 
     def get_analysis_methods(self):
         """

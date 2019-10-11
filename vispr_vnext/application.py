@@ -49,10 +49,11 @@ class Application:
                 Determines whether the application is run in debug mode. When the application is in debug mode, then all
                 FLASK and Werkzeug logs are printed to stdout, FLASK debugging is activated (FLASK will print out the
                 debugger PIN for attaching the debugger), and the automatic reloading, when the Python files change is
-                activated. Furthermore, the frontend of the application will not be served via the. Otherwise all these
-                things will be deactivated and the frontend of the application is served via the FLASK server. If the
-                application is to be debugged using Visual Studio Code (or any other IDE for that matter), then the
-                application must not be started in debug mode, because Visual Studio will create its own debugger.
+                activated. Furthermore, the frontend of the application will not be served via the command line tool and
+                has to be directly started (e.g. via ng serve). Otherwise, all these things will be deactivated and the
+                frontend of the application is served via the FLASK server. If the application is to be debugged using
+                Visual Studio Code (or any other IDE for that matter), then the application must not be started in debug
+                mode, because Visual Studio will create its own debugger.
             '''
         )
 

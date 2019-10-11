@@ -404,6 +404,12 @@ class AttributionDatabase:
         if not self.has_attribution(index):
             raise LookupError('No attribution with the index {0} could be found.'.format(index))
 
+        # Check where is the searched index in the attribution file
+        original_index = index
+        if 'index' in self.attribution_file:
+            index = numpy.where(index == self.attribution_file['index'][:])
+            index = index[0][0].item()
+
         # Extracts the information about the sample from the dataset
         attribution_data = self.attribution_file['attribution'][index]
         attribution_label_reference = self.attribution_file['label'][index]
@@ -412,7 +418,7 @@ class AttributionDatabase:
 
         # Wraps the attribution in an object and returns it
         return Attribution(
-            index,
+            original_index,
             attribution_data,
             attribution_labels,
             attribution_prediction
@@ -901,13 +907,15 @@ class Hdf5Dataset:
         # Checks if the index is out of range
         if 'index' in self.dataset_file:
             try:
-                index = self.dataset_file['index'][index]
+                data_index = self.dataset_file['index'][index].item()
             except ValueError as error:
                 raise LookupError('No sample with the index {0} could be found.'.format(index)) from error
+        else:
+            data_index = index
 
         # Extracts the information about the sample from the dataset
         try:
-            sample_data = self.dataset_file['data'][index]
+            sample_data = self.dataset_file['data'][data_index][:]
             sample_label_reference = self.dataset_file['label'][index]
             sample_labels = self.label_map.get_labels(sample_label_reference)
         except ValueError as error:

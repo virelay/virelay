@@ -1044,9 +1044,10 @@ class ImageDirectoryDataset:
         self.is_closed = False
 
         # Validates the arguments
-        if down_sampling_method not in ['none', 'center_crop']:
+        if down_sampling_method not in ['none', 'center_crop', 'resize']:
             raise ValueError('The down-sampling method "{0}" is not supported.'.format(down_sampling_method))
-        if up_sampling_method not in ['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']:
+        if up_sampling_method not in ['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around',
+                                      'resize']:
             raise ValueError('The up-sampling method "{0}" is not supported.'.format(up_sampling_method))
 
         # Stores the arguments for later reference
@@ -1153,6 +1154,8 @@ class ImageDirectoryDataset:
                     max(height, self.input_height),
                     self.up_sampling_method
                 )
+            elif self.up_sampling_method == 'resize':
+                image = numpy.array(Image.fromarray(image).resize((self.input_width, self.input_height)))
             elif self.up_sampling_method == 'none':
                 pass
             else:
@@ -1162,10 +1165,15 @@ class ImageDirectoryDataset:
         if width > self.input_width or height > self.input_height:
             if self.down_sampling_method == 'center_crop':
                 image = center_crop(image, self.input_width, self.input_height)
+            elif self.down_sampling_method == 'resize':
+                image = numpy.array(Image.fromarray(image).resize((self.input_width, self.input_height)))
             elif self.up_sampling_method == 'none':
                 pass
             else:
                 raise ValueError('The down-sampling method "{0}" is not supported.'.format(self.down_sampling_method))
+
+        if image.ndim == 2:  # If image black and white add the third axis
+            image = image[..., numpy.newaxis]
 
         # Returns the re-sampled image
         return image

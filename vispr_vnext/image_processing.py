@@ -169,6 +169,8 @@ def render_superimposed_heatmap(attribution_data, superimpose, color_map):
     """
 
     # Checks if the raw attribution has more than one channel, in that case the channels are summed up
+    attribution_data = attribution_data.squeeze()
+    superimpose = superimpose.squeeze()
     if len(attribution_data.shape) == 3 and attribution_data.shape[-1] > 1:
         attribution_data = numpy.sum(attribution_data, axis=2)
 
@@ -181,16 +183,20 @@ def render_superimposed_heatmap(attribution_data, superimpose, color_map):
     # considered separately, because otherwise the negative attributions would show up less significantly than the
     # positive attributions
     positive_attributions_mask = numpy.clip(attribution_data, 0, numpy.max(attribution_data))
-    positive_attributions_mask = positive_attributions_mask / numpy.max(positive_attributions_mask) * 0.5
+    positive_attributions_mask = positive_attributions_mask / numpy.max(positive_attributions_mask) * 0.9
     positive_attributions_mask = Image.fromarray((positive_attributions_mask * 255).astype(numpy.uint8), 'L')
     negative_attributions_mask = numpy.clip(attribution_data * -1, 0, numpy.max(attribution_data * -1))
-    negative_attributions_mask = negative_attributions_mask / numpy.max(negative_attributions_mask) * 0.5
+    negative_attributions_mask = negative_attributions_mask / numpy.max(negative_attributions_mask) * 0.9
     negative_attributions_mask = Image.fromarray((negative_attributions_mask * 255).astype(numpy.uint8), 'L')
 
     # Superimposes the positive and the negative attributions onto the specified image
-    superimpose = Image.fromarray(superimpose.astype(numpy.uint8), 'RGB')
+    superimpose = Image.fromarray(superimpose.astype(numpy.uint8)).convert('LA').convert('RGB')
+    heatmap = heatmap.resize(superimpose.size)
+    positive_attributions_mask = positive_attributions_mask.resize(superimpose.size)
+    negative_attributions_mask = negative_attributions_mask.resize(superimpose.size)
+
     superimposed_heatmap = Image.composite(heatmap, superimpose, positive_attributions_mask)
-    superimposed_heatmap = Image.composite(heatmap, superimposed_heatmap, positive_attributions_mask)
+    superimposed_heatmap = Image.composite(heatmap, superimposed_heatmap, negative_attributions_mask)
 
     # Returns the rendered heatmap
     return superimposed_heatmap

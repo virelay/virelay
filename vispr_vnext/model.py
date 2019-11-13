@@ -1063,7 +1063,14 @@ class ImageDirectoryDataset:
 
         # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
         # paths corresponds to the sample index that has to be specified in the get_sample method)
-        self.sample_paths = sorted(glob.glob(os.path.join(self.path, '**/*.*'), recursive=True))
+        if os.path.exists(self.path + '_paths.txt'):
+            import pandas as pd
+            df = pd.read_csv(self.path + '_paths.txt', header=None)
+            self.sample_paths = sorted(os.path.dirname(self.path) + '/' + df[0])
+            #print(self.sample_paths[:10])
+        else:
+            self.sample_paths = sorted(glob.glob(os.path.join(self.path, '**/*.*'), recursive=True))
+        assert len(self.sample_paths) > 0, 'No Images found.'
 
     def get_sample(self, index):
         """

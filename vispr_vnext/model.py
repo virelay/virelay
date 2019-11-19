@@ -1120,7 +1120,7 @@ class ImageDirectoryDataset:
         label = self.label_map.get_labels(label_reference)
 
         # Loads the image from file and converts to a NumPy array
-        image = Image.open(sample_path)
+        image = Image.open(sample_path).convert('RGB')
         image = numpy.array(image)
 
         # Performs the re-sampling of the image (depending on whether it is smaller or larger than the target input
@@ -1276,20 +1276,21 @@ class Sample:
         # is not guaranteed that the actual value range of the images has exactly these bounds, because not all images
         # contain pure black or pure white pixels, therefore, a heuristic is used, where the L1 distance between the
         # actual pixel value range and the three value ranges is computed
-        actual_pixel_value_range = numpy.array([numpy.min(self.data), numpy.max(self.data)])
-        distances = numpy.array([[-1.0, 1.0], [0.0, 1.0], [0.0, 255.0]]) - actual_pixel_value_range
-        distances = numpy.abs(numpy.sum(distances, axis=1))
-        detected_pixel_value_range_index = numpy.argmin(distances)
-        if detected_pixel_value_range_index == 0:
-            self.data += 1
-            self.data *= 255.0 / 2.0
-        elif detected_pixel_value_range_index == 1:
-            self.data *= 255.0
-
-        # Finally, the pixel values may be saved as floats and not as integers, so the data type is changed to unsigned
-        # 8-bit integers, which is standard for viewing images
         if self.data.dtype != numpy.uint8:
-            self.data = self.data.astype(numpy.uint8)
+            actual_pixel_value_range = numpy.array([numpy.min(self.data), numpy.max(self.data)])
+            distances = numpy.array([[-1.0, 1.0], [0.0, 1.0], [0.0, 255.0]]) - actual_pixel_value_range
+            distances = numpy.abs(numpy.sum(distances, axis=1))
+            detected_pixel_value_range_index = numpy.argmin(distances)
+            if detected_pixel_value_range_index == 0:
+                self.data += 1
+                self.data *= 255.0 / 2.0
+            elif detected_pixel_value_range_index == 1:
+                self.data *= 255.0
+
+            # Finally, the pixel values may be saved as floats and not as integers, so the data type is changed to unsigned
+            # 8-bit integers, which is standard for viewing images
+            if self.data.dtype != numpy.uint8:
+                self.data = self.data.astype(numpy.uint8)
 
 
 class LabelMap:

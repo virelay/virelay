@@ -2,7 +2,9 @@
 
 from .application import Application
 
-
-if __name__ == '__main__':
+def main():
     APPLICATION = Application()
     APPLICATION.run()
+
+if __name__ == '__main__':
+    main()

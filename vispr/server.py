@@ -6,6 +6,7 @@ import logging
 import traceback
 import threading
 import webbrowser
+from pkg_resources import resource_stream
 
 import numpy
 import flask
@@ -106,38 +107,48 @@ class Server:
         # When the application is not in debug mode, then the Angular frontend is served via the static file serving
         # feature in FLASK
         if not self.is_in_debug_mode:
-            frontend_path = os.path.join(os.path.dirname(__file__), 'frontend/distribution')
+            frontend_path = 'frontend/distribution'
+            def send_wrap(target):
+                return lambda: flask.send_file(
+                    resource_stream('vispr', os.path.join(frontend_path, target)),
+                    attachment_filename=os.path.basename(target),
+                )
+
+            def send_wrap_arg(target):
+                return lambda file_name: flask.send_file(
+                    resource_stream('vispr', os.path.join(frontend_path, target).format(file_name)),
+                    attachment_filename=os.path.basename(target.format(file_name)),
+                )
+
             self.app.add_url_rule(
                 '/',
                 'serve_frontend_index',
-                lambda: flask.send_file(os.path.join(frontend_path, 'index.html'))
+                send_wrap('index.html')
             )
             self.app.add_url_rule(
                 '/favicon.ico',
                 'serve_frontend_favicon',
-                lambda: flask.send_file(os.path.join(frontend_path, 'favicon.ico'))
+                send_wrap('favicon.ico')
             )
             self.app.add_url_rule(
                 '/<string:file_name>.css',
                 'serve_frontend_css',
-                lambda file_name: flask.send_file(os.path.join(frontend_path, '{0}.css').format(file_name))
+                send_wrap_arg('{0}.css')
             )
             self.app.add_url_rule(
                 '/<string:file_name>.js',
                 'serve_frontend_javascript',
-                lambda file_name: flask.send_file(os.path.join(frontend_path, '{0}.js').format(file_name))
+                send_wrap_arg('{0}.js')
             )
             self.app.add_url_rule(
                 '/assets/images/<string:file_name>.png',
                 'serve_frontend_assets',
-                lambda file_name: flask.send_file(os.path.join(
-                    frontend_path, 'assets', 'images', '{0}.png'.format(file_name)
-                ))
+                send_wrap_arg('assets/images/{0}.png')
             )
             self.app.add_url_rule(
                 '/<path:path>',
                 'serve_frontend_catch_all',
-                lambda path: flask.send_file(os.path.join(frontend_path, 'index.html'))
+                send_wrap('index.html')
             )
 
     def run(self, host='localhost', port=8080):

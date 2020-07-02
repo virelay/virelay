@@ -15,7 +15,7 @@ class Application:
 
         # Initializes the command line argument parser
         self.argument_parser = argparse.ArgumentParser(
-            prog="vispr_vnext",
+            prog="vispr",
             description="The vNext version of the visualization tool VISPR."
         )
         self.argument_parser.add_argument(

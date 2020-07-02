@@ -1,0 +1,22 @@
+
+project:
+  name: VGG16 ILSVRC2012-small SG
+  model: VGG16
+  label_map: datasets/ilsvrc2012/label-map-keras.json
+  dataset:
+    name: ILSVRC2012-small
+    type: hdf5
+    path: datasets/ilsvrc2012/ilsvrc2012-small.input.h5
+    input_width: 224
+    input_height: 224
+    down_sampling_method: none
+    up_sampling_method: none
+  attributions:
+    attribution_method: smoothgrad
+    attribution_strategy: true_label
+    sources:
+      - ilsvrc2012-small-sg/attribution/ilsvrc2012-small.smoothgrad.h5
+  analyses:
+    - analysis_method: spectral_analysis
+      sources:
+        - ilsvrc2012-small-sg/analysis/ilsvrc2012-small.smoothgrad.h5

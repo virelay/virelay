@@ -1,15 +1,8 @@
-"""The entry-point to the VISPR command line application."""
+"""Contains the entry-point to the VISPR application."""
 
-from .cli import main as cli_main
-
-
-def main():
-    """Executes the VISPR command-line interface."""
-
-    # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
-    cli_main(auto_envvar_prefix='VISPR')
+from .application import Application
 
 
-# If the module is executed, the main function is invoked
 if __name__ == '__main__':
-    main()
+    APPLICATION = Application()
+    APPLICATION.run()

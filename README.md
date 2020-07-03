@@ -20,7 +20,7 @@ optional arguments:
 ```
 
 
-Multiple project files may be supplied. A project file may look like the following:
+Multiple project files may be supplied. A project file may look like the [following](docs/example/example-project.yaml):
 
 ```yaml
 project:
@@ -46,4 +46,5 @@ project:
         - ilsvrc2012-small-sg/analysis/ilsvrc2012-small.smoothgrad.h5
 ```
 
-Paths are relative to the project file.
+Paths are relative to the project file. HDF5 files are structured as described in [docs/database_specifications.md](docs/database_specifications.md).
+An example how to structure hdf5 file for use with vispr is shown in [docs/example/hdf5_structure.py](docs/example/hdf5_structure.py).

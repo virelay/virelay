@@ -68,7 +68,7 @@
         overflow-x: auto;
         overflow-y: hidden;
 
-        clr-select-container, img {
+        clr-select-container, img, button{
             margin: 0 0 0 24px;
         }
 
@@ -76,6 +76,12 @@
             padding-right: 24px;
             width: 174px;
             height: 40px;
+        }
+
+        button {
+            background-color: #c14c3f;
+            margin-left: auto;
+            margin-right: 24px;
         }
     }
 

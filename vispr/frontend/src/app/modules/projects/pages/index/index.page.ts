@@ -17,6 +17,7 @@ import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 import { ColorMap } from 'src/services/colorMaps/color-map';
 import { HoverEvent, DataPoint } from 'src/app/components/embedding-visualizer/embedding-visualizer.component';
 import { Embedding } from 'src/services/analyses/embedding';
+import { saveAs } from 'file-saver';
 import * as THREE from 'three';
 
 /**
@@ -486,4 +487,25 @@ export class IndexPage implements OnInit {
         const dataPointsOfCluster = this.analysis.embedding.filter(dataPoint => dataPoint.cluster === index);
         this.selectedDataPoints = dataPointsOfCluster;
     }
+
+    /**
+      * Is invoked when user clicks the Export button. Exports selected data points as JSON file.
+      */
+     public onExportClick(): void {
+        const dataPoints = this.selectedDataPoints as Array<Embedding>;
+        const exportPoints = dataPoints.map(
+            dataPoint => ({index: dataPoint.attributionIndex, cluster: dataPoint.cluster})
+        );
+        const category = this.selectedCategory;
+        const data = {
+            selectedDataPoints: exportPoints,
+            selectedCategory: category
+        }
+        const fileName = `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}).json`;
+        const jsonExport = new Blob(
+            [JSON.stringify(data, undefined, 2)],
+            {type: 'application/json'}
+        );
+        saveAs(jsonExport, fileName);
+     }
 }

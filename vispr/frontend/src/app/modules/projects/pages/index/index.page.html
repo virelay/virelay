@@ -52,6 +52,7 @@
             </select>
         </clr-select-container>
         <img *ngIf="selectedColorMap" [src]="selectedColorMap.url" [alt]="selectedColorMap.humanReadableName" />
+        <button *ngIf="selectedAnalysisMethod" class="btn btn-primary" (click)="onExportClick()">Export</button>
     </aside>
 
     <section id="embedding-plot">

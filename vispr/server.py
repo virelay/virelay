@@ -146,9 +146,9 @@ class Server:
                 send_wrap_arg('assets/images/{0}.png')
             )
             self.app.add_url_rule(
-                '/<path:path>',
+                '/<path:file_name>',
                 'serve_frontend_catch_all',
-                send_wrap('index.html')
+                send_wrap_arg('index.html')
             )
 
     def run(self, host='localhost', port=8080):

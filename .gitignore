@@ -9,6 +9,7 @@
 .python
 *.egg-info
 __pycache__
+.eggs
 
 # Setup output
 build/

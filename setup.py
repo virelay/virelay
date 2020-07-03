@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="vispr",
-    version="0.1",
+    use_scm_version=True,
     packages=find_packages(exclude=("tests",)),
     install_requires=[
         'h5py>=2.10.0',
@@ -13,6 +13,9 @@ setup(
         'flask>=1.1.2',
         'flask_cors>=3.0.8',
         'pyyaml>=5.3.1'
+    ],
+    setup_requires=[
+        'setuptools_scm',
     ],
     entry_points={
         'console_scripts': [

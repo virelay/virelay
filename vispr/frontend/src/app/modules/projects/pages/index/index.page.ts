@@ -492,14 +492,38 @@ export class IndexPage implements OnInit {
       * Is invoked when user clicks the Export button. Exports selected data points as JSON file.
       */
      public onExportClick(): void {
-        const dataPoints = this.selectedDataPoints as Array<Embedding>;
-        const exportPoints = dataPoints.map(
-            dataPoint => ({index: dataPoint.attributionIndex, cluster: dataPoint.cluster})
+        const selectedDataPoints = this.selectedDataPoints as Array<Embedding>;
+        const selectedPointsIndices = selectedDataPoints.map(
+            dataPoint => dataPoint.attributionIndex
         );
-        const category = this.selectedCategory;
+        const selectedPointsClusters = selectedDataPoints.map(
+            dataPoint => dataPoint.cluster
+        );
+
+        const allDataPoints = this.analysis.embedding as Array<Embedding>;
+        const allPointsIndices = allDataPoints.map(
+            dataPoint => dataPoint.attributionIndex
+        );
+        const allPointsClusters = allDataPoints.map(
+            dataPoint => dataPoint.cluster
+        );
+
         const data = {
-            selectedDataPoints: exportPoints,
-            selectedCategory: category
+            projectID: this.project.id,
+            projectName: this.project.name,
+            modelName: this.project.model,
+            datasetName: this.project.dataset,
+            selectedAnalysisName: this.selectedAnalysisMethod.name,
+            selectedCategory: this.selectedCategory.name,
+            selectedCategoryHumanReadable: this.selectedCategory.humanReadableName,
+            selectedEmbeddingName: this.selectedEmbedding,
+            selectedClustering: this.selectedClustering,
+            numberOfClusters: this.numberOfClusters,
+            selectedColorMap: this.selectedColorMap.name,
+            selectedDataPointIndices: selectedPointsIndices,
+            selectedDataPointClusters: selectedPointsClusters,
+            allDataPointIndices: allPointsIndices,
+            allDataPointClusters: allPointsClusters
         }
         const fileName = `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}).json`;
         const jsonExport = new Blob(

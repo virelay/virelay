@@ -525,7 +525,9 @@ export class IndexPage implements OnInit {
             allDataPointIndices: allPointsIndices,
             allDataPointClusters: allPointsClusters
         }
-        const fileName = `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}).json`;
+        const fileName = `${this.project.name} - `
+                         + `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}) - `
+                         + `${this.selectedAnalysisMethod.name} - ${this.selectedClustering}.json`;
         const jsonExport = new Blob(
             [JSON.stringify(data, undefined, 2)],
             {type: 'application/json'}

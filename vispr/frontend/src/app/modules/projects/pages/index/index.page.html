@@ -52,6 +52,20 @@
             </select>
         </clr-select-container>
         <img *ngIf="selectedColorMap" [src]="selectedColorMap.url" [alt]="selectedColorMap.humanReadableName" />
+        <div class="btn-group" *ngIf="selectedAnalysisMethod">
+            <div class="radio btn">
+                <input type="radio" name="img-radio" id="img-radio-input" value="input" [(ngModel)]="imageMode">
+                <label for="img-radio-input">Input</label>
+            </div>
+            <div class="radio btn">
+                <input type="radio" name="img-radio" id="img-radio-overlay" value="overlay" [(ngModel)]="imageMode">
+                <label for="img-radio-overlay">Overlay</label>
+            </div>
+            <div class="radio btn">
+                <input type="radio" name="img-radio" id="img-radio-attribution" value="attribution" [(ngModel)]="imageMode">
+                <label for="img-radio-attribution">Attribution</label>
+            </div>
+        </div>
         <button *ngIf="selectedAnalysisMethod" class="btn btn-primary" (click)="onExportClick()">Export</button>
     </aside>
 

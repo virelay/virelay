@@ -363,13 +363,20 @@ class Server:
             'height': attribution.data.shape[1],
             'urls': {}
         }
-        superimpose = flask.request.args.get('superimpose', 'false')
+        image_mode = flask.request.args.get('image_mode', 'input')
         for color_map in self.color_maps:
-            attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}&superimpose={2}'.format(
-                flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
-                color_map,
-                superimpose
-            )
+            if image_mode in ('overlay', 'attribution'):
+                attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}&superimpose={2}'.format(
+                    flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
+                    color_map,
+                    image_mode == 'overlay'
+                )
+            else:
+                attribution_dictionary['urls'][color_map] = flask.url_for(
+                    'get_sample_image',
+                    project_id=project_id,
+                    sample_index=attribution_index
+                )
 
         # Returns the retrieved attribution
         return self.http_ok(attribution_dictionary)

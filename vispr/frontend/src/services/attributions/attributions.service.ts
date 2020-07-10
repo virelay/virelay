@@ -21,14 +21,15 @@ export class AttributionsService {
      * Gets the attribution with the specified index.
      * @param projectId The ID of the project from which the attribution is to be retrieved.
      * @param index The index of the attribution that is to be retrieved.
-     * @param superimpose Determines whether the heatmap URLs of the retrieved attributions point to the heatmaps or to
-     * heatmaps that are superimposed onto the dataset sample from which the heatmap was generated.
+     * @param image_mode Determines whether the heatmap URLs of the retrieved attributions
+     * point to the heatmaps or to heatmaps that are superimposed onto the dataset sample
+     * from which the heatmap was generated. Modes are 'input', 'overlay' and 'attribution'
      */
-    public async getAsync(projectId: number, index: number, superimpose: boolean): Promise<Attribution> {
+    public async getAsync(projectId: number, index: number, image_mode: string): Promise<Attribution> {
         return await this.httpClient
             .get<Attribution>(`${environment.apiBaseUrl}/api/projects/${projectId}/attributions/${index}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-                params: new HttpParams().set('superimpose', superimpose ? 'true' : 'false')
+                params: new HttpParams().set('image_mode', image_mode)
             })
             .pipe(map(attribution => new Attribution(attribution, environment.apiBaseUrl)))
             .toPromise();

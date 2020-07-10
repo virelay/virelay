@@ -419,8 +419,9 @@ export class IndexPage implements OnInit {
         this.isLoadingAttributions = true;
         const dataPoints = this.selectedDataPoints as Array<Embedding>;
         const attributionIndices = dataPoints.map(dataPoint => dataPoint.attributionIndex).slice(0, 20);
+
         const attributions = await Promise.all(attributionIndices.map(
-            index => this.attributionsService.getAsync(this.project.id, index, true)
+            index => this.attributionsService.getAsync(this.project.id, index, this.imageMode)
         ));
 
         // Assigns the dataset sample to their respective attribution
@@ -467,7 +468,7 @@ export class IndexPage implements OnInit {
 
         this.isHovering = true;
         const embedding = event.dataPoint as Embedding;
-        const attribution = await this.attributionsService.getAsync(this.project.id, embedding.attributionIndex, false);
+        const attribution = await this.attributionsService.getAsync(this.project.id, embedding.attributionIndex, 'attribution');
         this.datasetSampleHoverPreview = await this.datasetService.getAsync(this.project.id, attribution.index);
     }
 
@@ -491,7 +492,7 @@ export class IndexPage implements OnInit {
     /**
       * Is invoked when user clicks the Export button. Exports selected data points as JSON file.
       */
-     public onExportClick(): void {
+    public onExportClick(): void {
         const selectedDataPoints = this.selectedDataPoints as Array<Embedding>;
         const selectedPointsIndices = selectedDataPoints.map(
             dataPoint => dataPoint.attributionIndex
@@ -526,12 +527,32 @@ export class IndexPage implements OnInit {
             allDataPointClusters: allPointsClusters
         }
         const fileName = `${this.project.name} - `
-                         + `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}) - `
-                         + `${this.selectedAnalysisMethod.name} - ${this.selectedClustering}.json`;
+        + `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}) - `
+        + `${this.selectedAnalysisMethod.name} - ${this.selectedClustering}.json`;
         const jsonExport = new Blob(
             [JSON.stringify(data, undefined, 2)],
             {type: 'application/json'}
         );
         saveAs(jsonExport, fileName);
-     }
+    }
+
+    /**
+     * The image visualization mode
+     */
+    private _imageMode = "input";
+
+    /**
+     * Gets the image visualization mode
+     */
+    public get imageMode(): string {
+        return this._imageMode;
+    }
+
+    /**
+     * Sets the image visualization mode
+     */
+    public set imageMode(value: string) {
+        this._imageMode = value;
+        this.refreshAttributionsOfSelecteddataPointsAsync();
+    }
 }

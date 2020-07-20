@@ -538,6 +538,9 @@ export class IndexPage implements OnInit {
     }
 
 
+    /**
+      * Read the file content asynchronously.
+      */
     private async readFileContent(file: File): Promise<string | ArrayBuffer> {
         return new Promise<string | ArrayBuffer>((resolve, reject) => {
             const reader: FileReader = new FileReader();
@@ -554,6 +557,9 @@ export class IndexPage implements OnInit {
     }
 
 
+    /**
+      * Is invoked when user hits the Import button and chooses a file.
+      */
     public async onImportChange(files: File[]) {
         const rawContent = await this.readFileContent(files[0]);
         const data = JSON.parse(<string>rawContent);

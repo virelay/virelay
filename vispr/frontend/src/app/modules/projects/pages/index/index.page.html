@@ -66,7 +66,9 @@
                 <label for="img-radio-attribution">Attribution</label>
             </div>
         </div>
-        <button *ngIf="selectedAnalysisMethod" class="btn btn-primary" (click)="onExportClick()">Export</button>
+        <input *ngIf="selectedAnalysisMethod" type="file" id="file-import" class="btn btn-primary" (change)="onImportChange($event.target.files)">
+        <label *ngIf="selectedAnalysisMethod" for="file-import" class="btn btn-primary" id="import-label">Import</label>
+        <button *ngIf="selectedAnalysisMethod" id="button-export" class="btn btn-primary" (click)="onExportClick()">Export</button>
     </aside>
 
     <section id="embedding-plot">

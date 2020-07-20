@@ -521,6 +521,7 @@ export class IndexPage implements OnInit {
             selectedClustering: this.selectedClustering,
             numberOfClusters: this.numberOfClusters,
             selectedColorMap: this.selectedColorMap.name,
+            selectedImageMode: this.imageMode,
             selectedDataPointIndices: selectedPointsIndices,
             selectedDataPointClusters: selectedPointsClusters,
             allDataPointIndices: allPointsIndices,
@@ -535,6 +536,64 @@ export class IndexPage implements OnInit {
         );
         saveAs(jsonExport, fileName);
     }
+
+
+    private async readFileContent(file: File): Promise<string | ArrayBuffer> {
+        return new Promise<string | ArrayBuffer>((resolve, reject) => {
+            const reader: FileReader = new FileReader();
+
+            reader.onloadend = (e) => {
+                resolve(reader.result);
+            };
+            reader.onerror = (e) => {
+                reject(e);
+            };
+
+            reader.readAsText(file);
+        });
+    }
+
+
+    public async onImportChange(files: File[]) {
+        const rawContent = await this.readFileContent(files[0]);
+        const data = JSON.parse(<string>rawContent);
+
+        this.isLoading = true;
+        this.project = await this.projectsService.getByIdAsync(data.projectID);
+
+        const analysisMethods = this.project.analysisMethods.filter(analysis => analysis.name === data.selectedAnalysisName);
+        if (analysisMethods.length) {
+            this._selectedAnalysisMethod = analysisMethods[0];
+        }
+        const categories = this.selectedAnalysisMethod.categories.filter(category => category.name === data.selectedCategory);
+        if (categories.length) {
+            this._selectedCategory = categories[0];
+        }
+
+        if (this.selectedAnalysisMethod.clusterings.filter(clustering => clustering === data.selectedClustering).length) {
+            this._selectedClustering = data.selectedClustering;
+        }
+
+        if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === data.selectedEmbeddingName).length) {
+            this._selectedEmbedding = data.selectedEmbeddingName;
+        }
+
+        const colorMap = this.colorMaps.filter(cmap => cmap.name === data.selectedColorMap);
+        if (colorMap.length) {
+            this.selectedColorMap = colorMap[0];
+        }
+
+        this.imageMode = data.selectedImageMode;
+
+        await this.refreshAnalysisAsync();
+
+        const allDataPoints = this.analysis.embedding as Array<Embedding>;
+        this.selectedDataPoints = allDataPoints.filter(point => point.attributionIndex in data.selectedDataPointIndices);
+        await this.refreshAttributionsOfSelecteddataPointsAsync();
+
+        this.isLoading = false;
+    }
+
 
     /**
      * The image visualization mode

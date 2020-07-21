@@ -560,12 +560,18 @@ export class IndexPage implements OnInit {
     /**
       * Is invoked when user hits the Import button and chooses a file.
       */
-    public async onImportChange(files: File[]) {
+    public async onImportChange(files: File[]) : Promise<void> {
+        this.isLoading = true;
+
         const rawContent = await this.readFileContent(files[0]);
         const data = JSON.parse(<string>rawContent);
 
-        this.isLoading = true;
-        this.project = await this.projectsService.getByIdAsync(data.projectID);
+        const projects = await this.projectsService.getAsync();
+        const targetProjects = projects.filter(project => project.name === data.projectName);
+        if (projects.length) {
+            this.id = targetProjects[0].id;
+            this.project = await this.projectsService.getByIdAsync(this.id);
+        }
 
         const analysisMethods = this.project.analysisMethods.filter(analysis => analysis.name === data.selectedAnalysisName);
         if (analysisMethods.length) {
@@ -576,11 +582,11 @@ export class IndexPage implements OnInit {
             this._selectedCategory = categories[0];
         }
 
-        if (this.selectedAnalysisMethod.clusterings.filter(clustering => clustering === data.selectedClustering).length) {
+        if (this.selectedAnalysisMethod.clusterings.includes(data.selectedClustering)) {
             this._selectedClustering = data.selectedClustering;
         }
 
-        if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === data.selectedEmbeddingName).length) {
+        if (this.selectedAnalysisMethod.embeddings.includes(data.selectedEmbeddingName)) {
             this._selectedEmbedding = data.selectedEmbeddingName;
         }
 
@@ -594,7 +600,7 @@ export class IndexPage implements OnInit {
         await this.refreshAnalysisAsync();
 
         const allDataPoints = this.analysis.embedding as Array<Embedding>;
-        this.selectedDataPoints = allDataPoints.filter(point => point.attributionIndex in data.selectedDataPointIndices);
+        this.selectedDataPoints = allDataPoints.filter(point => data.selectedDataPointIndices.includes(point.attributionIndex));
         await this.refreshAttributionsOfSelecteddataPointsAsync();
 
         this.isLoading = false;

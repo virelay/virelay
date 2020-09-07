@@ -12,8 +12,8 @@ This makes it easy to understand the classifier as well as the dataset.
 $ pip install git+ssh://git@gitlab.tubit.tu-berlin.de/sprincl/vispr
 ```
 
-## Command-line interface
-The command-line interface is defined as following:
+## Sequential-only development command-line interface
+The (slow) development command-line interface is defined as following:
 
 ```sh
 $ vispr --help
@@ -30,6 +30,16 @@ optional arguments:
   -p PORT, --port PORT  The port at which the server should run. Defaults to 8080.
   -d, --debug-mode      Determines whether the application is run in debug mode. When the application is in debug mode, then all FLASK and Werkzeug logs are printed to stdout, FLASK debugging is activated (FLASK will print out the debugger PIN for attaching the debugger), and the automatic reloading, when the Python files change is activated. Furthermore, the frontend of the application will not be served via the command line tool and has to be directly started (e.g. via ng serve). Otherwise, all these things will be deactivated and the frontend of the application is served via the FLASK server. If the application is to be debugged using Visual Studio Code (or any other IDE for that matter), then the application must not be started in debug mode, because Visual Studio will create its own debugger.
 ```
+
+## Running in a Standalone WSGI Container
+To run VISPR for actual use, the user is advised to run flask using a WSGI container.
+The application can be run e.g. with Gunicorn (`pip install gunicorn`) using:
+
+```shell
+$ export VISPR_PROJECTS="path/to/project1.yaml:project2.yaml"
+$ gunicorn -w 4 -b 127.0.0.1:8080 "vispr.application:create_app()"
+```
+With the above, the server binds to 127.0.0.1 on port 8080 and uses 4 worker processes.
 
 
 ## Project Files

@@ -1,10 +1,29 @@
 """Contains the command line interface for the VISPR application."""
 
+import os
 import atexit
 import argparse
 
 from .server import Server
 from .model import Workspace
+
+
+def create_app():
+    """Create an application in a way understood by gunicorn etc."""
+    try:
+        projects = os.environ['VISPR_PROJECTS'].split(':')
+    except KeyError as err:
+        raise RuntimeError(
+            "No Projects specified! Specify by setting environment VISPR_PROJECTS=\"project1.yaml:project2.yaml\""
+        ) from err
+
+    workspace = Workspace()
+
+    for project_path in projects:
+        workspace.add_project(project_path)
+
+    server = Server(workspace)
+    return server.app
 
 
 class Application:

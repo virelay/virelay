@@ -23,6 +23,8 @@ def create_app():
         workspace.add_project(project_path)
 
     server = Server(workspace)
+    atexit.register(workspace.close)
+
     return server.app
 
 

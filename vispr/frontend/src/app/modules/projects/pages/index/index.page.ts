@@ -252,17 +252,18 @@ export class IndexPage implements OnInit {
         // Determines the total number of clusters, which is needed to determine the number of colors that are needed
         // for the visualization
         if (this.analysis.embedding) {
-            const clusters = new Array<number>();
+            const clusters = new Map<number, number>();
             for (const cluster of this.analysis.embedding.map(dataPoint => dataPoint.cluster)) {
-                if (clusters.indexOf(cluster) === -1) {
-                    clusters.push(cluster);
+                if (!(clusters.has(cluster))) {
+                    clusters.set(cluster, 0);
                 }
+                clusters.set(cluster, clusters.get(cluster) + 1);
             }
-            clusters.sort();
-            this.numberOfClusters = clusters.length;
-            this.availableClusters = clusters.map(cluster => {
+            this.numberOfClusters = clusters.size;
+            this.availableClusters = [...clusters.keys()].sort((a, b) => a - b).map(cluster => {
                 return {
                     index: cluster,
+                    size: clusters.get(cluster),
                     color: new THREE.Color().setHSL((360 / this.numberOfClusters * cluster) / 360, 0.5, 0.5).getStyle()
                 };
             });

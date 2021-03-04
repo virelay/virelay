@@ -16,9 +16,8 @@
 
 ## General Data Specification
 
-- all data is stored on `vca-gpu-211-01` at `<data-root>` = `/data/shared/sprincl/`
+- all data is stored as HDF5
 - file names with underscores for spaces and dashes as key-separators
-- everything is HDF5
 - all keys are in singular
 - each data instance is one large file
   - input data is only one per dataset and model
@@ -27,7 +26,6 @@
 
 ## Model Input Data
 
-- stored at `<data-root>/<dataset>/<model>.input.h5`
 - shape for image data is *samples x channel x height x width*
 - since preprocessing depends on the model, we supply a file `<model>.input.h5` with all preprocessing steps applied
 - HDF5 structure
@@ -43,7 +41,6 @@
 
 ## Attribution of Input Data
 
-- stored at `<data-root>/attributions/<dataset>/<model>-<attribution-method>-<attribution-strategy>.attribution.h5`
 - `<attribution-strategy>` can be:
   - `true`: for true label
   - `model`: for model prediction
@@ -63,8 +60,6 @@
 
 ## Analysis Output Data
 
-- stored at `<data-root>/analysis/<dataset>/<model>-<attribution-method>-<attribution-strategy>-<analysis-topic>.analysis.h5`
-  - `<analysis-topic>` is an identifier for the analysis approach, e.g. different distance metrics, graph methods etc.
 - HDF5 structure
   - `<analysis-identifier>` **group** with name of the analysis as subkeys (not necessarily classes!, wordnet-id for class-wise ImageNet Analysis)
     - `name`: **string** verbose name of analysis

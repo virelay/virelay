@@ -1,0 +1,192 @@
+
+#panels-container {
+    display: grid;
+    grid-template-rows: 85px 1fr 250px 35px;
+    grid-template-columns: 1fr 250px;
+    grid-template-areas:
+        "options-pane options-pane"
+        "embedding-plot cluster-pane"
+        "selected-attributions selected-attributions"
+        "status-bar status-bar"
+    ;
+
+    #cluster-pane {
+        grid-area: cluster-pane;
+
+        background-color: #EFEFEF;
+
+        height: calc(100vh - 430px);
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        .cluster-selection-buttons-container {
+
+            button {
+                margin-right: 0;
+                width: 200px;
+            }
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
+    #embedding-plot {
+        grid-area: embedding-plot;
+        width: calc(100vw - 250px);
+        height: calc(100vh - 430px);
+
+        background-color: #EFEFEF;
+
+        #attribution-hover-preview {
+            position: absolute;
+
+            top: 169px;
+            left: 24px;
+            min-width: 128px;
+            min-height: 128px;
+            max-width: 256px;
+            max-height: 256px;
+
+            z-index: 9999;
+
+            image-rendering: pixelated;
+        }
+    }
+
+    #options-pane {
+        grid-area: options-pane;
+
+        display: flex;
+        align-items: center;
+
+        background-color: #EFEFEF;
+        margin: 0;
+        z-index: 1;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        clr-select-container, img, button{
+            margin: 0 0 0 24px;
+        }
+
+        img {
+            padding-right: 24px;
+            width: 174px;
+            height: 40px;
+        }
+
+        #import-label {
+            background-color: #699151;
+            margin: 0 24px 0 auto;
+        }
+
+        #button-export {
+            background-color: #c14c3f;
+            margin: 0 24px 0 0;
+        }
+
+        #file-import {
+            display: none;
+        }
+    }
+
+    #selected-attributions {
+        grid-area: selected-attributions;
+
+        position: relative;
+        height: 100%;
+        width: 100%;
+
+        background-color: #EFEFEF;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+
+        .spinner-locally-centered {
+            position: absolute;
+            top: calc(50% - 1.5rem);
+            left: calc(50% - 1.5rem);
+        }
+
+        #selection-hint {
+            position: absolute;
+            display: table;
+
+            border: 1px dashed rgb(192, 192, 192);
+            border-radius: 5px;
+
+            text-align: center;
+
+            height: calc(100% - 24px);
+            width: calc(100% - 24px);
+            margin: 12px 12px 12px 12px;
+
+            p {
+                vertical-align: middle;
+                display: table-cell;
+            }
+        }
+
+        #selected-attribution-list {
+            display: flex;
+            align-items: center;
+
+            height: 226px;
+            margin: 12px;
+
+            .selected-attribution {
+                min-width: 180px;
+                min-height: 210px;
+                max-width: 180px;
+                max-height: 210px;
+
+                img {
+                    width: 180px;
+                    height: 180px;
+                }
+
+                margin-left: 12px;
+
+                &:first-child {
+                    margin-left: 0;
+                }
+
+                &:last-child {
+                    margin-right: 12px;
+                }
+            }
+
+            p {
+                margin-top: 6px;
+                text-align: center;
+            }
+        }
+    }
+
+    #status-bar {
+        grid-area: status-bar;
+
+        display: flex;
+        align-items: center;
+
+        padding-left: 1rem;
+        z-index: 1;
+        background-color: #271335;
+        color: white;
+
+        strong {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        clr-icon {
+            &:not(:first-child) {
+                margin-left: 20px;
+            }
+        }
+    }
+}

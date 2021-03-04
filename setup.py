@@ -2,9 +2,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="vispr",
+    name='virelay',
     use_scm_version=True,
-    packages=find_packages(exclude=("tests",)),
+    packages=['virelay'],
     install_requires=[
         'h5py>=2.10.0',
         'matplotlib>=3.2.2',
@@ -12,18 +12,19 @@ setup(
         'Pillow>=7.2.0',
         'flask>=1.1.2',
         'flask_cors>=3.0.8',
-        'pyyaml>=5.3.1'
+        'pyyaml>=5.3.1',
+        'gunicorn>=20.0.4'
     ],
     setup_requires=[
         'setuptools_scm',
     ],
     entry_points={
         'console_scripts': [
-            'vispr = vispr.__main__:main',
+            'virelay = virelay.__main__:main',
         ]
     },
     package_data={
-        'vispr': [
+        'virelay': [
             'frontend/distribution/index.html',
             'frontend/distribution/favicon.ico',
             'frontend/distribution/*.js',

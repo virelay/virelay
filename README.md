@@ -29,7 +29,7 @@ If you find ViRelAy useful for your research, why no cite our related [paper](ht
 
 ## Install
 ```sh
-$ pip install 'git+git://github.com/virelay/corelay'
+$ pip install 'git+git://github.com/virelay/virelay'
 ```
 
 ## Running in a Standalone WSGI Container

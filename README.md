@@ -87,7 +87,7 @@ optional arguments:
 ## Project Files
 Project files are described in [YAML](https://yaml.org/).
 Multiple project files may be supplied on the command line.
-A project file may look like the [following](docs/example/project-ilsvrc2012-sg.yaml):
+A project file may look like the [following](docs/example/ilsvrc2012/project-sg.yaml):
 
 ```yaml
 project:
@@ -115,7 +115,53 @@ project:
 
 Paths are relative to the project file. HDF5 files are structured as described in [docs/database_specifications.md](docs/database_specifications.md).
 An example how to structure hdf5 file for use with virelay is shown in [docs/example/hdf5_structure.py](docs/example/hdf5_structure.py).
-An example for a label map is given in [docs/example/label-map-ilsvrc2012.json](docs/example/label-map-ilsvrc2012.json)
+An example for a label map is given in [docs/example/label-map-ilsvrc2012.json](docs/example/ilsvrc2012/label-map.json)
+
+
+## Example Project
+An example project can be created with some random data in the following way:
+
+Clone and install requirements:
+```shell
+$ git clone 'https://github.com/virelay/virelay.git'
+$ cd virelay
+$ # Create a virtual environment and install virelay and corelay:
+$ python -m venv venv
+$ venv/bin/pip install . 'git+git://github.com/virelay/corelay#egg=corelay[umap,hdbscan]'
+```
+
+Create the test project:
+```shell
+$ # Create some test data:
+$ mkdir -p share/test-project
+$ venv/bin/python docs/example/test-project/make_test_data.py \
+    share/test-project/input.h5 \
+    share/test-project/attribution.h5 \
+    share/test-project/label-map.json
+$ # Execute an analysis:
+$ venv/bin/python docs/example/test-project/meta_analysis.py \
+    share/test-project/attribution.h5 \
+    share/test-project/analysis.h5 \
+    --label-map share/test-project/label-map.json
+$ # Create a project file:
+$ venv/bin/python docs/example/test-project/make_project.py \
+    share/test-project/input.h5 \
+    share/test-project/attribution.h5 \
+    share/test-project/analysis.h5 \
+    share/test-project/label-map.json \
+    --project-name 'Test Project' \
+    --dataset-name 'Random Data' \
+    --model-name 'No Model' \
+    --attribution-name 'Random Attribution' \
+    --analysis-name 'Spectral Analysis' \
+    --output share/test-project/project.yaml
+```
+
+Now you can run virelay using the created project file:
+```shell
+$ venv/bin/gunicorn -w 4 -b 127.0.0.1:8080 \
+    "virelay.application:create_app(projects=['share/test-project/project.yaml'])"
+```
 
 ## Development
 ViRelAy consists of 2 parts, the backend written in Python using Flask, and the frontend implemented using Angular.

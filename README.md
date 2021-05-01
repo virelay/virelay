@@ -7,7 +7,7 @@ It runs a small website to view and interact with data representations using clu
 With this, ViRelAy attempts to simplify the analysis of classifiers and their underlying datasets.
 Currently, only image data is supported, and the auxilary representation is expected to be an attribution with the same shape as the input.
 
-If you find ViRelAy useful for your research, why no cite our related [paper](https://arxiv.org/abs/1912.11425v2):
+If you find ViRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/1912.11425v2):
 ```
 @article{anders2020finding,
   author    = {Christopher J. Anders and

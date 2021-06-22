@@ -38,6 +38,8 @@ class Normalize(Processor):
 
 
 def csints(string):
+    if isinstance(string, tuple):
+        return string
     return tuple(int(elem) for elem in string.split(','))
 
 

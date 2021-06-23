@@ -184,3 +184,11 @@ Alternatively, during development, instead
 $ node_modules/@angular/cli/bin/ng serve
 ```
 can be used for debugging purposes.
+
+The backend server can be run using the following command (assuming you installed a virtual environment as described above):
+
+```shell
+$ venv/bin/python -m virelay --debug-mode <project-file> [<project-file>, ...]
+```
+
+The `--debug-mode` flag starts the backend server in debug mode, which prints out detailed server logs, FLASK is started in debug mode (it will print out a debugger pin that can be used to attach a debugger), auto-reload when files have changed is activated, and the front will not be served via FLASK. This way, the frontend and backend can be updated separately from each other.

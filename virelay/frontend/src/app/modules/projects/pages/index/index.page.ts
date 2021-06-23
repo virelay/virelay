@@ -110,6 +110,26 @@ export class IndexPage implements OnInit {
     public selectedColorMap: ColorMap;
 
     /**
+     * The image visualization mode
+     */
+    private _imageMode = "input";
+
+    /**
+     * Gets the image visualization mode
+     */
+    public get imageMode(): string {
+        return this._imageMode;
+    }
+
+    /**
+     * Sets the image visualization mode
+     */
+    public set imageMode(value: string) {
+        this._imageMode = value;
+        this.refreshAttributionsOfSelectedDataPointsAsync();
+    }
+
+    /**
      * Contains the analysis method that was selected by the user.
      */
     private _selectedAnalysisMethod: AnalysisMethod;
@@ -321,7 +341,7 @@ export class IndexPage implements OnInit {
      */
     public set selectedDataPoints(value: Array<DataPoint>) {
         this._selectedDataPoints = value;
-        this.refreshAttributionsOfSelecteddataPointsAsync();
+        this.refreshAttributionsOfSelectedDataPointsAsync();
     }
 
     /**
@@ -368,25 +388,76 @@ export class IndexPage implements OnInit {
      * Reloads the project and all its information.
      */
     private async refreshProjectAsync(): Promise<void> {
+
+        // Loads the project with the ID that was specified in the URL path
         this.isLoading = true;
         this.project = await this.projectsService.getByIdAsync(this.id);
 
+        // Resets the data points that are selected in the embedding visualization
         this.selectedDataPoints = null;
-        this._selectedAnalysisMethod = this.project.analysisMethods[0];
-        this._selectedCategory = this.selectedAnalysisMethod.categories[0];
-        const initialClustering = this.selectedAnalysisMethod.clusterings.filter(clustering => parseInt(clustering, 10) === 10);
-        if (initialClustering.length > 0) {
-            this.selectedClustering = initialClustering[0];
+
+        // Parses the query parameters, which may contain state information that has to be restored
+        const queryParameters = new URLSearchParams(window.location.search);
+
+        // Resets/restores the selected analysis method
+        if (queryParameters.has('analysisMethod')) {
+            this._selectedAnalysisMethod = this.project.analysisMethods.filter(method => method.name == queryParameters.get('analysisMethod'))[0];
         } else {
-            this.selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+            this._selectedAnalysisMethod = this.project.analysisMethods[0];
         }
-        if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
+
+        // Resets/restores the selected category
+        if (queryParameters.has('analysisCategory')) {
+            this._selectedCategory = this.selectedAnalysisMethod.categories.filter(category => category.name === queryParameters.get('analysisCategory'))[0];
+        } else {
+            this._selectedCategory = this.selectedAnalysisMethod.categories[0];
+        }
+
+        // Resets/restores the clustering
+        if (queryParameters.has('clustering')) {
+            this._selectedClustering = queryParameters.get('clustering');
+        } else {
+            const initialClustering = this.selectedAnalysisMethod.clusterings.filter(clustering => parseInt(clustering, 10) === 10);
+            if (initialClustering.length > 0) {
+                this._selectedClustering = initialClustering[0];
+            } else {
+                this._selectedClustering = this.selectedAnalysisMethod.clusterings[0];
+            }
+        }
+
+        // Resets/restores the selected embedding
+        if (queryParameters.has('embedding')) {
+            this._selectedEmbedding = queryParameters.get('embedding');
+        } else if (this.selectedAnalysisMethod.embeddings.filter(embedding => embedding === 'tsne').length > 0) {
             this._selectedEmbedding = 'tsne';
         } else {
             this._selectedEmbedding = this.selectedAnalysisMethod.embeddings[0];
         }
 
+        // Restores the image mode
+        if (queryParameters.has('imageMode')) {
+            this._imageMode = queryParameters.get('imageMode');
+        }
+
+        // Restores the dimensions that are displayed in the embedding visualization
+        if (queryParameters.has('firstEmbeddingDimension')) {
+            this.firstDimension = parseInt(queryParameters.get('firstEmbeddingDimension'));
+        }
+        if (queryParameters.has('secondEmbeddingDimension')) {
+            this.secondDimension = parseInt(queryParameters.get('secondEmbeddingDimension'));
+        }
+
+        // Refreshes the analysis
         await this.refreshAnalysisAsync();
+
+        // Restores the selected data points
+        if (queryParameters.has('dataPoints')) {
+            const dataPointIndices = queryParameters.get('dataPoints').split(',').map(index => parseInt(index));
+            this.selectedDataPoints = (this.analysis.embedding as Array<Embedding>).filter(point => dataPointIndices.includes(point.attributionIndex));
+            await this.refreshAttributionsOfSelectedDataPointsAsync();
+        }
+
+        // Finally, the loading has finished
         this.isLoading = false;
     }
 
@@ -418,7 +489,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when the user selects data points. Updates the attributions that are displayed
      */
-    private async refreshAttributionsOfSelecteddataPointsAsync(): Promise<void> {
+    private async refreshAttributionsOfSelectedDataPointsAsync(): Promise<void> {
 
         // Checks if any data points were selected, if not, then the attributions can be removed
         if (!this.selectedDataPoints || this.selectedDataPoints.length === 0) {
@@ -452,8 +523,7 @@ export class IndexPage implements OnInit {
      */
     public async ngOnInit(): Promise<void> {
 
-        // Subscribes for changes of the route, when the route has changed, then the project ID is retrieved from the
-        // URL and the project is loaded
+        // Subscribes to changes of the route, when the route has changed, then the project ID is retrieved from the URL and the project is loaded
         this.route.paramMap.subscribe(paramMap => {
             if (paramMap.has('id') && paramMap.get('id')) {
                 this.id = parseInt(paramMap.get('id'), 10);
@@ -463,11 +533,16 @@ export class IndexPage implements OnInit {
 
         // Loads the color maps from the RESTful API
         this.colorMaps = await this.colorMapsService.getAsync();
-        const defaultColorMaps = this.colorMaps.filter(colorMap => colorMap.name === 'black-fire-red');
-        if (defaultColorMaps.length > 0) {
-            this.selectedColorMap = defaultColorMaps[0];
+        const queryParameters = new URLSearchParams(window.location.search);
+        if (queryParameters.has('colorMap')) {
+            this.selectedColorMap = this.colorMaps.filter(colorMap => colorMap.name === queryParameters.get('colorMap'))[0];
         } else {
-            this.selectedColorMap = this.colorMaps[0];
+            const defaultColorMaps = this.colorMaps.filter(colorMap => colorMap.name === 'black-fire-red');
+            if (defaultColorMaps.length > 0) {
+                this.selectedColorMap = defaultColorMaps[0];
+            } else {
+                this.selectedColorMap = this.colorMaps[0];
+            }
         }
     }
 
@@ -527,6 +602,7 @@ export class IndexPage implements OnInit {
         const rawContent = await this.readFileContent(files[0]);
         const data = JSON.parse(<string>rawContent);
 
+        // Why are the projects filtered by name, if we have the ID? We could just use projectsService.getByIdAsync(data.projectId), instead of loading all projects first!
         const projects = await this.projectsService.getAsync();
         const targetProjects = projects.filter(project => project.name === data.projectName);
         if (projects.length) {
@@ -562,7 +638,7 @@ export class IndexPage implements OnInit {
 
         const allDataPoints = this.analysis.embedding as Array<Embedding>;
         this.selectedDataPoints = allDataPoints.filter(point => data.selectedDataPointIndices.includes(point.attributionIndex));
-        await this.refreshAttributionsOfSelecteddataPointsAsync();
+        await this.refreshAttributionsOfSelectedDataPointsAsync();
 
         this.isLoading = false;
     }
@@ -588,7 +664,7 @@ export class IndexPage implements OnInit {
         );
 
         const data = {
-            projectID: this.project.id,
+            projectId: this.project.id,
             projectName: this.project.name,
             modelName: this.project.model,
             datasetName: this.project.dataset,
@@ -689,25 +765,5 @@ export class IndexPage implements OnInit {
     public closeShareDialog(): void {
         this.shareLinkUrlCopied = null;
         this.shareLinkUrl = null;
-    }
-
-    /**
-     * The image visualization mode
-     */
-    private _imageMode = "input";
-
-    /**
-     * Gets the image visualization mode
-     */
-    public get imageMode(): string {
-        return this._imageMode;
-    }
-
-    /**
-     * Sets the image visualization mode
-     */
-    public set imageMode(value: string) {
-        this._imageMode = value;
-        this.refreshAttributionsOfSelecteddataPointsAsync();
     }
 }

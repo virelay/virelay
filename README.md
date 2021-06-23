@@ -52,7 +52,6 @@ Passing the the projects explicitly to `create_app()` takes precedence over the
 environment variable, i.e. if `create_app(projects=...)` is used,
 `VIRELAY_PROJECTS` is ignored.
 
-
 ## Sequential-only development command-line interface
 The (slow) development command-line interface is defined as following:
 
@@ -116,7 +115,6 @@ project:
 Paths are relative to the project file. HDF5 files are structured as described in [docs/database_specifications.md](docs/database_specifications.md).
 An example how to structure hdf5 file for use with virelay is shown in [docs/example/hdf5_structure.py](docs/example/hdf5_structure.py).
 An example for a label map is given in [docs/example/label-map-ilsvrc2012.json](docs/example/ilsvrc2012/label-map.json)
-
 
 ## Example Project
 An example project can be created with some random data in the following way:

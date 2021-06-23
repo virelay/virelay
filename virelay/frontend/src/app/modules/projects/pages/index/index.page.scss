@@ -78,18 +78,24 @@
             height: 40px;
         }
 
-        #import-label {
-            background-color: #699151;
-            margin: 0 24px 0 auto;
+        .btn clr-icon {
+            margin-right: 0.125rem;
         }
 
-        #button-export {
-            background-color: #c14c3f;
-            margin: 0 24px 0 0;
+        #import-label {
+            margin: 0 0.5rem 0 auto;
         }
 
         #file-import {
             display: none;
+        }
+
+        #button-export {
+            margin: 0 0.5rem 0 0;
+        }
+
+        #share-button {
+            margin: 0 1rem 0 0;
         }
     }
 
@@ -187,6 +193,14 @@
             &:not(:first-child) {
                 margin-left: 20px;
             }
+        }
+    }
+
+    #share-dialog {
+        textarea {
+            width: 100%;
+            height: 100%;
+            margin-top: 0.25rem;
         }
     }
 }

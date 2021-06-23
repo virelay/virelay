@@ -66,9 +66,17 @@
                 <label for="img-radio-attribution">Attribution</label>
             </div>
         </div>
-        <input *ngIf="selectedAnalysisMethod" type="file" id="file-import" class="btn btn-primary" (change)="onImportChange($event.target.files)">
-        <label *ngIf="selectedAnalysisMethod" for="file-import" class="btn btn-primary" id="import-label">Import</label>
-        <button *ngIf="selectedAnalysisMethod" id="button-export" class="btn btn-primary" (click)="onExportClick()">Export</button>
+
+        <input *ngIf="selectedAnalysisMethod" type="file" id="file-import" (change)="import($event.target.files)">
+        <label *ngIf="selectedAnalysisMethod" id="import-label" for="file-import" class="btn btn-success-outline">
+            <clr-icon shape="import"></clr-icon> <span>Import</span>
+        </label>
+        <button *ngIf="selectedAnalysisMethod" id="button-export" class="btn btn-danger-outline" (click)="export()">
+            <clr-icon shape="export"></clr-icon> <span>Export</span>
+        </button>
+        <button *ngIf="selectedAnalysisMethod" id="share-button" class="btn btn-outline" (click)="generateShareLink()">
+            <clr-icon shape="share"></clr-icon> <span>Share</span>
+        </button>
     </aside>
 
     <section id="embedding-plot">
@@ -125,4 +133,19 @@
         <clr-icon shape="storage"></clr-icon> <strong>Dataset:</strong> {{ project.dataset }}
         <clr-icon shape="organization"></clr-icon> <strong>Model:</strong> {{ project.model }}
     </footer>
+
+    <clr-modal id="share-dialog" [(clrModalOpen)]="shareLinkUrl" [clrModalSize]="sm" [clrModalClosable]="false" [clrModalStaticBackdrop]="true">
+        <h3 class="modal-title">Share Link</h3>
+        <div class="modal-body">
+            <textarea readonly name="share-link" class="clr-textarea" [(ngModel)]="shareLinkUrl"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeShareDialog()">Close</button>
+            <button type="button" class="btn btn-primary" [class.btn-success]="shareLinkUrlCopied === 'successful'" [class.btn-danger]="shareLinkUrlCopied === 'failed'" (click)="copyShareLink()">
+                <clr-icon *ngIf="shareLinkUrlCopied === 'successful'" shape="check"></clr-icon>
+                <clr-icon *ngIf="shareLinkUrlCopied === 'failed'" shape="times"></clr-icon>
+                Copy
+            </button>
+        </div>
+    </clr-modal>
 </div>

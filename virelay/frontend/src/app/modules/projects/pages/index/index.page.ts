@@ -334,6 +334,16 @@ export class IndexPage implements OnInit {
     }>;
 
     /**
+     * Contains the generated share link, which can be used to reproduce the exact state of the ViRelAy in another browser.
+     */
+    public shareLinkUrl: string;
+
+    /**
+     * Contains a value that determines whether the share link was copied into the clipboard.
+     */
+    public shareLinkUrlCopied: null | 'successful' | 'failed';
+
+    /**
      * Refreshes the eigen value plot.
      */
     private refreshEigenValuePlot(): void {
@@ -491,57 +501,8 @@ export class IndexPage implements OnInit {
     }
 
     /**
-      * Is invoked when user clicks the Export button. Exports selected data points as JSON file.
-      */
-    public onExportClick(): void {
-        const selectedDataPoints = this.selectedDataPoints as Array<Embedding>;
-        const selectedPointsIndices = selectedDataPoints.map(
-            dataPoint => dataPoint.attributionIndex
-        );
-        const selectedPointsClusters = selectedDataPoints.map(
-            dataPoint => dataPoint.cluster
-        );
-
-        const allDataPoints = this.analysis.embedding as Array<Embedding>;
-        const allPointsIndices = allDataPoints.map(
-            dataPoint => dataPoint.attributionIndex
-        );
-        const allPointsClusters = allDataPoints.map(
-            dataPoint => dataPoint.cluster
-        );
-
-        const data = {
-            projectID: this.project.id,
-            projectName: this.project.name,
-            modelName: this.project.model,
-            datasetName: this.project.dataset,
-            selectedAnalysisName: this.selectedAnalysisMethod.name,
-            selectedCategory: this.selectedCategory.name,
-            selectedCategoryHumanReadable: this.selectedCategory.humanReadableName,
-            selectedEmbeddingName: this.selectedEmbedding,
-            selectedClustering: this.selectedClustering,
-            numberOfClusters: this.numberOfClusters,
-            selectedColorMap: this.selectedColorMap.name,
-            selectedImageMode: this.imageMode,
-            selectedDataPointIndices: selectedPointsIndices,
-            selectedDataPointClusters: selectedPointsClusters,
-            allDataPointIndices: allPointsIndices,
-            allDataPointClusters: allPointsClusters
-        }
-        const fileName = `${this.project.name} - `
-        + `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}) - `
-        + `${this.selectedAnalysisMethod.name} - ${this.selectedClustering}.json`;
-        const jsonExport = new Blob(
-            [JSON.stringify(data, undefined, 2)],
-            {type: 'application/json'}
-        );
-        saveAs(jsonExport, fileName);
-    }
-
-
-    /**
-      * Read the file content asynchronously.
-      */
+     * Read the file content asynchronously.
+     */
     private async readFileContent(file: File): Promise<string | ArrayBuffer> {
         return new Promise<string | ArrayBuffer>((resolve, reject) => {
             const reader: FileReader = new FileReader();
@@ -557,11 +518,10 @@ export class IndexPage implements OnInit {
         });
     }
 
-
     /**
-      * Is invoked when user hits the Import button and chooses a file.
-      */
-    public async onImportChange(files: File[]) : Promise<void> {
+     * Is invoked when user hits the Import button and chooses a file.
+     */
+    public async import(files: File[]) : Promise<void> {
         this.isLoading = true;
 
         const rawContent = await this.readFileContent(files[0]);
@@ -607,6 +567,128 @@ export class IndexPage implements OnInit {
         this.isLoading = false;
     }
 
+    /**
+     * Is invoked when user clicks the Export button. Exports selected data points as JSON file.
+     */
+     public export(): void {
+        const selectedDataPoints = this.selectedDataPoints as Array<Embedding>;
+        const selectedPointsIndices = selectedDataPoints.map(
+            dataPoint => dataPoint.attributionIndex
+        );
+        const selectedPointsClusters = selectedDataPoints.map(
+            dataPoint => dataPoint.cluster
+        );
+
+        const allDataPoints = this.analysis.embedding as Array<Embedding>;
+        const allPointsIndices = allDataPoints.map(
+            dataPoint => dataPoint.attributionIndex
+        );
+        const allPointsClusters = allDataPoints.map(
+            dataPoint => dataPoint.cluster
+        );
+
+        const data = {
+            projectID: this.project.id,
+            projectName: this.project.name,
+            modelName: this.project.model,
+            datasetName: this.project.dataset,
+            selectedAnalysisName: this.selectedAnalysisMethod.name,
+            selectedCategory: this.selectedCategory.name,
+            selectedCategoryHumanReadable: this.selectedCategory.humanReadableName,
+            selectedEmbeddingName: this.selectedEmbedding,
+            selectedClustering: this.selectedClustering,
+            numberOfClusters: this.numberOfClusters,
+            selectedColorMap: this.selectedColorMap.name,
+            selectedImageMode: this.imageMode,
+            selectedDataPointIndices: selectedPointsIndices,
+            selectedDataPointClusters: selectedPointsClusters,
+            allDataPointIndices: allPointsIndices,
+            allDataPointClusters: allPointsClusters
+        }
+        const fileName = `${this.project.name} - ` +
+            `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}) - ` +
+            `${this.selectedAnalysisMethod.name} - ${this.selectedClustering}.json`;
+        const jsonExport = new Blob(
+            [JSON.stringify(data, undefined, 2)],
+            {type: 'application/json'}
+        );
+        saveAs(jsonExport, fileName);
+    }
+
+    /**
+     * Generates a link with all the necessary information to open ViRelAy to the exact state that it is currently in.
+     */
+    public generateShareLink(): void {
+
+        // Creates the URL for sharing the current state (just in case the current href contains some hashes, etc., the URL is build from the ground up)
+        let shareLinkUrl = new URL(window.location.origin);
+        shareLinkUrl.pathname = `projects/${this.id}`;
+
+        // Adds the complete current state to the URL
+        shareLinkUrl.searchParams.append('firstEmbeddingDimension', this.firstDimension.toString());
+        shareLinkUrl.searchParams.append('secondEmbeddingDimension', this.secondDimension.toString());
+        shareLinkUrl.searchParams.append('colorMap', this.selectedColorMap.name);
+        shareLinkUrl.searchParams.append('analysisMethod', this.selectedAnalysisMethod.name);
+        shareLinkUrl.searchParams.append('analysisCategory', this.selectedCategory.name);
+        shareLinkUrl.searchParams.append('clustering', this.selectedClustering);
+        shareLinkUrl.searchParams.append('embedding', this.selectedEmbedding);
+        if (this.selectedDataPoints && this.selectedDataPoints.length > 0) {
+            shareLinkUrl.searchParams.append('dataPoints', this.selectedDataPoints.map(dataPoint => this.analysis.embedding.indexOf(dataPoint as Embedding)).join(','));
+        }
+
+        // Sets the share link, so that it can be copied by the user
+        this.shareLinkUrl = shareLinkUrl.href;
+    }
+
+    /**
+     * Copies the generated share link into the clipboard of the user.
+     */
+    public async copyShareLink(): Promise<void> {
+
+        // If the browser does not support the new clipboard API, then, as a fallback, a text area is created and the copy command is executed on it
+        if (navigator.clipboard) {
+
+            // Since the browser supports the new clipboard, the text is copied directly
+            try {
+                await navigator.clipboard.writeText(this.shareLinkUrl)
+                this.shareLinkUrlCopied = 'successful';
+            }
+            catch {
+                this.shareLinkUrlCopied = 'failed';
+            }
+        } else {
+
+            // Creates a new hidden text area, which contains the share link to be copied
+            var textArea = document.createElement("textarea");
+            textArea.value = this.shareLinkUrl;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            // Copies the share link
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                var wasSuccessful = document.execCommand('copy');
+                this.shareLinkUrlCopied = wasSuccessful ? 'successful' : 'failed';
+            }
+            catch {
+                this.shareLinkUrlCopied = 'failed';
+            }
+
+            // Removes the text area as it is no longer needed
+            document.body.removeChild(textArea);
+        }
+    }
+
+    /**
+     * Closes the share dialog.
+     */
+    public closeShareDialog(): void {
+        this.shareLinkUrlCopied = null;
+        this.shareLinkUrl = null;
+    }
 
     /**
      * The image visualization mode

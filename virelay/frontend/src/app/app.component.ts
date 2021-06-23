@@ -43,6 +43,8 @@ export class AppComponent implements OnInit {
         this.isLoadingProjects = false;
 
         // Navigates the user to the first project
-        this.router.navigate(['projects', this.projects[0].id]);
+        if (this.router.url === '/') {
+            this.router.navigate(['projects', this.projects[0].id]);
+        }
     }
 }

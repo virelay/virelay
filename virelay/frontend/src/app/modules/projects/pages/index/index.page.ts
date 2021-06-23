@@ -633,7 +633,7 @@ export class IndexPage implements OnInit {
         shareLinkUrl.searchParams.append('clustering', this.selectedClustering);
         shareLinkUrl.searchParams.append('embedding', this.selectedEmbedding);
         if (this.selectedDataPoints && this.selectedDataPoints.length > 0) {
-            shareLinkUrl.searchParams.append('dataPoints', this.selectedDataPoints.map(dataPoint => this.analysis.embedding.indexOf(dataPoint as Embedding)).join(','));
+            shareLinkUrl.searchParams.append('dataPoints', this.selectedDataPoints.map(dataPoint => (dataPoint as Embedding).attributionIndex).join(','));
         }
 
         // Sets the share link, so that it can be copied by the user

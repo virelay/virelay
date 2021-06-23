@@ -134,7 +134,7 @@
         <clr-icon shape="organization"></clr-icon> <strong>Model:</strong> {{ project.model }}
     </footer>
 
-    <clr-modal id="share-dialog" [(clrModalOpen)]="shareLinkUrl" [clrModalSize]="sm" [clrModalClosable]="false" [clrModalStaticBackdrop]="true">
+    <clr-modal id="share-dialog" [(clrModalOpen)]="shareLinkUrl" [clrModalClosable]="false" [clrModalStaticBackdrop]="true">
         <h3 class="modal-title">Share Link</h3>
         <div class="modal-body">
             <textarea readonly name="share-link" class="clr-textarea" [(ngModel)]="shareLinkUrl"></textarea>

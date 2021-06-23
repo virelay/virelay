@@ -632,6 +632,7 @@ export class IndexPage implements OnInit {
         shareLinkUrl.searchParams.append('analysisCategory', this.selectedCategory.name);
         shareLinkUrl.searchParams.append('clustering', this.selectedClustering);
         shareLinkUrl.searchParams.append('embedding', this.selectedEmbedding);
+        shareLinkUrl.searchParams.append('imageMode', this.imageMode);
         if (this.selectedDataPoints && this.selectedDataPoints.length > 0) {
             shareLinkUrl.searchParams.append('dataPoints', this.selectedDataPoints.map(dataPoint => (dataPoint as Embedding).attributionIndex).join(','));
         }

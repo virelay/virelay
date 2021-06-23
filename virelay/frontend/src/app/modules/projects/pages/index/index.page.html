@@ -55,15 +55,24 @@
         <div class="btn-group" *ngIf="selectedAnalysisMethod">
             <div class="radio btn">
                 <input type="radio" name="img-radio" id="img-radio-input" value="input" [(ngModel)]="imageMode">
-                <label for="img-radio-input">Input</label>
+                <label for="img-radio-input">
+                    <clr-icon shape="image"></clr-icon>
+                    Input
+                </label>
             </div>
             <div class="radio btn">
                 <input type="radio" name="img-radio" id="img-radio-overlay" value="overlay" [(ngModel)]="imageMode">
-                <label for="img-radio-overlay">Overlay</label>
+                <label for="img-radio-overlay">
+                    <clr-icon shape="layers"></clr-icon>
+                    Overlay
+                </label>
             </div>
             <div class="radio btn">
                 <input type="radio" name="img-radio" id="img-radio-attribution" value="attribution" [(ngModel)]="imageMode">
-                <label for="img-radio-attribution">Attribution</label>
+                <label for="img-radio-attribution">
+                    <clr-icon shape="bubble-chart"></clr-icon>
+                    Attribution
+                </label>
             </div>
         </div>
 
@@ -149,3 +158,4 @@
         </div>
     </clr-modal>
 </div>
+

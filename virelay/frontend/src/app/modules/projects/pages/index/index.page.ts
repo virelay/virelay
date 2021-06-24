@@ -112,19 +112,19 @@ export class IndexPage implements OnInit {
     /**
      * The image visualization mode
      */
-    private _imageMode = "input";
+    private _imageMode: 'input' | 'overlay' | 'attribution' = 'input';
 
     /**
      * Gets the image visualization mode
      */
-    public get imageMode(): string {
+    public get imageMode(): 'input' | 'overlay' | 'attribution' {
         return this._imageMode;
     }
 
     /**
      * Sets the image visualization mode
      */
-    public set imageMode(value: string) {
+    public set imageMode(value: 'input' | 'overlay' | 'attribution') {
         this._imageMode = value;
         this.refreshAttributionsOfSelectedDataPointsAsync();
     }
@@ -436,7 +436,7 @@ export class IndexPage implements OnInit {
 
         // Restores the image mode
         if (queryParameters.has('imageMode')) {
-            this._imageMode = queryParameters.get('imageMode');
+            this._imageMode = queryParameters.get('imageMode') as 'input' | 'overlay' | 'attribution';
         }
 
         // Restores the dimensions that are displayed in the embedding visualization
@@ -602,7 +602,6 @@ export class IndexPage implements OnInit {
         const rawContent = await this.readFileContent(files[0]);
         const data = JSON.parse(<string>rawContent);
 
-        // Why are the projects filtered by name, if we have the ID? We could just use projectsService.getByIdAsync(data.projectId), instead of loading all projects first!
         const projects = await this.projectsService.getAsync();
         const targetProjects = projects.filter(project => project.name === data.projectName);
         if (projects.length) {
@@ -646,7 +645,7 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when user clicks the Export button. Exports selected data points as JSON file.
      */
-     public export(): void {
+    public export(): void {
         const selectedDataPoints = this.selectedDataPoints as Array<Embedding>;
         const selectedPointsIndices = selectedDataPoints.map(
             dataPoint => dataPoint.attributionIndex

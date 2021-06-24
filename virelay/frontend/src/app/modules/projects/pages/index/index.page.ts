@@ -737,9 +737,10 @@ export class IndexPage implements OnInit {
             // Creates a new hidden text area, which contains the share link to be copied
             var textArea = document.createElement("textarea");
             textArea.value = this.shareLinkUrl;
+            textArea.setAttribute('readonly', '');
+            textArea.style.position = 'absolute';
             textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.position = "fixed";
+            textArea.style.left = '-9999px';
 
             // Copies the share link
             document.body.appendChild(textArea);

@@ -110,19 +110,25 @@ export class IndexPage implements OnInit {
     public selectedColorMap: ColorMap;
 
     /**
-     * The image visualization mode
+     * Contains a value that determine how the images in the selected attributions are displayed. The value "input"
+     * displays the input image, "overlay" overlays a gray-version of the input image with the attribution, and
+     * "attribution" displays the attribution.
      */
     private _imageMode: 'input' | 'overlay' | 'attribution' = 'input';
 
     /**
-     * Gets the image visualization mode
+     * Gets a value that determine how the images in the selected attributions are displayed. The value "input"
+     * displays the input image, "overlay" overlays a gray-version of the input image with the attribution, and
+     * "attribution" displays the attribution.
      */
     public get imageMode(): 'input' | 'overlay' | 'attribution' {
         return this._imageMode;
     }
 
     /**
-     * Sets the image visualization mode
+     * Sets a value that determine how the images in the selected attributions are displayed. The value "input"
+     * displays the input image, "overlay" overlays a gray-version of the input image with the attribution, and
+     * "attribution" displays the attribution.
      */
     public set imageMode(value: 'input' | 'overlay' | 'attribution') {
         this._imageMode = value;

@@ -7,23 +7,18 @@ It runs a small website to view and interact with data representations using clu
 With this, ViRelAy attempts to simplify the analysis of classifiers and their underlying datasets.
 Currently, only image data is supported, and the auxiliary representation is expected to be an attribution with the same shape as the input.
 
-If you find ViRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/1912.11425v2):
+If you find ViRelAy useful for your research, why not cite our related [paper](https://arxiv.org/abs/2106.13200):
 ```
-@article{anders2020finding,
-  author    = {Christopher J. Anders and
-               Leander Weber and
-               David Neumann and
-               Wojciech Samek and
-               Klaus{-}Robert M{\"{u}}ller and
-               Sebastian Lapuschkin},
-  title     = {Finding and Removing Clever Hans:
-               Using Explanation Methods to Debug and Improve Deep Models},
-  journal   = {CoRR},
-  volume    = {abs/1912.11425v2},
-  year      = {2020},
-  url       = {http://arxiv.org/abs/1912.11425v2},
-  archivePrefix = {arXiv},
-  eprint    = {1912.11425v2},
+@article{anders2021software,
+      author  = {Anders, Christopher J. and
+                 Neumann, David and
+                 Samek, Wojciech and
+                 Müller, Klaus-Robert and
+                 Lapuschkin, Sebastian},
+      title   = {Software for Dataset-wide XAI: From Local Explanations to Global Insights with {Zennit}, {CoRelAy}, and {ViRelAy}},
+      journal = {CoRR},
+      volume  = {abs/2106.13200},
+      year    = {2021},
 }
 ```
 

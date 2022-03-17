@@ -657,6 +657,7 @@ class Server:
                 The exception that is to be formatted.
 
         Returns
+        -------
             str
                 Returns a string, which contains the error message of the exception. If the server is being run in debug
                 mode, then the traceback is also included in the string that is returned.

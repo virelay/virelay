@@ -168,8 +168,8 @@ class Project:
         """
         Retrieves the names of the categories that are in the analyses of the specified analysis method.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
             analysis_method: str
                 The name of the analysis method for which the categories are to be retrieved.
 
@@ -199,8 +199,8 @@ class Project:
         """
         Retrieves the names of the clustering methods that are in the analyses of the specified analysis method.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
             analysis_method: str
                 The name of the analysis method for which the clusterings are to be retrieved.
 
@@ -224,8 +224,8 @@ class Project:
         """
         Retrieves the names of the embedding methods that are in the analyses of the specified analysis method.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
             analysis_method: str
                 The name of the analysis method for which the embeddings are to be retrieved.
 

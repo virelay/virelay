@@ -15,6 +15,9 @@ import { DatasetService } from 'src/services/dataset/dataset.service';
 import { ColorMapsService } from 'src/services/colorMaps/color-maps.service';
 import { FormsModule } from '@angular/forms';
 
+/**
+ * Represents the app module, which is the main module of the application.
+ */
 @NgModule({
     declarations: [
         AppComponent
@@ -35,6 +38,6 @@ import { FormsModule } from '@angular/forms';
         DatasetService,
         ColorMapsService
     ],
-  bootstrap: [AppComponent]
+    bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -137,13 +137,13 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
     /**
      * Contains a reference to the HTML element that represents the render target.
      */
-    @ViewChild('renderTarget', { static: false })
+    @ViewChild('renderTarget')
     public renderTarget: ElementRef;
 
     /**
      * Contains a reference to the HTML element that represents the selection box.
      */
-    @ViewChild('selectionBox', { static: false })
+    @ViewChild('selectionBox')
     public selectionBox: ElementRef;
 
     /**

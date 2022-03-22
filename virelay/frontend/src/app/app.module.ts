@@ -29,7 +29,7 @@ import { FormsModule } from '@angular/forms';
         ClarityModule,
         BrowserAnimationsModule,
         ProjectsModule,
-        RouterModule.forRoot([])
+        RouterModule.forRoot([], { relativeLinkResolution: 'legacy' })
     ],
     providers: [
         ProjectsService,

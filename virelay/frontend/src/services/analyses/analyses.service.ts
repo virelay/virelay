@@ -1,11 +1,11 @@
 
 import { map } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 
 import { Analysis } from './analysis';
-import { AnalysisMethod } from '../projects/analysis-method';
 
 /**
  * Represents a service for managing analyses of a project.
@@ -34,11 +34,10 @@ export class AnalysesService {
         clustering: string,
         embedding: string
     ): Promise<Analysis> {
-        return await this.httpClient
+        return await lastValueFrom(this.httpClient
             .get<Analysis>(`${environment.apiBaseUrl}/api/projects/${projectId}/analyses/${analysisMethod}?category=${category}&clustering=${clustering}&embedding=${embedding}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
-            .pipe(map(analysis => new Analysis(analysis)))
-            .toPromise();
+            .pipe(map(analysis => new Analysis(analysis))));
     }
 }

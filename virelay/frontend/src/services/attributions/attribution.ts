@@ -1,4 +1,3 @@
-import { Sample } from '../dataset/sample';
 
 /**
  * Represents a single attribution.

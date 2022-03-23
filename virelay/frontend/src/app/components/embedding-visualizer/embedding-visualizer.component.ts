@@ -3,7 +3,7 @@ import { ElementRef, ViewChild, Component, AfterViewInit, NgZone, OnDestroy, Inp
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import * as THREE from 'three';
-import * as OrbitControls from 'three-orbitcontrols';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 /**
  * Represents a data point of the embedding.
@@ -327,23 +327,33 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
 
         // Determines which embedding objects are inside the selection box
         this.selectedDataPointIndices = new Array<number>();
+        const vertices = this.embeddingObject.geometry.attributes.position.array;
         for (let index = 0; index < this.embedding.length; index++) {
-            const vector = (this.embeddingObject.geometry as THREE.Geometry).vertices[index];
-            if (vector.x > topLeftVector.x && vector.x < bottomRightVector.x && vector.y < topLeftVector.y && vector.y > bottomRightVector.y) {
+            const vectorX = vertices[index * 3];
+            const vectorY = vertices[index * 3 + 1];
+            if (vectorX > topLeftVector.x && vectorX < bottomRightVector.x && vectorY < topLeftVector.y && vectorY > bottomRightVector.y) {
                 this.selectedDataPointIndices.push(index);
             }
         }
 
         // Increases the saturation of the data points that are selected and decreases the saturation of the rest
+        const colorsAttribute = this.embeddingObject.geometry.attributes.color;
+        const colors = (colorsAttribute.array as Float32Array);
         for (let index = 0; index < this.embedding.length; index++) {
             const dataPoint = this.embedding[index];
             if (this.selectedDataPointIndices.indexOf(index) === -1) {
-                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+                const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+                colors[index * 3] = color.r;
+                colors[index * 3 + 1] = color.g;
+                colors[index * 3 + 2] = color.b;
             } else {
-                (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+                const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+                colors[index * 3] = color.r;
+                colors[index * 3 + 1] = color.g;
+                colors[index * 3 + 2] = color.b;
             }
         }
-        (this.embeddingObject.geometry as THREE.Geometry).colorsNeedUpdate = true;
+        colorsAttribute.needsUpdate = true;
     }
 
     /**
@@ -459,9 +469,12 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
         if (intersections.length > 0) {
             if (this.indexOfDataPointCurrentBeingHovered !== intersections[0].index) {
                 const dataPoint = this.embedding[intersections[0].index];
-                const clusterColor = (this.embeddingObject.geometry as THREE.Geometry).colors[intersections[0].index];
+                const colors = this.embeddingObject.geometry.attributes.color.array;
+                const red = colors[intersections[0].index * 3];
+                const green = colors[intersections[0].index * 3 + 1];
+                const blue = colors[intersections[0].index * 3 + 2];
                 this.indexOfDataPointCurrentBeingHovered = intersections[0].index;
-                this.onHover.emit(new HoverEvent(dataPoint, clusterColor));
+                this.onHover.emit(new HoverEvent(dataPoint, new THREE.Color(red, green, blue)));
             }
         } else {
             if (this.indexOfDataPointCurrentBeingHovered != null) {
@@ -505,7 +518,8 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
         // Creates the scene object for the data points
         let maximumX = 0;
         let maximumY = 0;
-        const pointsGeometry = new THREE.Geometry();
+        const vertices = new Array<number>();
+        const colors = new Array<number>();
         for (const dataPoint of this.embedding) {
 
             // Determines X and Y positions of the points that are the farthest away from the origin, this information
@@ -518,17 +532,15 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
             }
 
             // Creates a new vertex for the data point
-            const vertex = new THREE.Vector3(
-                dataPoint.value[this.firstDimension],
-                dataPoint.value[this.secondDimension],
-                -1
-            );
-            pointsGeometry.vertices.push(vertex);
+            vertices.push(dataPoint.value[this.firstDimension], dataPoint.value[this.secondDimension], -1);
 
             // Generates a color for the data point based on its cluster
             const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.75, 0.5);
-            pointsGeometry.colors.push(color);
+            colors.push(color.r, color.g, color.b);
         }
+        const pointsGeometry = new THREE.BufferGeometry();
+        pointsGeometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(vertices), 3, true));
+        pointsGeometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(colors), 3, true));
 
         // Scales all data points so that they fill out the whole viewport
         const scaleFactor = Math.min(width / maximumX, height / maximumY);
@@ -539,7 +551,7 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
         const pointsMaterial = new THREE.PointsMaterial({
             size: 8,
             sizeAttenuation: false,
-            vertexColors: THREE.VertexColors,
+            vertexColors: true,
             map: this.dataPointTexture,
             transparent: true,
             depthTest: false
@@ -637,22 +649,33 @@ export class EmbeddingVisualizerComponent implements ControlValueAccessor, After
         // saturation of the selected data points is increased and the saturation of the data points that are not
         // selected is decreased, if the user deselected everything, then the saturation of the data points is reset
         if (this.embeddingObject) {
+            const colorsAttribute = this.embeddingObject.geometry.attributes.color;
+            const colors = (colorsAttribute.array as Float32Array);
             if (this.selectedDataPoints.length !== 0) {
                 for (let index = 0; index < this.embedding.length; index++) {
                     const dataPoint = this.embedding[index];
                     if (this.selectedDataPoints.indexOf(dataPoint) === -1) {
-                        (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+                        const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.25, 0.5);
+                        colors[index * 3] = color.r;
+                        colors[index * 3 + 1] = color.g;
+                        colors[index * 3 + 2] = color.b;
                     } else {
-                        (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+                        const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 1, 0.5);
+                        colors[index * 3] = color.r;
+                        colors[index * 3 + 1] = color.g;
+                        colors[index * 3 + 2] = color.b;
                     }
                 }
             } else {
                 for (let index = 0; index < this.embedding.length; index++) {
                     const dataPoint = this.embedding[index];
-                    (this.embeddingObject.geometry as THREE.Geometry).colors[index] = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5);
+                    const color = new THREE.Color().setHSL((360 / this.numberOfClusters * dataPoint.cluster) / 360, 0.5, 0.5);
+                    colors[index * 3] = color.r;
+                    colors[index * 3 + 1] = color.g;
+                    colors[index * 3 + 2] = color.b;
                 }
             }
-            (this.embeddingObject.geometry as THREE.Geometry).colorsNeedUpdate = true;
+            colorsAttribute.needsUpdate = true;
         }
 
         // Propagates the change

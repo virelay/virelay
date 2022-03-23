@@ -407,7 +407,7 @@ export class IndexPage implements OnInit {
 
         // Resets/restores the selected analysis method
         if (queryParameters.has('analysisMethod')) {
-            this._selectedAnalysisMethod = this.project.analysisMethods.filter(method => method.name == queryParameters.get('analysisMethod'))[0];
+            this._selectedAnalysisMethod = this.project.analysisMethods.filter(method => method.name === queryParameters.get('analysisMethod'))[0];
         } else {
             this._selectedAnalysisMethod = this.project.analysisMethods[0];
         }
@@ -447,10 +447,10 @@ export class IndexPage implements OnInit {
 
         // Restores the dimensions that are displayed in the embedding visualization
         if (queryParameters.has('firstEmbeddingDimension')) {
-            this.firstDimension = parseInt(queryParameters.get('firstEmbeddingDimension'));
+            this.firstDimension = parseInt(queryParameters.get('firstEmbeddingDimension'), 10);
         }
         if (queryParameters.has('secondEmbeddingDimension')) {
-            this.secondDimension = parseInt(queryParameters.get('secondEmbeddingDimension'));
+            this.secondDimension = parseInt(queryParameters.get('secondEmbeddingDimension'), 10);
         }
 
         // Refreshes the analysis
@@ -458,7 +458,7 @@ export class IndexPage implements OnInit {
 
         // Restores the selected data points
         if (queryParameters.has('dataPoints')) {
-            const dataPointIndices = queryParameters.get('dataPoints').split(',').map(index => parseInt(index));
+            const dataPointIndices = queryParameters.get('dataPoints').split(',').map(index => parseInt(index, 10));
             this.selectedDataPoints = (this.analysis.embedding as Array<Embedding>).filter(point => dataPointIndices.includes(point.attributionIndex));
             await this.refreshAttributionsOfSelectedDataPointsAsync();
         }
@@ -602,11 +602,11 @@ export class IndexPage implements OnInit {
     /**
      * Is invoked when user hits the Import button and chooses a file.
      */
-    public async import(files: File[]) : Promise<void> {
+    public async import(files: File[]): Promise<void> {
         this.isLoading = true;
 
         const rawContent = await this.readFileContent(files[0]);
-        const data = JSON.parse(<string>rawContent);
+        const data = JSON.parse(rawContent as string);
 
         const projects = await this.projectsService.getAsync();
         const targetProjects = projects.filter(project => project.name === data.projectName);
@@ -632,7 +632,7 @@ export class IndexPage implements OnInit {
             this._selectedEmbedding = data.selectedEmbeddingName;
         }
 
-        const colorMap = this.colorMaps.filter(cmap => cmap.name === data.selectedColorMap);
+        const colorMap = this.colorMaps.filter(map => map.name === data.selectedColorMap);
         if (colorMap.length) {
             this.selectedColorMap = colorMap[0];
         }
@@ -685,7 +685,7 @@ export class IndexPage implements OnInit {
             selectedDataPointClusters: selectedPointsClusters,
             allDataPointIndices: allPointsIndices,
             allDataPointClusters: allPointsClusters
-        }
+        };
         const fileName = `${this.project.name} - ` +
             `${this.selectedCategory.humanReadableName} (${this.selectedCategory.name}) - ` +
             `${this.selectedAnalysisMethod.name} - ${this.selectedClustering}.json`;
@@ -702,7 +702,7 @@ export class IndexPage implements OnInit {
     public generateShareLink(): void {
 
         // Creates the URL for sharing the current state (just in case the current href contains some hashes, etc., the URL is build from the ground up)
-        let shareLinkUrl = new URL(window.location.origin);
+        const shareLinkUrl = new URL(window.location.origin);
         shareLinkUrl.pathname = `projects/${this.id}`;
 
         // Adds the complete current state to the URL
@@ -732,7 +732,7 @@ export class IndexPage implements OnInit {
 
             // Since the browser supports the new clipboard, the text is copied directly
             try {
-                await navigator.clipboard.writeText(this.shareLinkUrl)
+                await navigator.clipboard.writeText(this.shareLinkUrl);
                 this.shareLinkUrlCopied = 'successful';
             }
             catch {
@@ -741,11 +741,11 @@ export class IndexPage implements OnInit {
         } else {
 
             // Creates a new hidden text area, which contains the share link to be copied
-            var textArea = document.createElement("textarea");
+            const textArea = document.createElement('textarea');
             textArea.value = this.shareLinkUrl;
             textArea.setAttribute('readonly', '');
             textArea.style.position = 'absolute';
-            textArea.style.top = "0";
+            textArea.style.top = '0';
             textArea.style.left = '-9999px';
 
             // Copies the share link
@@ -753,7 +753,8 @@ export class IndexPage implements OnInit {
             textArea.focus();
             textArea.select();
             try {
-                var wasSuccessful = document.execCommand('copy');
+                // tslint:disable-next-line: deprecation
+                const wasSuccessful = document.execCommand('copy');
                 this.shareLinkUrlCopied = wasSuccessful ? 'successful' : 'failed';
             }
             catch {

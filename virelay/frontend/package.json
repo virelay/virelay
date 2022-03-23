@@ -27,7 +27,6 @@
     "plotly.js": "^2.11.1",
     "rxjs": "^7.5.5",
     "three": "^0.138.3",
-    "three-orbitcontrols": "^2.110.3",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.4"
   },

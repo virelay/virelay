@@ -1,5 +1,6 @@
 
 import { map } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
@@ -23,11 +24,10 @@ export class DatasetService {
      * @param index The index of the dataset sample that is to be retrieved.
      */
     public async getAsync(projectId: number, index: number): Promise<Sample> {
-        return await this.httpClient
+        return await lastValueFrom(this.httpClient
             .get<Sample>(`${environment.apiBaseUrl}/api/projects/${projectId}/dataset/${index}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
-            .pipe(map(sample => new Sample(sample, environment.apiBaseUrl)))
-            .toPromise();
+            .pipe(map(sample => new Sample(sample, environment.apiBaseUrl))));
     }
 }

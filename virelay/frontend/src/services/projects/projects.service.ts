@@ -1,5 +1,6 @@
 
 import { map } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
@@ -22,12 +23,11 @@ export class ProjectsService {
      * Gets all projects from the current workspace.
      */
     public async getAsync(): Promise<Array<Project>> {
-        return await this.httpClient
+        return await lastValueFrom(this.httpClient
             .get<Array<Project>>(`${environment.apiBaseUrl}/api/projects`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
-            .pipe(map(projects => projects.map(project => new Project(project))))
-            .toPromise();
+            .pipe(map(projects => projects.map(project => new Project(project)))));
     }
 
     /**
@@ -35,11 +35,10 @@ export class ProjectsService {
      * @param id The ID of the project that is to be retrieved.
      */
     public async getByIdAsync(id: number): Promise<Project> {
-        return await this.httpClient
+        return await lastValueFrom(this.httpClient
             .get<Project>(`${environment.apiBaseUrl}/api/projects/${id}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
-            .pipe(map(project => new Project(project)))
-            .toPromise();
+            .pipe(map(project => new Project(project))));
     }
 }

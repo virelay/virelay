@@ -32,3 +32,6 @@ node_modules
 
 # Angular cache
 .angular
+
+# Test project
+test-project

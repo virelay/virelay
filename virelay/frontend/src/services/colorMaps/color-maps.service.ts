@@ -1,5 +1,6 @@
 
 import { map } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
@@ -21,11 +22,10 @@ export class ColorMapsService {
      * Gets all color maps.
      */
     public async getAsync(): Promise<Array<ColorMap>> {
-        return await this.httpClient
+        return await lastValueFrom(this.httpClient
             .get<Array<ColorMap>>(`${environment.apiBaseUrl}/api/color-maps`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' })
             })
-            .pipe(map(colorMaps => colorMaps.map(colorMap => new ColorMap(colorMap, environment.apiBaseUrl))))
-            .toPromise();
+            .pipe(map(colorMaps => colorMaps.map(colorMap => new ColorMap(colorMap, environment.apiBaseUrl)))));
     }
 }

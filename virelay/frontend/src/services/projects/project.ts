@@ -17,7 +17,7 @@ export class Project {
             this.model = project.model;
             this.dataset = project.dataset;
             if (project.analysisMethods) {
-                this.analysisMethods = project.analysisMethods.map(analysisMethod => new AnalysisMethod(analysisMethod));
+                this.analysisMethods = project.analysisMethods.map((analysisMethod: any) => new AnalysisMethod(analysisMethod));
             }
         }
     }

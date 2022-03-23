@@ -174,14 +174,14 @@ $ npm install
 
 Then the frontend may be compiled with:
 ```shell
-$ node_modules/@angular/cli/bin/ng build --prod
+$ npx ng build --configuration production
 ```
-where the `--prod` flag introduces optimizations for production and may be omitted during development.
+where the `--configuration production` argument introduces optimizations for production and may be omitted during development.
 The frontend's static files are produced in `virelay/frontend/distribution` and may then be served.
 
 Alternatively, during development, instead
 ```shell
-$ node_modules/@angular/cli/bin/ng serve
+$ npx ng serve
 ```
 can be used for debugging purposes.
 

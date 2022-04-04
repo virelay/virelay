@@ -10,6 +10,7 @@ from .model import Workspace
 
 def create_app(projects=None):
     """Create an application in a way understood by gunicorn etc."""
+
     if projects is None:
         try:
             projects = os.environ['VIRELAY_PROJECTS']
@@ -21,7 +22,6 @@ def create_app(projects=None):
             projects = projects.split(':')
 
     workspace = Workspace()
-
     for project_path in projects:
         workspace.add_project(project_path)
 
@@ -87,7 +87,7 @@ class Application:
         # Parses the command line arguments
         arguments = self.argument_parser.parse_args()
 
-        # Adds the projects to the
+        # Adds the projects to the workspace
         for project_path in arguments.project:
             self.workspace.add_project(project_path)
 

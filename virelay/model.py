@@ -44,7 +44,7 @@ class Project:
 
         # Loads the project from the YAML file
         working_directory = os.path.dirname(self.path)
-        with open(self.path, 'r') as project_file:
+        with open(self.path, 'r', encoding="utf8") as project_file:
             try:
 
                 # Loads the project and extracts some general information
@@ -78,7 +78,7 @@ class Project:
                             self.label_map
                         )
                     else:
-                        raise ValueError('The specified dataset type "{0}" is unknown.'.format(dataset_type))
+                        raise ValueError(f'The specified dataset type "{dataset_type}" is unknown.')
 
                 # Loads the attributions of the project
                 if project['attributions'] is not None:
@@ -101,8 +101,8 @@ class Project:
                                 os.path.join(working_directory, analysis_database),
                                 self.label_map
                             ))
-            except yaml.YAMLError:
-                raise ValueError('An error occurred while loading the project file.')
+            except yaml.YAMLError as yaml_error:
+                raise ValueError('An error occurred while loading the project file.') from yaml_error
 
     def get_sample(self, index):
         """
@@ -150,7 +150,7 @@ class Project:
             if attribution_database.has_attribution(index):
                 return attribution_database.get_attribution(index)
 
-        raise LookupError('No attribution with the specified index {0} could be found.'.format(index))
+        raise LookupError(f'No attribution with the specified index {index} could be found.')
 
     def get_analysis_methods(self):
         """
@@ -185,7 +185,7 @@ class Project:
         """
 
         if analysis_method not in self.analyses:
-            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+            raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
 
         categories = []
         for analysis in self.analyses[analysis_method]:
@@ -216,7 +216,7 @@ class Project:
         """
 
         if analysis_method not in self.analyses:
-            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+            raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
 
         return self.analyses[analysis_method][0].get_clustering_names()
 
@@ -241,7 +241,7 @@ class Project:
         """
 
         if analysis_method not in self.analyses:
-            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+            raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
 
         return self.analyses[analysis_method][0].get_embedding_names()
 
@@ -282,18 +282,15 @@ class Project:
         """
 
         if analysis_method not in self.analyses:
-            raise LookupError('The specified analysis method "{0}" could not be found.'.format(analysis_method))
+            raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
 
         for analysis_database in self.analyses[analysis_method]:
             if analysis_database.has_analysis(category_name, clustering_name, embedding_name):
                 return analysis_database.get_analysis(category_name, clustering_name, embedding_name)
 
         raise LookupError(
-            'No analysis in the category "{0}" with the clustering "{1}" and embedding "{2}" could be found.'.format(
-                category_name,
-                clustering_name,
-                embedding_name
-            )
+            f'No analysis in the category "{category_name}" with the clustering "{clustering_name}" and embedding '
+            f'"{embedding_name}" could be found.'
         )
 
     def close(self):
@@ -304,8 +301,8 @@ class Project:
                 self.dataset.close()
             for attribution in self.attributions:
                 attribution.close()
-            for analysis_method in self.analyses:
-                for analysis in self.analyses[analysis_method]:
+            for _, analyses in self.analyses.items():
+                for analysis in analyses:
                     analysis.close()
             self.is_closed = True
 
@@ -402,7 +399,7 @@ class AttributionDatabase:
 
         # Checks if the specified attribution exists, if not, then an LookupError is raised
         if not self.has_attribution(index):
-            raise LookupError('No attribution with the index {0} could be found.'.format(index))
+            raise LookupError(f'No attribution with the index {index} could be found.')
 
         # Check where is the searched index in the attribution file
         original_index = index
@@ -491,8 +488,7 @@ class Attribution:
 
         if superimpose is not None:
             return render_superimposed_heatmap(self.data, superimpose, color_map)
-        else:
-            return render_heatmap(self.data, color_map)
+        return render_heatmap(self.data, color_map)
 
 
 class AnalysisDatabase:
@@ -690,11 +686,8 @@ class AnalysisDatabase:
         # Checks if the specified analysis exists, if not, then an LookupError is raised
         if not self.has_analysis(category_name, clustering_name, embedding_name):
             raise LookupError(
-                'No analysis for category "{0}", clustering "{1}", and embedding "{2}" could be found.'.format(
-                    category_name,
-                    clustering_name,
-                    embedding_name
-                )
+                f'No analysis for category "{category_name}", clustering "{clustering_name}", and embedding '
+                '"{embedding_name}" could be found.'
             )
 
         # Gets the analysis for the specified name, cluster, and embedding
@@ -909,7 +902,7 @@ class Hdf5Dataset:
             try:
                 data_index = self.dataset_file['index'][index].item()
             except ValueError as error:
-                raise LookupError('No sample with the index {0} could be found.'.format(index)) from error
+                raise LookupError(f'No sample with the index {index} could be found.') from error
         else:
             data_index = index
 
@@ -919,7 +912,7 @@ class Hdf5Dataset:
             sample_label_reference = self.dataset_file['label'][index]
             sample_labels = self.label_map.get_labels(sample_label_reference)
         except ValueError as error:
-            raise LookupError('No sample with the index {0} could be found.'.format(index)) from error
+            raise LookupError(f'No sample with the index {index} could be found.') from error
 
         # Wraps the sample in an object and returns it
         return Sample(index, sample_data, sample_labels)
@@ -1045,10 +1038,10 @@ class ImageDirectoryDataset:
 
         # Validates the arguments
         if down_sampling_method not in ['none', 'center_crop', 'resize']:
-            raise ValueError('The down-sampling method "{0}" is not supported.'.format(down_sampling_method))
-        if up_sampling_method not in ['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around',
-                                      'resize']:
-            raise ValueError('The up-sampling method "{0}" is not supported.'.format(up_sampling_method))
+            raise ValueError(f'The down-sampling method "{down_sampling_method}" is not supported.')
+        up_sampling_methods = ['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize']
+        if up_sampling_method not in up_sampling_methods:
+            raise ValueError(f'The up-sampling method "{up_sampling_method}" is not supported.')
 
         # Stores the arguments for later reference
         self.name = name
@@ -1064,9 +1057,10 @@ class ImageDirectoryDataset:
         # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
         # paths corresponds to the sample index that has to be specified in the get_sample method)
         if os.path.exists(self.path + '_paths.txt'):
-            with open(self.path + '_paths.txt') as f:
-                self.sample_paths = sorted([os.path.join(os.path.dirname(self.path), path)
-                                            for path in f.read().split('\n')])
+            with open(self.path + '_paths.txt', encoding="utf8") as f:
+                self.sample_paths = sorted(
+                    [os.path.join(os.path.dirname(self.path), path) for path in f.read().split('\n')]
+                )
         else:
             self.sample_paths = sorted(glob.glob(os.path.join(self.path, '**/*.*'), recursive=True))
         assert len(self.sample_paths) > 0, 'No Images found.'
@@ -1101,7 +1095,7 @@ class ImageDirectoryDataset:
 
         # Gets the path to the sample file
         if index >= len(self.sample_paths):
-            raise LookupError('No sample with the index {0} could be found.'.format(index))
+            raise LookupError(f'No sample with the index {index} could be found.')
         sample_path = self.sample_paths[index]
 
         # Determines the label of the sample by parsing the path
@@ -1148,10 +1142,8 @@ class ImageDirectoryDataset:
         # (if for example the width is smaller than the target width but the height is larger, then the image is first
         # up-sampled so that the width matched the target width, in the next step, the image will be down-sampled, so
         # that the height also matches the target width)
-        if len(image.shape) == 2:
-            width, height = image.shape
-        else:
-            width, height, _ = image.shape
+        width = image.shape[0]
+        height = image.shape[1]
         if width < self.input_width or height < self.input_height:
             if self.up_sampling_method in ['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']:
                 image = add_border(
@@ -1165,7 +1157,7 @@ class ImageDirectoryDataset:
             elif self.up_sampling_method == 'none':
                 pass
             else:
-                raise ValueError('The up-sampling method "{0}" is not supported.'.format(self.up_sampling_method))
+                raise ValueError(f'The up-sampling method "{self.up_sampling_method}" is not supported.')
 
         # If at least one of the image dimensions is greater than the target size, then the image is down-sampled
         if width > self.input_width or height > self.input_height:
@@ -1176,7 +1168,7 @@ class ImageDirectoryDataset:
             elif self.up_sampling_method == 'none':
                 pass
             else:
-                raise ValueError('The down-sampling method "{0}" is not supported.'.format(self.down_sampling_method))
+                raise ValueError(f'The down-sampling method "{self.down_sampling_method}" is not supported.')
 
         if image.ndim == 2:  # If image black and white add the third axis
             image = image[..., numpy.newaxis]
@@ -1286,8 +1278,8 @@ class Sample:
             elif detected_pixel_value_range_index == 1:
                 self.data *= 255.0
 
-            # Finally, the pixel values may be saved as floats and not as integers, so the data type is changed to unsigned
-            # 8-bit integers, which is standard for viewing images
+            # Finally, the pixel values may be saved as floats and not as integers, so the data type is changed to
+            # unsigned 8-bit integers, which is standard for viewing images
             if self.data.dtype != numpy.uint8:
                 self.data = self.data.astype(numpy.uint8)
 
@@ -1310,7 +1302,7 @@ class LabelMap:
 
         # Loads the label map from the specified JSON file
         self.labels = []
-        with open(self.path, 'r') as label_map_file:
+        with open(self.path, 'r', encoding="utf8") as label_map_file:
             for label in json.load(label_map_file):
                 self.labels.append(Label(label['index'], label['word_net_id'], label['name']))
 
@@ -1347,7 +1339,7 @@ class LabelMap:
             return self.get_label_from_index(reference.item())
         if isinstance(reference, str):
             return self.get_label_from_word_net_id(reference)
-        raise LookupError('No labels for the specified reference "{0}" could be found.'.format(reference))
+        raise LookupError(f'No labels for the specified reference "{reference}" could be found.')
 
     def get_label_from_index(self, index):
         """
@@ -1372,7 +1364,7 @@ class LabelMap:
         for label in self.labels:
             if label.index == index:
                 return label.name
-        raise LookupError('No label with the specified index {0} could be found.'.format(index))
+        raise LookupError(f'No label with the specified index {index} could be found.')
 
     def get_labels_from_n_hot_vector(self, n_hot_vector):
         """
@@ -1401,8 +1393,8 @@ class LabelMap:
             for index in numpy.argwhere(n_hot_vector):
                 labels.append(self.get_label_from_index(index[0]))
             return labels
-        except LookupError:
-            raise LookupError('One or more labels for the n-hot encoded vector do not exist.')
+        except LookupError as lookup_error:
+            raise LookupError('One or more labels for the n-hot encoded vector do not exist.') from lookup_error
 
     def get_label_from_word_net_id(self, word_net_id):
         """
@@ -1427,7 +1419,7 @@ class LabelMap:
         for label in self.labels:
             if label.word_net_id == word_net_id:
                 return label.name
-        raise LookupError('No label with the specified WordNet ID "{0}" could be found.'.format(word_net_id))
+        raise LookupError(f'No label with the specified WordNet ID "{word_net_id}" could be found.')
 
 
 class Label:
@@ -1537,7 +1529,7 @@ class Workspace:
                 return project
 
         # If no project with the specified name could not be found, then an exception is raised
-        raise LookupError('The project with the name "{0}" could not be found.'.format(name))
+        raise LookupError(f'The project with the name "{name}" could not be found.')
 
     def close(self):
         """Closes the workspace and all projects within it."""

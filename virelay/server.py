@@ -108,6 +108,7 @@ class Server:
         # feature in FLASK
         if not self.is_in_debug_mode:
             frontend_path = 'frontend/distribution'
+
             def send_wrap(target):
                 return lambda: flask.send_file(
                     resource_stream('virelay', os.path.join(frontend_path, target)),
@@ -174,7 +175,7 @@ class Server:
         # run, so we have to set a timer, which will run on a different thread and start the thread after the server,
         # hopefully, has started)
         if not self.is_in_debug_mode:
-            threading.Timer(1, lambda: webbrowser.open_new_tab('http://localhost:{0}'.format(str(port)))).start()
+            threading.Timer(1, lambda: webbrowser.open_new_tab(f'http://localhost:{port}')).start()
 
         # When the application is started in debug mode, then the frontend is not served from the same host and port,
         # therefore CORS must be activated
@@ -207,7 +208,7 @@ class Server:
                 'dataset': project.dataset.name
             })
 
-        return self.http_ok(projects)
+        return http_ok(projects)
 
     def get_project(self, project_id):
         """
@@ -226,7 +227,7 @@ class Server:
         """
 
         if project_id >= len(self.workspace.get_project_names()):
-            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+            return http_not_found(f'The project with the ID {project_id} could not be found.', self.is_in_debug_mode)
 
         project_name = self.workspace.get_project_names()[project_id]
         project = self.workspace.get_project(project_name)
@@ -252,7 +253,7 @@ class Server:
                 })
             project_data['analysisMethods'].append(analysis_method)
 
-        return self.http_ok(project_data)
+        return http_ok(project_data)
 
     def get_sample(self, project_id, sample_index):
         """
@@ -275,17 +276,17 @@ class Server:
 
         # Checks if a project with the specified ID exists
         if project_id >= len(self.workspace.projects):
-            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+            return http_not_found(f'The project with the ID {project_id} could not be found.', self.is_in_debug_mode)
         project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
 
         # Retrieves the dataset sample with the specified index
         try:
             sample = project.get_sample(sample_index)
         except LookupError as error:
-            return self.http_not_found(error)
+            return http_not_found(error, self.is_in_debug_mode)
 
         # Returns the retrieved dataset sample
-        return self.http_ok({
+        return http_ok({
             'index': sample.index,
             'labels': sample.labels,
             'width': sample.data.shape[0],
@@ -313,17 +314,17 @@ class Server:
 
         # Checks if a project with the specified ID exists
         if project_id >= len(self.workspace.projects):
-            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+            return http_not_found(f'The project with the ID {project_id} could not be found.', self.is_in_debug_mode)
         project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
 
         # Retrieves the dataset sample with the specified index
         try:
             sample = project.get_sample(sample_index)
         except LookupError as error:
-            return self.http_not_found(error)
+            return http_not_found(error, self.is_in_debug_mode)
 
         # Converts the NumPy array with the image data to a PIL image, encodes it as JPEG and returns it
-        return self.send_image_file(sample.data)
+        return send_image_file(sample.data)
 
     def get_attribution(self, project_id, attribution_index):
         """
@@ -345,14 +346,14 @@ class Server:
 
         # Checks if a project with the specified ID exists
         if project_id >= len(self.workspace.projects):
-            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+            return http_not_found(f'The project with the ID {project_id} could not be found.', self.is_in_debug_mode)
         project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
 
         # Retrieves the attribution with the specified index
         try:
             attribution = project.get_attribution(attribution_index)
         except LookupError as error:
-            return self.http_not_found(error)
+            return http_not_found(error, self.is_in_debug_mode)
 
         # Generates the JSON object that is to be returned to the client
         attribution_dictionary = {
@@ -366,11 +367,13 @@ class Server:
         image_mode = flask.request.args.get('image_mode', 'input')
         for color_map in self.color_maps:
             if image_mode in ('overlay', 'attribution'):
-                attribution_dictionary['urls'][color_map] = '{0}?colorMap={1}&superimpose={2}'.format(
-                    flask.url_for('get_attribution_heatmap', project_id=project_id, attribution_index=attribution_index),
-                    color_map,
-                    image_mode == 'overlay'
+                url = flask.url_for(
+                    'get_attribution_heatmap',
+                    project_id=project_id,
+                    attribution_index=attribution_index
                 )
+                superimpose = image_mode == 'overlay'
+                attribution_dictionary['urls'][color_map] = f'{url}?colorMap={color_map}&superimpose={superimpose}'
             else:
                 attribution_dictionary['urls'][color_map] = flask.url_for(
                     'get_sample_image',
@@ -379,7 +382,7 @@ class Server:
                 )
 
         # Returns the retrieved attribution
-        return self.http_ok(attribution_dictionary)
+        return http_ok(attribution_dictionary)
 
     def get_attribution_heatmap(self, project_id, attribution_index):
         """
@@ -401,14 +404,14 @@ class Server:
 
         # Checks if a project with the specified ID exists
         if project_id >= len(self.workspace.projects):
-            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+            return http_not_found(f'The project with the ID {project_id} could not be found.', self.is_in_debug_mode)
         project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
 
         # Retrieves the attribution with the specified index
         try:
             attribution = project.get_attribution(attribution_index)
         except LookupError as error:
-            return self.http_not_found(error)
+            return http_not_found(error, self.is_in_debug_mode)
 
         # If the user wants the heatmap to be superimposed onto its original image, then the sample has to be loaded
         superimpose = flask.request.args.get('superimpose', 'false').upper() == 'TRUE'
@@ -416,7 +419,7 @@ class Server:
             try:
                 sample = project.get_sample(attribution.index)
             except LookupError as error:
-                return self.http_not_found(error)
+                return http_not_found(error, self.is_in_debug_mode)
 
         # Gets the color map that is to be used to convert the raw attribution to a heatmap from the URL parameters, if
         # none was specified, then it defaults to Black Fire-Red
@@ -427,7 +430,7 @@ class Server:
             heatmap = attribution.render_heatmap(color_map_name, superimpose=sample.data)
         else:
             heatmap = attribution.render_heatmap(color_map_name)
-        return self.send_image_file(heatmap)
+        return send_image_file(heatmap)
 
     def get_analysis(self, project_id, analysis_method_name):
         """
@@ -455,32 +458,29 @@ class Server:
 
         # Checks if a project with the specified ID exists
         if project_id >= len(self.workspace.projects):
-            return self.http_not_found('The project with the ID {0} could not be found.'.format(project_id))
+            return http_not_found(f'The project with the ID {project_id} could not be found.', self.is_in_debug_mode)
         project = self.workspace.get_project(self.workspace.get_project_names()[project_id])
 
         # Checks if the specified analysis method exists
         analysis_method_name = analysis_method_name.replace('-', '_')
         if analysis_method_name not in project.get_analysis_methods():
-            return self.http_not_found('The specified analysis method "{0}" could not be found.'.format(
-                analysis_method_name.replace('_', '-')
-            ))
+            return http_not_found(
+                f'The specified analysis method "{analysis_method_name.replace("_", "-")}" could not be found.',
+                self.is_in_debug_mode
+            )
 
         # Retrieves the other parameters from the URL, if one is missing, an HTTP Bad Request response is returned
         category_name = flask.request.args.get('category')
-        if category_name is None:
-            return self.http_bad_request('No category was specified.')
         clustering_name = flask.request.args.get('clustering')
-        if clustering_name is None:
-            return self.http_bad_request('No clustering was specified.')
         embedding_name = flask.request.args.get('embedding')
-        if embedding_name is None:
-            return self.http_bad_request('No embedding was specified.')
+        if category_name is None or clustering_name is None or embedding_name is None:
+            return http_bad_request('No category, clustering, or embedding was specified.', self.is_in_debug_mode)
 
         # Gets the specified analysis
         try:
             analysis = project.get_analysis(analysis_method_name, category_name, clustering_name, embedding_name)
         except LookupError as error:
-            return self.http_not_found(error)
+            return http_not_found(error, self.is_in_debug_mode)
 
         # The analysis consists mainly of three lists: one that contains the embedding array, one that contains the
         # index of the attribution to which the analysis belongs, and one that contains the cluster of the embeddings,
@@ -513,7 +513,7 @@ class Server:
             analysis_dictionary['baseEmbeddingAxesIndices'] = numpy.array(analysis.base_embedding_axes_indices).tolist()
 
         # Returns the retrieved analysis
-        return self.http_ok(analysis_dictionary)
+        return http_ok(analysis_dictionary)
 
     def get_color_maps(self):
         """
@@ -524,15 +524,15 @@ class Server:
             flask.Response
                 Returns an HTTP 200 OK response with a list of all the supported color maps as content.
         """
+
         color_maps = []
-        for color_map_name in self.color_maps:
-            human_readable_name = self.color_maps[color_map_name]
+        for color_map_name, human_readable_name in self.color_maps.items():
             color_maps.append({
                 'name': color_map_name,
                 'humanReadableName': human_readable_name,
                 'url': flask.url_for('get_color_map_preview', color_map=color_map_name)
             })
-        return self.http_ok(color_maps)
+        return http_ok(color_maps)
 
     def get_color_map_preview(self, color_map):
         """
@@ -550,8 +550,8 @@ class Server:
             If the specified color map is unknown, then an HTTP 400 Bad Request response is returned.
         """
 
-        if color_map not in self.color_maps.keys():
-            return self.http_bad_request('The color map "{0}" is not supported.'.format(color_map))
+        if color_map not in self.color_maps:
+            return http_bad_request(f'The color map "{color_map}" is not supported.', self.is_in_debug_mode)
 
         width = int(flask.request.args.get('width', 200))
         height = int(flask.request.args.get('height', 20))
@@ -560,113 +560,124 @@ class Server:
         heatmap = numpy.repeat([heatmap], height, axis=0)
         heatmap = render_heatmap(heatmap, color_map)
 
-        return self.send_image_file(heatmap)
+        return send_image_file(heatmap)
 
-    def http_ok(self, content):
-        """
-        Generates an HTTP 200 OK response.
 
-        Parameters
-        ----------
-            content
-                The content that is to be converted into JSON and returned in the body of the response.
+def http_ok(content):
+    """
+    Generates an HTTP 200 OK response.
 
-        Returns
-        -------
-            flask.Response
-                Returns an HTTP 200 OK response.
-        """
+    Parameters
+    ----------
+        content
+            The content that is to be converted into JSON and returned in the body of the response.
 
-        response = flask.jsonify(content)
-        response.status_code = 200
-        return response
+    Returns
+    -------
+        flask.Response
+            Returns an HTTP 200 OK response.
+    """
 
-    def http_bad_request(self, error):
-        """
-        Generates an HTTP 400 Bad request response.
+    response = flask.jsonify(content)
+    response.status_code = 200
+    return response
 
-        Parameters
-        ----------
-            error: str or BaseException
-                The error that is to be returned in the body of the response.
 
-        Returns
-        -------
-            flask.Response
-                Returns an HTTP 400 Bad Request response.
-        """
+def http_bad_request(error, add_debug_information):
+    """
+    Generates an HTTP 400 Bad request response.
 
-        if isinstance(error, BaseException):
-            error = self.format_exception(error)
+    Parameters
+    ----------
+        error: str or BaseException
+            The error that is to be returned in the body of the response.
+        add_debug_information: bool
+            Determines whether debug information is added to the error message.
 
-        response = flask.jsonify({'errorMessage': str(error)})
-        response.status_code = 400
-        return response
+    Returns
+    -------
+        flask.Response
+            Returns an HTTP 400 Bad Request response.
+    """
 
-    def http_not_found(self, error):
-        """
-        Generates an HTTP 404 Not Found response.
+    if isinstance(error, BaseException):
+        error = format_exception(error, add_debug_information)
 
-        Parameters
-        ----------
-            error: str or BaseException
-                The error that is to be returned in the body of the response.
+    response = flask.jsonify({'errorMessage': str(error)})
+    response.status_code = 400
+    return response
 
-        Returns
-        -------
-            flask.Response
-                Returns an HTTP 404 Not found response.
-        """
 
-        if isinstance(error, BaseException):
-            error = self.format_exception(error)
+def http_not_found(error, add_debug_information):
+    """
+    Generates an HTTP 404 Not Found response.
 
-        response = flask.jsonify({'errorMessage': str(error)})
-        response.status_code = 404
-        return response
+    Parameters
+    ----------
+        error: str or BaseException
+            The error that is to be returned in the body of the response.
+        add_debug_information: bool
+            Determines whether debug information is added to the error message.
 
-    def send_image_file(self, image):
-        """
-        Converts the image to a JPEG image and generates a response which sends the image to the client.
+    Returns
+    -------
+        flask.Response
+            Returns an HTTP 404 Not found response.
+    """
 
-        Parameters
-        ----------
-            image: numpy.ndarray
-                The image as a NumPy array that is to be send to the client.
+    if isinstance(error, BaseException):
+        error = format_exception(error, add_debug_information)
 
-        Returns
-        -------
-            flask.Response
-                Returns a response, which contains the specified image as a JPEG encoded image file.
-        """
+    response = flask.jsonify({'errorMessage': str(error)})
+    response.status_code = 404
+    return response
 
-        if type(image) is numpy.ndarray:
-            image = Image.fromarray(image)
-        in_memory_image_file = io.BytesIO()
-        image.save(in_memory_image_file, format='JPEG', quality=70)
-        in_memory_image_file.seek(0)
-        return flask.send_file(in_memory_image_file, mimetype='image/jpeg')
 
-    def format_exception(self, exception):
-        """
-        Formats the specified exception as a string so that it can be logged.
+def send_image_file(image):
+    """
+    Converts the image to a JPEG image and generates a response which sends the image to the client.
 
-        Parameters
-        ----------
-            exception: BaseException
-                The exception that is to be formatted.
+    Parameters
+    ----------
+        image: numpy.ndarray
+            The image as a NumPy array that is to be send to the client.
 
-        Returns
-        -------
-            str
-                Returns a string, which contains the error message of the exception. If the server is being run in debug
-                mode, then the traceback is also included in the string that is returned.
-        """
+    Returns
+    -------
+        flask.Response
+            Returns a response, which contains the specified image as a JPEG encoded image file.
+    """
 
-        error_message = str(exception)
-        if self.is_in_debug_mode:
-            error_message = '{0}\n{1}'.format(
-                error_message,
-                '\n'.join(traceback.format_tb(exception.__traceback__))
-            )
-        return error_message
+    if isinstance(image, numpy.ndarray):
+        image = Image.fromarray(image)
+    in_memory_image_file = io.BytesIO()
+    image.save(in_memory_image_file, format='JPEG', quality=70)
+    in_memory_image_file.seek(0)
+    return flask.send_file(in_memory_image_file, mimetype='image/jpeg')
+
+
+def format_exception(exception, add_debug_information):
+    """
+    Formats the specified exception as a string so that it can be logged.
+
+    Parameters
+    ----------
+        exception: BaseException
+            The exception that is to be formatted.
+        add_debug_information: bool
+            Determines whether debug information is added to the string representation of the exception.
+
+    Returns
+    -------
+        str
+            Returns a string, which contains the error message of the exception. If the server is being run in debug
+            mode, then the traceback is also included in the string that is returned.
+    """
+
+    error_message = str(exception)
+    if add_debug_information:
+        error_message = '{0}\n{1}'.format(
+            error_message,
+            '\n'.join(traceback.format_tb(exception.__traceback__))
+        )
+    return error_message

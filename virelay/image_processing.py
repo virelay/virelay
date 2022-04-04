@@ -36,10 +36,8 @@ def add_border(image, new_width, new_height, method):
             Returns the up-sampled image.
     """
 
-    if len(image.shape) == 2:
-        width, height = image.shape
-    else:
-        width, height, _ = image.shape
+    width = image.shape[0]
+    height = image.shape[1]
     horizontal_padding = max(0, new_width - width)
     vertical_padding = max(0, new_height - height)
     left_padding = math.ceil(float(horizontal_padding) / 2.0)
@@ -60,14 +58,14 @@ def add_border(image, new_width, new_height, method):
         'mirror_edge': 'reflect',
         'wrap_around': 'wrap'
     }
-    if method in internal_methods_map.keys():
+    if method in internal_methods_map:
         return numpy.pad(
             image,
             ((left_padding, right_padding), (top_padding, bottom_padding), (0, 0)),
             internal_methods_map[method]
         )
 
-    raise ValueError('The specified method "{0}" is not supported.'.format(method))
+    raise ValueError(f'The specified method "{method}" is not supported.')
 
 
 def center_crop(image, new_width, new_height):
@@ -84,10 +82,8 @@ def center_crop(image, new_width, new_height):
             The new height to which the image is to be down-sampled.
     """
 
-    if len(image.shape) == 2:
-        width, height = image.shape
-    else:
-        width, height, _ = image.shape
+    width = image.shape[0]
+    height = image.shape[1]
     horizontal_crop = max(0, width - new_width)
     vertical_crop = max(0, height - new_width)
     left_crop = math.ceil(float(horizontal_crop) / 2.0)
@@ -143,7 +139,7 @@ def render_heatmap(attribution_data, color_map):
     elif color_map in matplotlib_color_maps:
         heatmap_image = generate_heatmap_image_using_matplotlib(attribution_data, matplotlib_color_maps[color_map])
     else:
-        raise ValueError('The color map "{0}" is not supported.'.format(color_map))
+        raise ValueError(f'The color map "{color_map}" is not supported.')
     heatmap_image *= 255.0
     heatmap_image = heatmap_image.astype(numpy.uint8)
     return heatmap_image

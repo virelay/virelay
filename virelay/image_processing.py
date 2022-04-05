@@ -50,7 +50,7 @@ def add_border(image, new_width, new_height, method):
             image,
             ((left_padding, right_padding), (top_padding, bottom_padding), (0, 0)),
             'constant',
-            constant_values=0 if method == 'zeros' else 1
+            constant_values=0 if method == 'fill_zeros' else 1
         )
 
     internal_methods_map = {

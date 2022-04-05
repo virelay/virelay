@@ -23,6 +23,7 @@ result
 .coverage
 .coverage.*
 .pytest_cache
+htmlcov
 
 # System Files
 .DS_Store

@@ -47,7 +47,7 @@ class Server:
             'gray-red': 'Gray Red',
             'black-green': 'Black Green',
             'black-fire-red': 'Black Fire-Red',
-            'blue-black-yellow': 'Blue Black Yellow',
+            'black-yellow': 'Black Yellow',
             'blue-white-red': 'Blue White Red',
             'afm-hot': 'AFM Hot',
             'jet': 'Jet',

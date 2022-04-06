@@ -44,7 +44,7 @@ class Project:
 
         # Loads the project from the YAML file
         working_directory = os.path.dirname(self.path)
-        with open(self.path, 'r', encoding="utf8") as project_file:
+        with open(self.path, 'r', encoding='utf-8') as project_file:
             try:
 
                 # Loads the project and extracts some general information
@@ -1057,7 +1057,7 @@ class ImageDirectoryDataset:
         # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
         # paths corresponds to the sample index that has to be specified in the get_sample method)
         if os.path.exists(self.path + '_paths.txt'):
-            with open(self.path + '_paths.txt', encoding="utf8") as f:
+            with open(self.path + '_paths.txt', encoding='utf-8') as f:
                 self.sample_paths = sorted(
                     [os.path.join(os.path.dirname(self.path), path) for path in f.read().split('\n')]
                 )
@@ -1302,7 +1302,7 @@ class LabelMap:
 
         # Loads the label map from the specified JSON file
         self.labels = []
-        with open(self.path, 'r', encoding="utf8") as label_map_file:
+        with open(self.path, 'r', encoding='utf-8') as label_map_file:
             for label in json.load(label_map_file):
                 self.labels.append(Label(label['index'], label['word_net_id'], label['name']))
 

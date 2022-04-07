@@ -977,7 +977,7 @@ class Hdf5Dataset:
 
 class ImageDirectoryDataset:
     """
-    Represents a dataset that is stored as image files in a directory hierarchy were the names of the directories
+    Represents an image dataset, where the image files are in a directory hierarchy were the names of the directories
     represent the labels of the images.
     """
 
@@ -998,8 +998,6 @@ class ImageDirectoryDataset:
 
         Parameters
         ----------
-            path: str
-                The path to the HDF5 file that contains the dataset.
             path: str
                 The path to the directory that contains the directories for the labels, which in turn contain the images
                 that belong to the respective label.
@@ -1029,6 +1027,8 @@ class ImageDirectoryDataset:
         Raises
         ------
             ValueError
+                If neither the label index RegEx nor the label WordNet ID RegEx was specified, a ValueError is raised.
+                If both the label index RegEx and the label WordNet ID RegEx were specified, a ValueError is raised.
                 If the specified up-sampling method is not supported, a ValueError is raised.
                 If the specified down-sampling method is not supported, a ValueError is raised.
         """
@@ -1037,6 +1037,10 @@ class ImageDirectoryDataset:
         self.is_closed = False
 
         # Validates the arguments
+        if label_index_regex is None and label_word_net_id_regex is None:
+            raise ValueError('Either the label index RegEx or the label WordNet ID RegEx must be specified.')
+        if label_index_regex is not None and label_word_net_id_regex is not None:
+            raise ValueError('Only the label index RegEx or the label WordNet ID RegEx must be specified, not both.')
         if down_sampling_method not in ['none', 'center_crop', 'resize']:
             raise ValueError(f'The down-sampling method "{down_sampling_method}" is not supported.')
         up_sampling_methods = ['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize']
@@ -1054,7 +1058,7 @@ class ImageDirectoryDataset:
         self.up_sampling_method = up_sampling_method
         self.label_map = label_map
 
-        # Loads a list of all the paths to all samples in the dataset (they are soreted, because the index of the sorted
+        # Loads a list of all the paths to all samples in the dataset (they are sorted, because the index of the sorted
         # paths corresponds to the sample index that has to be specified in the get_sample method)
         if os.path.exists(self.path + '_paths.txt'):
             with open(self.path + '_paths.txt', encoding='utf-8') as f:
@@ -1103,7 +1107,7 @@ class ImageDirectoryDataset:
         if self.label_index_regex is not None:
             match = re.match(self.label_index_regex, sample_path)
             if match:
-                label_reference = match.groups()[0]
+                label_reference = int(match.groups()[0])
         else:
             match = re.match(self.label_word_net_id_regex, sample_path)
             if match:
@@ -1154,10 +1158,6 @@ class ImageDirectoryDataset:
                 )
             elif self.up_sampling_method == 'resize':
                 image = numpy.array(Image.fromarray(image).resize((self.input_width, self.input_height)))
-            elif self.up_sampling_method == 'none':
-                pass
-            else:
-                raise ValueError(f'The up-sampling method "{self.up_sampling_method}" is not supported.')
 
         # If at least one of the image dimensions is greater than the target size, then the image is down-sampled
         if width > self.input_width or height > self.input_height:
@@ -1165,13 +1165,6 @@ class ImageDirectoryDataset:
                 image = center_crop(image, self.input_width, self.input_height)
             elif self.down_sampling_method == 'resize':
                 image = numpy.array(Image.fromarray(image).resize((self.input_width, self.input_height)))
-            elif self.up_sampling_method == 'none':
-                pass
-            else:
-                raise ValueError(f'The down-sampling method "{self.down_sampling_method}" is not supported.')
-
-        if image.ndim == 2:  # If image black and white add the third axis
-            image = image[..., numpy.newaxis]
 
         # Returns the re-sampled image
         return image
@@ -1223,8 +1216,7 @@ class ImageDirectoryDataset:
     def close(self):
         """Closes the dataset."""
 
-        if not self.is_closed:
-            self.is_closed = True
+        self.is_closed = True
 
     def __del__(self):
         """Destructs the dataset."""

@@ -878,8 +878,8 @@ class Hdf5Dataset:
 
         Parameters
         ----------
-            index: int
-                The index of the sample that is to be retrieved.
+            index: int | str
+                The index or key of the sample that is to be retrieved.
 
         Raises
         ------
@@ -898,18 +898,9 @@ class Hdf5Dataset:
         if self.is_closed:
             raise ValueError('The dataset is already closed.')
 
-        # Checks if the index is out of range
-        if 'index' in self.dataset_file:
-            try:
-                data_index = self.dataset_file['index'][index].item()
-            except ValueError as error:
-                raise LookupError(f'No sample with the index {index} could be found.') from error
-        else:
-            data_index = index
-
         # Extracts the information about the sample from the dataset
         try:
-            sample_data = self.dataset_file['data'][data_index][:]
+            sample_data = self.dataset_file['data'][index][()]
             sample_label_reference = self.dataset_file['label'][index]
             sample_labels = self.label_map.get_labels(sample_label_reference)
         except IndexError as error:

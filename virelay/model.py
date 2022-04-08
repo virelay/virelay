@@ -299,11 +299,14 @@ class Project:
         if not self.is_closed:
             if self.dataset is not None:
                 self.dataset.close()
+            self.dataset = None
             for attribution in self.attributions:
                 attribution.close()
+            self.attributions = []
             for _, analyses in self.analyses.items():
                 for analysis in analyses:
                     analysis.close()
+            self.analyses = {}
             self.is_closed = True
 
     def __del__(self):
@@ -329,7 +332,6 @@ class AttributionDatabase:
 
         # Initializes some class members
         self.is_closed = False
-        self.attribution_file = None
 
         # Stores the arguments for later reference
         self.attribution_path = attribution_path
@@ -448,7 +450,7 @@ class Attribution:
                 The index of the attribution, which is the index of the sample for which the attribution was created.
             data: numpy.ndarray
                 The attribution data, which is a raw heatmap.
-            labels: str or list
+            labels: Label or list
                 The ground truth label or a list of the ground truth labels of the sample for which the attribution was
                 created.
             prediction: numpy.ndarray
@@ -508,7 +510,6 @@ class AnalysisDatabase:
 
         # Initializes some class members
         self.is_closed = False
-        self.analysis_file = None
 
         # Stores the arguments for later reference
         self.analysis_path = analysis_path
@@ -729,8 +730,8 @@ class AnalysisDatabase:
         """Closes the analysis database."""
 
         if not self.is_closed:
-            if self.analysis_file is not None:
-                self.analysis_file.close()
+            self.analysis_file.close()
+            self.analysis_file = None
             self.is_closed = True
 
     def __del__(self):
@@ -789,7 +790,7 @@ class Analysis:
                 the attributions. So the category name is the umbrella term for all the attributions that comprise the
                 analysis, which will, in most cases, be the name of the label.
             human_readable_category_name: str
-                A human readable version of the category name (since category names are usually label, this can be
+                A human readable version of the category name (since category names are usually labels, this can be
                 the human-readable name of the label, if the category name is not a label, then the human-readable name
                 should be set to the category name itself).
             clustering_name: str
@@ -869,7 +870,7 @@ class Hdf5Dataset:
         # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
         # whether the sample has the label, when the dataset is single-label, then the label is just a scalar value
         # containing the index of the label)
-        self.is_multi_label = self.dataset_file['label'][0].dtype == numpy.bool
+        self.is_multi_label = self.dataset_file['label'][0].dtype == bool
 
     def get_sample(self, index):
         """
@@ -911,7 +912,7 @@ class Hdf5Dataset:
             sample_data = self.dataset_file['data'][data_index][:]
             sample_label_reference = self.dataset_file['label'][index]
             sample_labels = self.label_map.get_labels(sample_label_reference)
-        except ValueError as error:
+        except IndexError as error:
             raise LookupError(f'No sample with the index {index} could be found.') from error
 
         # Wraps the sample in an object and returns it
@@ -965,8 +966,8 @@ class Hdf5Dataset:
         """Closes the dataset."""
 
         if not self.is_closed:
-            if self.dataset_file is not None:
-                self.dataset_file.close()
+            self.dataset_file.close()
+            self.dataset_file = None
             self.is_closed = True
 
     def __del__(self):
@@ -1237,7 +1238,7 @@ class Sample:
                 The index of the sample within the dataset.
             data: numpy.ndarray
                 The data that represents the sample.
-            labels: str or list
+            labels: Label or list
                 The label or a list of all the labels that the sample has.
         """
 
@@ -1269,11 +1270,7 @@ class Sample:
                 self.data *= 255.0 / 2.0
             elif detected_pixel_value_range_index == 1:
                 self.data *= 255.0
-
-            # Finally, the pixel values may be saved as floats and not as integers, so the data type is changed to
-            # unsigned 8-bit integers, which is standard for viewing images
-            if self.data.dtype != numpy.uint8:
-                self.data = self.data.astype(numpy.uint8)
+            self.data = self.data.astype(numpy.uint8)
 
 
 class LabelMap:
@@ -1529,6 +1526,7 @@ class Workspace:
         if not self.is_closed:
             for project in self.projects:
                 project.close()
+            self.projects = []
             self.is_closed = True
 
     def __del__(self):

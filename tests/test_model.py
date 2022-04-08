@@ -550,6 +550,230 @@ class TestProject:
         assert len(project.analyses) == 1
         assert 'Spectral Analysis' in project.analyses
 
+    @staticmethod
+    def test_closed_attribution_database_cannot_be_used(project_file_path: str) -> None:
+        """Tests whether a project correctly refuses to operate when it was already closed.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+        project.close()
+
+        with pytest.raises(ValueError):
+            project.get_sample(0)
+
+        with pytest.raises(ValueError):
+            project.get_attribution(0)
+
+        with pytest.raises(ValueError):
+            project.get_analysis_methods()
+
+        with pytest.raises(ValueError):
+            project.get_analysis_categories('analysis-method')
+
+        with pytest.raises(ValueError):
+            project.get_analysis_clustering_names('analysis-method')
+
+        with pytest.raises(ValueError):
+            project.get_analysis_embedding_names('analysis-method')
+
+        with pytest.raises(ValueError):
+            project.get_analysis('analysis-method', 'category-name', 'clustering-name', 'embedding-name')
+
+    @staticmethod
+    def test_attribution_database_can_be_closed_multiple_times(project_file_path: str) -> None:
+        """Tests whether a project can be closed multiple times without raising an error.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+        project.close()
+        project.close()
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_sample(project_file_path: str) -> None:
+        """Tests whether a sample can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+
+        with pytest.raises(LookupError):
+            project.get_sample(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+        sample = project.get_sample(0)
+        assert sample.index == 0
+        assert sample.labels == ['Class 0']
+        assert isinstance(sample.data, numpy.ndarray)
+        assert sample.data.shape == (32, 32, 3)
+        assert sample.data.dtype == numpy.uint8
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_attribution(project_file_path: str) -> None:
+        """Tests whether an attribution can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+
+        with pytest.raises(LookupError):
+            project.get_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+        attribution = project.get_attribution(0)
+        assert attribution.index == 0
+        assert attribution.labels == ['Class 0']
+        assert isinstance(attribution.data, numpy.ndarray)
+        assert attribution.data.shape == (32, 32, 3)
+        assert attribution.data.dtype == numpy.float32
+        assert isinstance(attribution.prediction, numpy.ndarray)
+        assert attribution.prediction.shape == (NUMBER_OF_CLASSES,)
+        assert attribution.prediction.dtype == numpy.float32
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_analysis_methods(project_file_path: str) -> None:
+        """Tests whether a analysis methods can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+        analysis_methods = project.get_analysis_methods()
+        assert len(analysis_methods) == 1
+        assert analysis_methods[0] == 'Spectral Analysis'
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_analysis_categories(project_file_path: str) -> None:
+        """Tests whether an analysis categories can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+
+        with pytest.raises(LookupError):
+            project.get_analysis_categories('Unknown Analysis Method')
+
+        categories = project.get_analysis_categories('Spectral Analysis')
+        for category, label in zip(categories, project.label_map.labels):
+            assert category.name == label.word_net_id
+            assert category.human_readable_name == label.name
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_analysis_clustering_names(project_file_path: str) -> None:
+        """Tests whether an analysis clustering names can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+
+        with pytest.raises(LookupError):
+            project.get_analysis_clustering_names('Unknown Analysis Method')
+
+        expected_clustering_names = [
+            'agglomerative-02',
+            'agglomerative-03',
+            'dbscan-eps=0.2',
+            'dbscan-eps=0.3',
+            'hdbscan',
+            'kmeans-02',
+            'kmeans-03'
+        ]
+        actual_clustering_names = project.get_analysis_clustering_names('Spectral Analysis')
+        for expected_clustering_name, actual_clustering_name in zip(expected_clustering_names, actual_clustering_names):
+            assert expected_clustering_name == actual_clustering_name
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_analysis_embedding_names(project_file_path: str) -> None:
+        """Tests whether an analysis embedding names can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+
+        with pytest.raises(LookupError):
+            project.get_analysis_embedding_names('Unknown Analysis Method')
+
+        expected_embedding_names = ['spectral', 'tsne', 'umap']
+        actual_embedding_names = project.get_analysis_embedding_names('Spectral Analysis')
+        for expected_embedding_name, actual_embedding_name in zip(expected_embedding_names, actual_embedding_names):
+            assert expected_embedding_name == actual_embedding_name
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_analyses(project_file_path: str) -> None:
+        """Tests whether analyses can be retrieved from the project.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+
+        with pytest.raises(LookupError):
+            project.get_analysis(
+                'unknown-analysis-method',
+                'unknown-category',
+                'unknown-clustering',
+                'unknown-embedding'
+            )
+        with pytest.raises(LookupError):
+            project.get_analysis('Spectral Analysis', 'unknown-category', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            project.get_analysis('Spectral Analysis', '00000000', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            project.get_analysis('Spectral Analysis', '00000000', 'agglomerative-02', 'unknown-embedding')
+
+        analysis = project.get_analysis('Spectral Analysis', '00000000', 'agglomerative-02', 'spectral')
+        assert analysis.category_name == '00000000'
+        assert analysis.human_readable_category_name == 'Class 0'
+        assert analysis.clustering_name == 'agglomerative-02'
+        assert analysis.embedding_name == 'spectral'
+        assert isinstance(analysis.clustering, numpy.ndarray)
+        assert analysis.clustering.shape == (40,)
+        assert analysis.clustering.dtype == numpy.int64
+        assert isinstance(analysis.embedding, numpy.ndarray)
+        assert analysis.embedding.shape == (40, 32)
+        assert analysis.embedding.dtype == numpy.float32
+        assert isinstance(analysis.attribution_indices, numpy.ndarray)
+        assert analysis.attribution_indices.shape == (40,)
+        assert analysis.attribution_indices.dtype == numpy.uint32
+        assert isinstance(analysis.eigen_values, numpy.ndarray)
+        assert analysis.eigen_values.shape == (32,)
+        assert analysis.eigen_values.dtype == numpy.float32
+        assert analysis.base_embedding_name is None
+        assert analysis.base_embedding_axes_indices is None
+
 
 class TestAttributionDatabase:
     """Represents the tests for the AttributionDatabase class."""
@@ -567,9 +791,103 @@ class TestAttributionDatabase:
                 The path to the label map file that is used for the tests.
         """
 
-        attribution_database = AttributionDatabase(attribution_file_path, label_map_file_path)
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_path, label_map)
         assert not attribution_database.is_closed
         assert not attribution_database.is_multi_label
+
+    @staticmethod
+    def test_closed_attribution_database_cannot_get_attributions(
+            attribution_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the attribution database correctly refuses to operate when it was already closed.
+
+        Parameters
+        ----------
+            attribution_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+        attribution_database.close()
+
+        with pytest.raises(ValueError):
+            attribution_database.has_attribution(0)
+
+        with pytest.raises(ValueError):
+            attribution_database.get_attribution(0)
+
+    @staticmethod
+    def test_attribution_database_can_be_closed_multiple_times(
+            attribution_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the attribution database can be closed multiple times without raising an error.
+
+        Parameters
+        ----------
+            attribution_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+        attribution_database.close()
+        attribution_database.close()
+
+    @staticmethod
+    def test_attribution_database_can_check_whether_attribution_is_available(
+            attribution_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether it can be checked if the attribution database contains a specific attribution.
+
+        Parameters
+        ----------
+            attribution_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+
+        assert attribution_database.has_attribution(0)
+        assert not attribution_database.has_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+    @staticmethod
+    def test_attribution_database_can_retrieve_attribution(
+            attribution_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether an attribution can be retrieved from the attribution database.
+
+        Parameters
+        ----------
+            attribution_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+
+        with pytest.raises(LookupError):
+            attribution_database.get_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+        attribution = attribution_database.get_attribution(0)
+        assert attribution.index == 0
+        assert isinstance(attribution.data, numpy.ndarray)
+        assert attribution.data.shape == (32, 32, 3)
+        assert attribution.data.dtype == numpy.float32
+        assert attribution.labels == ['Class 0']
+        assert isinstance(attribution.prediction, numpy.ndarray)
+        assert attribution.prediction.shape == (NUMBER_OF_CLASSES,)
+        assert attribution.prediction.dtype == numpy.float32
 
 
 class TestAttribution:
@@ -750,8 +1068,186 @@ class TestAnalysisDatabase:
                 The path to the label map file that is used for the tests.
         """
 
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map_file_path)
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
         assert not analysis_database.is_closed
+
+    @staticmethod
+    def test_closed_analysis_database_cannot_be_used(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether the analysis database correctly refuses to operate when it was already closed.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database.close()
+
+        with pytest.raises(ValueError):
+            analysis_database.get_categories()
+
+        with pytest.raises(ValueError):
+            analysis_database.get_clustering_names()
+
+        with pytest.raises(ValueError):
+            analysis_database.get_embedding_names()
+
+        with pytest.raises(ValueError):
+            analysis_database.has_analysis('category-name', 'clustering-name', 'embedding-name')
+
+        with pytest.raises(ValueError):
+            analysis_database.get_analysis('category-name', 'clustering-name', 'embedding-name')
+
+    @staticmethod
+    def test_analysis_database_can_be_closed_multiple_times(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether the analysis database can be closed multiple times without raising an error.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database.close()
+        analysis_database.close()
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_categories(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether categories can be retrieved from the analysis database.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        categories = analysis_database.get_categories()
+        for category, label in zip(categories, label_map.labels):
+            assert category.name == label.word_net_id
+            assert category.human_readable_name == label.name
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_clustering_names(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether clustering names can be retrieved from the analysis database.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        expected_clustering_names = [
+            'agglomerative-02',
+            'agglomerative-03',
+            'dbscan-eps=0.2',
+            'dbscan-eps=0.3',
+            'hdbscan',
+            'kmeans-02',
+            'kmeans-03'
+        ]
+        actual_clustering_names = analysis_database.get_clustering_names()
+        for expected_clustering_name, actual_clustering_name in zip(expected_clustering_names, actual_clustering_names):
+            assert expected_clustering_name == actual_clustering_name
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_embedding_names(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether embedding names can be retrieved from the analysis database.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        expected_embedding_names = ['spectral', 'tsne', 'umap']
+        actual_embedding_names = analysis_database.get_embedding_names()
+        for expected_embedding_name, actual_embedding_name in zip(expected_embedding_names, actual_embedding_names):
+            assert expected_embedding_name == actual_embedding_name
+
+    @staticmethod
+    def test_analysis_database_can_check_whether_analysis_is_available(
+            analysis_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether it can be checked if the analysis database contains a specific analysis.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+
+        assert not analysis_database.has_analysis('unknown-category', 'unknown-clustering', 'unknown-embedding')
+        assert not analysis_database.has_analysis('00000000', 'unknown-clustering', 'unknown-embedding')
+        assert not analysis_database.has_analysis('00000000', 'agglomerative-02', 'unknown-embedding')
+        assert analysis_database.has_analysis('00000000', 'agglomerative-02', 'spectral')
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_analyses(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether analyses can be retrieved from the analysis database.
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('unknown-category', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('00000000', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('00000000', 'agglomerative-02', 'unknown-embedding')
+
+        analysis = analysis_database.get_analysis('00000000', 'agglomerative-02', 'spectral')
+        assert analysis.category_name == '00000000'
+        assert analysis.human_readable_category_name == 'Class 0'
+        assert analysis.clustering_name == 'agglomerative-02'
+        assert analysis.embedding_name == 'spectral'
+        assert isinstance(analysis.clustering, numpy.ndarray)
+        assert analysis.clustering.shape == (40,)
+        assert analysis.clustering.dtype == numpy.int64
+        assert isinstance(analysis.embedding, numpy.ndarray)
+        assert analysis.embedding.shape == (40, 32)
+        assert analysis.embedding.dtype == numpy.float32
+        assert isinstance(analysis.attribution_indices, numpy.ndarray)
+        assert analysis.attribution_indices.shape == (40,)
+        assert analysis.attribution_indices.dtype == numpy.uint32
+        assert isinstance(analysis.eigen_values, numpy.ndarray)
+        assert analysis.eigen_values.shape == (32,)
+        assert analysis.eigen_values.dtype == numpy.float32
+        assert analysis.base_embedding_name is None
+        assert analysis.base_embedding_axes_indices is None
 
 
 class TestAnalysisCategory:
@@ -879,7 +1375,7 @@ class TestHdf5Dataset:
         hdf5_dataset.close()
 
     @staticmethod
-    def test_cannot_retrieve_sample_for_out_of_bounds_index(
+    def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
             input_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
@@ -907,7 +1403,35 @@ class TestHdf5Dataset:
             _ = hdf5_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
 
     @staticmethod
-    def test_retrieval_of_multiple_samples(
+    def test_dataset_can_retrieve_samples(
+            input_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether a sample can be retrieved from the dataset.
+
+        Parameters
+        ----------
+            input_file_path: str
+                The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=input_file_path,
+            label_map=label_map
+        )
+
+        sample = hdf5_dataset.get_sample(0)
+        assert sample.index == 0
+        assert sample.labels == ['Class 0']
+        assert isinstance(sample.data, numpy.ndarray)
+        assert sample.data.shape == (32, 32, 3)
+        assert sample.data.dtype == numpy.uint8
+
+    @staticmethod
+    def test_dataset_can_retrieve_multiple_samples(
             input_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether multiple samples can be retrieved at the same time.
@@ -1071,7 +1595,7 @@ class TestImageDirectoryDataset:
             _ = image_directory_dataset[0]
 
     @staticmethod
-    def test_cannot_retrieve_sample_for_out_of_bounds_index(
+    def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
@@ -1105,7 +1629,7 @@ class TestImageDirectoryDataset:
             _ = image_directory_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
 
     @staticmethod
-    def test_sample_paths_file(
+    def test_dataset_sample_paths_file(
             image_directory_dataset_with_sample_paths_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the image directory dataset can locate samples .
@@ -1141,7 +1665,7 @@ class TestImageDirectoryDataset:
         assert len(image_directory_dataset) == number_of_images_in_dataset_directory // 2
 
     @staticmethod
-    def test_label_index_directory_name(
+    def test_dataset_label_index_directory_name(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the image directory dataset can properly parse the labels from directory that contain the index
@@ -1170,7 +1694,7 @@ class TestImageDirectoryDataset:
         image_directory_dataset.get_sample(0)
 
     @staticmethod
-    def test_label_wordnet_id_directory_name(
+    def test_dataset_label_wordnet_id_directory_name(
             image_directory_dataset_with_wordnet_ids_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the image directory dataset can properly parse the labels from directory that contain the index
@@ -1199,7 +1723,7 @@ class TestImageDirectoryDataset:
         image_directory_dataset.get_sample(0)
 
     @staticmethod
-    def test_label_cannot_be_determined(
+    def test_dataset_cannot_determine_labels(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the image directory dataset raises an exception, if it cannot determine the label of a sample,
@@ -1244,7 +1768,7 @@ class TestImageDirectoryDataset:
             image_directory_dataset.get_sample(0)
 
     @staticmethod
-    def test_down_sampling_methods(
+    def test_dataset_down_sampling_methods(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the image directory dataset can properly down-sample the images to the correct input size,
@@ -1294,7 +1818,7 @@ class TestImageDirectoryDataset:
             assert sample.data.shape[1] == 32
 
     @staticmethod
-    def test_up_sampling_methods(
+    def test_dataset_up_sampling_methods(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the image directory dataset can properly up-sample the images to the correct input size,
@@ -1345,7 +1869,41 @@ class TestImageDirectoryDataset:
             assert sample.data.shape[1] == 128
 
     @staticmethod
-    def test_retrieval_of_multiple_samples(
+    def test_dataset_can_retrieve_sample(
+            image_directory_dataset_with_label_indices_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether a sample can be retrieved from the dataset.
+
+        Parameters
+        ----------
+            image_directory_dataset_with_label_indices_path: str
+                The path to the image directory dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        image_directory_dataset = ImageDirectoryDataset(
+            name="Test Dataset",
+            path=image_directory_dataset_with_label_indices_path,
+            label_index_regex=r'^.*/label-([0-9]+)/.*$',
+            label_word_net_id_regex=None,
+            input_width=128,
+            input_height=128,
+            down_sampling_method='none',
+            up_sampling_method='none',
+            label_map=label_map
+        )
+
+        sample = image_directory_dataset.get_sample(0)
+        assert sample.index == 0
+        assert sample.labels == ['Class 0']
+        assert isinstance(sample.data, numpy.ndarray)
+        assert sample.data.shape == (64, 64, 3)
+        assert sample.data.dtype == numpy.uint8
+
+    @staticmethod
+    def test_dataset_can_retrieve_multiple_samples(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether multiple samples can be retrieved at the same time.

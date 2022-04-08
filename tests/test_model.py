@@ -579,15 +579,159 @@ class TestAttribution:
     def test_attribution_creation() -> None:
         """Tests whether an attribution can be created."""
 
+        data = numpy.random.uniform(-1, 1, size=(32, 32, 3))
+        label_0 = Label(0, '00000000', 'Class 0')
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(0, data, label_0, prediction)
+
+        assert attribution.index == 0
+        assert numpy.array_equal(attribution.data, data)
+        assert attribution.labels == [label_0]
+        assert numpy.array_equal(attribution.prediction, prediction)
+
+        data = numpy.random.uniform(-1, 1, size=(32, 32, 3))
+        label_1 = Label(1, '00000000', 'Class 0')
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(1, data, [label_0, label_1], prediction)
+
+        assert attribution.index == 1
+        assert numpy.array_equal(attribution.data, data)
+        assert attribution.labels == [label_0, label_1]
+        assert numpy.array_equal(attribution.prediction, prediction)
+
         data = numpy.random.uniform(-1, 1, size=(3, 32, 32))
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(2, data, label_0, prediction)
+
+        assert attribution.index == 2
+        assert numpy.array_equal(attribution.data, numpy.moveaxis(data, [0, 1, 2], [2, 0, 1]))
+        assert attribution.labels == [label_0]
+        assert numpy.array_equal(attribution.prediction, prediction)
+
+    @staticmethod
+    def test_attribution_render_heatmap_unknown_color_map():
+        """Tests whether the heatmap rendering of the attribution fails, when the color map is unknown."""
+
+        data = numpy.random.uniform(-1, 1, size=(4, 4, 3))
+        label = Label(0, '00000000', 'Class 0')
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(0, data, label, prediction)
+        with pytest.raises(ValueError):
+            attribution.render_heatmap('unknown-color-map')
+
+    @staticmethod
+    def test_attribution_render_heatmap():
+        """Tests whether a heatmap can be rendered from the attribution."""
+
+        # Creates the attribution
+        data = numpy.array(
+            [[[-0.63598313, 0.05182445, -0.94523354],
+              [0.21506858, -0.13204615, 0.0819828],
+              [0.10219199, -0.49505036, -0.57652793],
+              [0.01718352, 0.0409061, 0.58327392]],
+             [[0.86893207, -0.26937166, -0.94142186],
+              [-0.61266463, -0.09961933, -0.80746353],
+              [-0.91493128, -0.31382453, 0.04481068],
+              [-0.39876502, -0.28151701, 0.93280041]],
+             [[0.28490411, 0.47067797, 0.40586151],
+              [-0.3422943, 0.91319999, -0.98634023],
+              [0.81298836, 0.39517061, 0.76021407],
+              [0.10702649, -0.62526615, -0.34403102]],
+             [[-0.27316466, 0.93960925, 0.03727774],
+              [0.83324282, -0.69104866, 0.50410142],
+              [0.86643333, 0.50700986, 0.16282292],
+              [-0.71744439, 0.27219448, 0.34797268]]]
+        )
         label = Label(0, '00000000', 'Class 0')
         prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
         attribution = Attribution(0, data, label, prediction)
 
-        assert attribution.index == 0
-        assert numpy.array_equal(attribution.data, numpy.moveaxis(data, [0, 1, 2], [2, 0, 1]))
-        assert attribution.labels == [label]
-        assert numpy.array_equal(attribution.prediction, prediction)
+        # Validates the colors assigned by the heatmap
+        expected_heatmap = numpy.array(
+            [[[56, 56, 255],
+              [255, 234, 234],
+              [128, 128, 255],
+              [255, 172, 172]],
+             [[210, 210, 255],
+              [58, 58, 255],
+              [102, 102, 255],
+              [255, 222, 222]],
+             [[255, 104, 104],
+              [200, 200, 255],
+              [255, 0, 0],
+              [142, 142, 255]],
+             [[255, 163, 163],
+              [255, 170, 170],
+              [255, 56, 56],
+              [242, 242, 255]]],
+            dtype=numpy.uint8
+        )
+        actual_heatmap = attribution.render_heatmap('blue-white-red')
+        assert numpy.array_equal(expected_heatmap, actual_heatmap)
+
+    @staticmethod
+    def test_attribution_render_superimposed_heatmap_unknown_color_map():
+        """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution
+        data as alpha-channel using an unknown color map."""
+
+        data = numpy.random.uniform(-1, 1, size=(4, 4, 3))
+        label = Label(0, '00000000', 'Class 0')
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(0, data, label, prediction)
+        superimpose = numpy.ones((4, 4, 3))
+        with pytest.raises(ValueError):
+            attribution.render_heatmap('unknown-color-map', superimpose)
+
+    @staticmethod
+    def test_attribution_render_superimposed_heatmap():
+        """Tests whether a heatmap, superimposed onto another image, can be rendered from the attribution."""
+
+        # Creates the attribution
+        data = numpy.array(
+            [[[0.17681855, 0.91944598, 0.33373127],
+              [-0.80632149, -0.93380861, 0.15624767],
+              [-0.80029563, -0.10224675, -0.21737921],
+              [-0.12587663, 0.00244791, 0.0558195]],
+             [[0.34478494, 0.22592281, -0.46938452],
+              [-0.28683651, -0.43241806, -0.74974368],
+              [0.28910623, 0.9201011, 0.69483512],
+              [0.60624353, 0.58788177, 0.05531979]],
+             [[-0.52632942, 0.95181703, -0.12907603],
+              [0.11709027, -0.78199527, -0.3564949],
+              [-0.02690579, 0.30163809, 0.15051245],
+              [0.29140564, 0.79343594, -0.43470242]],
+             [[-0.43761021, 0.27552307, 0.028462],
+              [-0.37463762, -0.09987923, 0.65990991],
+              [0.46209578, 0.72126955, 0.50027807],
+              [0.68741856, 0.13709213, 0.92287532]]]
+        )
+        label = Label(0, '00000000', 'Class 0')
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(0, data, label, prediction)
+        superimpose = numpy.ones((4, 4, 3))
+
+        # Validates the colors assigned by the heatmap
+        expected_heatmap = numpy.array(
+            [[[172, 42, 42],
+              [38, 38, 229],
+              [66, 66, 162],
+              [10, 10, 10]],
+             [[13, 12, 12],
+              [48, 48, 212],
+              [229, 0, 0],
+              [150, 52, 52]],
+             [[36, 31, 31],
+              [68, 68, 147],
+              [52, 40, 40],
+              [79, 52, 52]],
+             [[19, 19, 20],
+              [23, 21, 21],
+              [202, 22, 22],
+              [210, 17, 17]]],
+            dtype=numpy.uint8
+        )
+        actual_heatmap = attribution.render_heatmap('blue-white-red', superimpose)
+        assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
 class TestAnalysisDatabase:

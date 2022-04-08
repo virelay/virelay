@@ -98,30 +98,6 @@ def test_render_heatmap_unknown_color_map():
         render_heatmap(attribution_data, 'unknown-color-map')
 
 
-def test_render_heatmap_with_multiple_dimensions():
-    """Tests the function for rendering heatmap images, where the attribution data has multiple channel dimensions."""
-
-    # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.stack([numpy.linspace(-1.0, 1.0, 10).reshape(10, 1)] * 2, axis=2)
-
-    # Validates the colors assigned by the heatmap
-    expected_heatmap = numpy.array(
-        [[[0, 0, 255]],
-         [[56, 56, 255]],
-         [[112, 112, 255]],
-         [[170, 170, 255]],
-         [[226, 226, 255]],
-         [[255, 226, 226]],
-         [[255, 170, 170]],
-         [[255, 112, 112]],
-         [[255, 56, 56]],
-         [[255, 0, 0]]],
-        dtype=numpy.uint8
-    )
-    actual_heatmap = render_heatmap(attribution_data, 'blue-white-red')
-    assert numpy.array_equal(expected_heatmap, actual_heatmap)
-
-
 def test_render_heatmap_blue_white_red():
     """Tests the function for rendering heatmap images using the blue-white-red color map."""
 
@@ -312,6 +288,40 @@ def test_render_heatmap_black_yellow():
     )
     actual_heatmap = render_heatmap(attribution_data, 'black-yellow')
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
+
+
+def test_render_heatmap_with_multiple_dimensions():
+    """Tests the function for rendering heatmap images, where the attribution data has multiple channel dimensions."""
+
+    # Creates the raw heatmap on which the tests are performed
+    attribution_data = numpy.stack([numpy.linspace(-1.0, 1.0, 10).reshape(10, 1)] * 2, axis=2)
+
+    # Validates the colors assigned by the heatmap
+    expected_heatmap = numpy.array(
+        [[[0, 0, 255]],
+         [[56, 56, 255]],
+         [[112, 112, 255]],
+         [[170, 170, 255]],
+         [[226, 226, 255]],
+         [[255, 226, 226]],
+         [[255, 170, 170]],
+         [[255, 112, 112]],
+         [[255, 56, 56]],
+         [[255, 0, 0]]],
+        dtype=numpy.uint8
+    )
+    actual_heatmap = render_heatmap(attribution_data, 'blue-white-red')
+    assert numpy.array_equal(expected_heatmap, actual_heatmap)
+
+
+def test_render_superimposed_heatmap_unknown_color_map():
+    """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution data as
+    alpha-channel using an unknown color map."""
+
+    attribution_data = numpy.linspace(-1.0, 1.0, 10).reshape(5, 2)
+    superimpose = numpy.ones((5, 2, 3))
+    with pytest.raises(ValueError):
+        render_superimposed_heatmap(attribution_data, superimpose, 'unknown-color-map')
 
 
 def test_render_superimposed_heatmap():

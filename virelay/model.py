@@ -115,6 +115,8 @@ class Project:
 
         Raises
         ------
+            ValueError
+                If the project has already been closed, then a ValueError is raised.
             LookupError
                 If no dataset sample with the specified index could be found, then a LookupError is raised.
 
@@ -123,6 +125,9 @@ class Project:
             Sample
                 Returns the dataset sample with the specified index.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         return self.dataset.get_sample(index)
 
@@ -137,6 +142,8 @@ class Project:
 
         Raises
         ------
+            ValueError
+                If the project has already been closed, then a ValueError is raised.
             LookupError
                 If no attribution with the specified index could be found, then a LookupError is raised
 
@@ -145,6 +152,9 @@ class Project:
             Attribution
                 Returns the attribution with the specified index.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         for attribution_database in self.attributions:
             if attribution_database.has_attribution(index):
@@ -156,11 +166,19 @@ class Project:
         """
         Retrieves the names of all the analysis methods that are in this project.
 
+        Raises
+        ------
+            ValueError
+                If the project has already been closed, then a ValueError is raised.
+
         Returns
         -------
             list of str
                 Returns a list of the names of the all the analysis methods in this project.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         return list(self.analyses.keys())
 
@@ -175,6 +193,8 @@ class Project:
 
         Raises
         ------
+            ValueError
+                If the project has already been closed, then a ValueError is raised.
             LookupError
                 If the specified analysis method does not exist, then a LookupError is raised.
 
@@ -183,6 +203,9 @@ class Project:
             list of str
                 Returns a list of the names of the categories.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         if analysis_method not in self.analyses:
             raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
@@ -206,6 +229,8 @@ class Project:
 
         Raises
         ------
+            ValueError
+                If the project has already been closed, then a ValueError is raised.
             LookupError
                 If the specified analysis method does not exist, then a LookupError is raised.
 
@@ -214,6 +239,9 @@ class Project:
             list of str
                 Returns a list of the names of the clusterings.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         if analysis_method not in self.analyses:
             raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
@@ -231,6 +259,8 @@ class Project:
 
         Raises
         ------
+            ValueError
+                If the project has already been closed, then a ValueError is raised.
             LookupError
                 If the specified analysis method does not exist, then a LookupError is raised.
 
@@ -239,6 +269,9 @@ class Project:
             list of str
                 Returns a list of the names of the embeddings.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         if analysis_method not in self.analyses:
             raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
@@ -270,7 +303,7 @@ class Project:
         Raises
         ------
             ValueError
-                If the analysis database has already been closed, then a ValueError is raised.
+                If the project has already been closed, then a ValueError is raised.
             LookupError
                 When the analysis for the specified analysis method, category name, clustering name, and embedding name
                 could not be found, then a LookupError is raised.
@@ -280,6 +313,9 @@ class Project:
             Analysis
                 Returns the analysis for the specified name.
         """
+
+        if self.is_closed:
+            raise ValueError('The project has already been closed.')
 
         if analysis_method not in self.analyses:
             raise LookupError(f'The specified analysis method "{analysis_method}" could not be found.')
@@ -344,7 +380,7 @@ class AttributionDatabase:
         # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
         # whether the sample has the label, when the dataset is single-label, then the label is just a scalar value
         # containing the index of the label)
-        self.is_multi_label = self.attribution_file['label'][0].dtype == numpy.bool
+        self.is_multi_label = self.attribution_file['label'][0].dtype == bool
 
     def has_attribution(self, index):
         """
@@ -371,7 +407,7 @@ class AttributionDatabase:
 
         if 'index' in self.attribution_file.keys():
             return index in self.attribution_file['index']
-        return index <= self.attribution_file['attribution'].shape[0]
+        return index < self.attribution_file['attribution'].shape[0]
 
     def get_attribution(self, index):
         """
@@ -427,8 +463,8 @@ class AttributionDatabase:
         """Closes the attribution database."""
 
         if not self.is_closed:
-            if self.attribution_file is not None:
-                self.attribution_file.close()
+            self.attribution_file.close()
+            self.attribution_file = None
             self.is_closed = True
 
     def __del__(self):
@@ -693,9 +729,9 @@ class AnalysisDatabase:
 
         # Gets the analysis for the specified name, cluster, and embedding
         analysis = self.analysis_file[category_name]
-        clustering = analysis['cluster'][clustering_name]
-        embedding = analysis['embedding'][embedding_name]
-        attribution_indices = analysis['index']
+        clustering = analysis['cluster'][clustering_name][()]
+        embedding = analysis['embedding'][embedding_name][()]
+        attribution_indices = analysis['index'][()]
         eigen_values = None
         if 'eigenvalue' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
             eigen_values = self.analysis_file[category_name]['embedding'][embedding_name].attrs['eigenvalue']

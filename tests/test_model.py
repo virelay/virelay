@@ -1,4 +1,5 @@
-"""Contains the tests for the model abstractions of ViRelAy"""
+"""Contains the tests for the model abstractions of ViRelAy."""
+# pylint: disable=too-many-lines
 
 import os
 import glob
@@ -12,17 +13,30 @@ import numpy
 import pytest
 from PIL import Image
 
-from virelay.model import ImageDirectoryDataset, LabelMap
 from corelay.processor.base import Processor
-from corelay.processor.flow import Sequential, Parallel
+from corelay.processor.affinity import SparseKNN
 from corelay.processor.distance import SciPyPDist
+from corelay.processor.flow import Sequential, Parallel
 from corelay.pipeline.spectral import SpectralClustering
 from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeClustering
 from corelay.processor.embedding import TSNEEmbedding, UMAPEmbedding, EigenDecomposition
-from corelay.processor.affinity import SparseKNN
+from virelay.model import (
+    Project,
+    AttributionDatabase,
+    Attribution,
+    AnalysisDatabase,
+    Analysis,
+    AnalysisCategory,
+    Hdf5Dataset,
+    ImageDirectoryDataset,
+    Sample,
+    LabelMap,
+    Label,
+    Workspace
+)
 
 NUMBER_OF_CLASSES = 3
-NUMBER_OF_SAMPLES = 10
+NUMBER_OF_SAMPLES = 40
 
 
 class Flatten(Processor):
@@ -130,15 +144,35 @@ def input_file_path(tmp_path: pathlib.Path) -> str:
             Returns the path to the created input file.
     """
 
+    data = None
+    data_labels = None
     input_file_path = tmp_path / 'input.h5'
     for label_index in range(NUMBER_OF_CLASSES):
 
-        data = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
-        data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
+        new_data = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
+        if data is None:
+            data = new_data
+        else:
+            data = numpy.concatenate((data, new_data), axis=0)
+        new_data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
+        if data_labels is None:
+            data_labels = new_data_labels
+        else:
+            data_labels = numpy.concatenate((data_labels, new_data_labels), axis=0)
 
-        with h5py.File(input_file_path, 'w') as input_file:
-            input_file.create_dataset('data', shape=(NUMBER_OF_SAMPLES, 3, 32, 32), dtype='float32', data=data)
-            input_file.create_dataset('label', shape=(NUMBER_OF_SAMPLES,), dtype='uint16', data=data_labels)
+    with h5py.File(input_file_path, 'w') as input_file:
+        input_file.create_dataset(
+            'data',
+            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
+            dtype='float32',
+            data=data
+        )
+        input_file.create_dataset(
+            'label',
+            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
+            dtype='uint16',
+            data=data_labels
+        )
 
     return input_file_path.as_posix()
 
@@ -159,27 +193,47 @@ def attribution_file_path(tmp_path: pathlib.Path) -> str:
             Returns the path to the created attribution file.
     """
 
+    attributions = None
+    predictions = None
+    data_labels = None
     attribution_file_path = tmp_path / 'attribution.h5'
     for label_index in range(NUMBER_OF_CLASSES):
 
-        attributions = numpy.random.uniform(-1, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
-        predictions = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, NUMBER_OF_CLASSES))
-        data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
+        new_attributions = numpy.random.uniform(-1, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
+        if attributions is None:
+            attributions = new_attributions
+        else:
+            attributions = numpy.concatenate((attributions, new_attributions), axis=0)
+        new_predictions = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, NUMBER_OF_CLASSES))
+        if predictions is None:
+            predictions = new_predictions
+        else:
+            predictions = numpy.concatenate((predictions, new_predictions), axis=0)
+        new_data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
+        if data_labels is None:
+            data_labels = new_data_labels
+        else:
+            data_labels = numpy.concatenate((data_labels, new_data_labels), axis=0)
 
-        with h5py.File(attribution_file_path, 'w') as input_file:
-            input_file.create_dataset(
-                'attribution',
-                shape=(NUMBER_OF_SAMPLES, 3, 32, 32),
-                dtype='float32',
-                data=attributions
-            )
-            input_file.create_dataset(
-                'prediction',
-                shape=(NUMBER_OF_SAMPLES, NUMBER_OF_CLASSES),
-                dtype='float32',
-                data=predictions
-            )
-            input_file.create_dataset('label', shape=(NUMBER_OF_SAMPLES,), dtype='uint16', data=data_labels)
+    with h5py.File(attribution_file_path, 'w') as input_file:
+        input_file.create_dataset(
+            'attribution',
+            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
+            dtype='float32',
+            data=attributions
+        )
+        input_file.create_dataset(
+            'prediction',
+            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, NUMBER_OF_CLASSES),
+            dtype='float32',
+            data=predictions
+        )
+        input_file.create_dataset(
+            'label',
+            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
+            dtype='uint16',
+            data=data_labels
+        )
 
     return attribution_file_path.as_posix()
 
@@ -474,8 +528,307 @@ def image_directory_dataset_with_sample_paths_file_path(tmp_path: pathlib.Path) 
     return image_directory_dataset_path.as_posix()
 
 
+class TestProject:
+    """Represents the tests for the Project class."""
+
+    @staticmethod
+    def test_project_creation(project_file_path: str) -> None:
+        """Tests whether a project can be created.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_path)
+        assert not project.is_closed
+        assert project.name == 'Test Project'
+        assert project.model == 'No Model'
+        assert project.dataset.name == 'Random Data'
+        assert project.attribution_method == 'Random Attribution'
+        assert len(project.analyses) == 1
+        assert 'Spectral Analysis' in project.analyses
+
+
+class TestAttributionDatabase:
+    """Represents the tests for the AttributionDatabase class."""
+
+    @staticmethod
+    def test_attribution_database_creation(attribution_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether an attribution database can be created.
+
+
+        Parameters
+        ----------
+            attribution_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        attribution_database = AttributionDatabase(attribution_file_path, label_map_file_path)
+        assert not attribution_database.is_closed
+        assert not attribution_database.is_multi_label
+
+
+class TestAttribution:
+    """Represents the tests for the Attribution class."""
+
+    @staticmethod
+    def test_attribution_creation() -> None:
+        """Tests whether an attribution can be created."""
+
+        data = numpy.random.uniform(-1, 1, size=(3, 32, 32))
+        label = Label(0, '00000000', 'Class 0')
+        prediction = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES, ))
+        attribution = Attribution(0, data, label, prediction)
+
+        assert attribution.index == 0
+        assert numpy.array_equal(attribution.data, numpy.moveaxis(data, [0, 1, 2], [2, 0, 1]))
+        assert attribution.labels == [label]
+        assert numpy.array_equal(attribution.prediction, prediction)
+
+
+class TestAnalysisDatabase:
+    """Represents the tests for the AnalysisDatabase class."""
+
+    @staticmethod
+    def test_analysis_database_creation(analysis_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether an analysis database can be created.
+
+
+        Parameters
+        ----------
+            analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        analysis_database = AnalysisDatabase(analysis_file_path, label_map_file_path)
+        assert not analysis_database.is_closed
+
+
+class TestAnalysisCategory:
+    """Represents the tests for the AnalysisCategory class."""
+
+    @staticmethod
+    def test_analysis_category_creation() -> None:
+        """Tests whether an analysis category can be created."""
+
+        analysis_category = AnalysisCategory('class-0', 'Class 0')
+        assert analysis_category.name == 'class-0'
+        assert analysis_category.human_readable_name == 'Class 0'
+
+
+class TestAnalysis:
+    """Represents the tests for the Analysis class."""
+
+    @staticmethod
+    def test_analysis_creation() -> None:
+        """Tests whether an analysis can be created."""
+
+        clustering = numpy.random.randint(NUMBER_OF_CLASSES, size=NUMBER_OF_SAMPLES)
+        embedding = numpy.random.uniform(size=(NUMBER_OF_CLASSES, 16))
+        attribution_indices = numpy.random.randint(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES, size=NUMBER_OF_SAMPLES)
+        eigen_values = numpy.random.normal(size=NUMBER_OF_SAMPLES)
+        analysis = Analysis(
+            category_name='class-0',
+            human_readable_category_name='Class 0',
+            clustering_name='kmeans-2',
+            clustering=clustering,
+            embedding_name='spectral',
+            embedding=embedding,
+            attribution_indices=attribution_indices,
+            eigen_values=eigen_values,
+            base_embedding_name=None,
+            base_embedding_axes_indices=None
+        )
+
+        assert analysis.category_name == 'class-0'
+        assert analysis.human_readable_category_name == 'Class 0'
+        assert analysis.clustering_name == 'kmeans-2'
+        assert numpy.array_equal(analysis.clustering, clustering)
+        assert analysis.embedding_name == 'spectral'
+        assert numpy.array_equal(analysis.embedding, embedding)
+        assert numpy.array_equal(analysis.attribution_indices, attribution_indices)
+        assert numpy.array_equal(analysis.eigen_values, eigen_values)
+        assert analysis.base_embedding_name is None
+        assert analysis.base_embedding_axes_indices is None
+
+
+class TestHdf5Dataset:
+    """Represents the tests for the Hdf5Dataset class."""
+
+    @staticmethod
+    def test_dataset_has_correct_size(
+            input_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the dataset correctly reports its size/length.
+
+        Parameters
+        ----------
+            input_file_path: str
+                The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=input_file_path,
+            label_map=label_map
+        )
+        assert len(hdf5_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
+
+    @staticmethod
+    def test_closed_dataset_cannot_retrieve_sample(
+            input_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the dataset correctly refuses to return a sample for a closed dataset.
+
+        Parameters
+        ----------
+            input_file_path: str
+                The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=input_file_path,
+            label_map=label_map
+        )
+        hdf5_dataset.close()
+
+        with pytest.raises(ValueError):
+            hdf5_dataset.get_sample(0)
+
+        with pytest.raises(ValueError):
+            _ = hdf5_dataset[0]
+
+    @staticmethod
+    def test_dataset_can_be_closed_multiple_times(
+            input_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the dataset can be closed multiple times without raising an error.
+
+        Parameters
+        ----------
+            input_file_path: str
+                The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=input_file_path,
+            label_map=label_map
+        )
+        hdf5_dataset.close()
+        hdf5_dataset.close()
+
+    @staticmethod
+    def test_cannot_retrieve_sample_for_out_of_bounds_index(
+            input_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
+        dataset.
+
+        Parameters
+        ----------
+            input_file_path: str
+                The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=input_file_path,
+            label_map=label_map
+        )
+
+        with pytest.raises(LookupError):
+            hdf5_dataset.get_sample(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+        with pytest.raises(LookupError):
+            _ = hdf5_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
+
+    @staticmethod
+    def test_retrieval_of_multiple_samples(
+            input_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether multiple samples can be retrieved at the same time.
+
+        Parameters
+        ----------
+            input_file_path: str
+                The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=input_file_path,
+            label_map=label_map
+        )
+
+        samples = hdf5_dataset[2:6]
+        assert len(samples) == 4
+
+        samples = hdf5_dataset[[2, 10, 12, 20, 19]]
+        assert len(samples) == 5
+
+        samples = hdf5_dataset[(8, 13, 27)]
+        assert len(samples) == 3
+
+        samples = hdf5_dataset[numpy.array([21, 4])]
+        assert len(samples) == 2
+
+        samples = hdf5_dataset[range(10)]
+        assert len(samples) == 10
+
+
 class TestImageDirectoryDataset:
     """Represents the tests for the ImageDirectoryDataset class."""
+
+    @staticmethod
+    def test_dataset_has_correct_size(
+            image_directory_dataset_with_label_indices_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether the dataset correctly reports its size/length.
+
+        Parameters
+        ----------
+            image_directory_dataset_with_label_indices_path: str
+                The path to the image directory dataset that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        image_directory_dataset = ImageDirectoryDataset(
+            name="Test Dataset",
+            path=image_directory_dataset_with_label_indices_path,
+            label_index_regex=r'^.*/label-([0-9]+)/.*$',
+            label_word_net_id_regex=None,
+            input_width=64,
+            input_height=64,
+            down_sampling_method='none',
+            up_sampling_method='none',
+            label_map=label_map
+        )
+        assert len(image_directory_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
 
     @staticmethod
     def test_unsupported_sampling_methods() -> None:
@@ -541,13 +894,13 @@ class TestImageDirectoryDataset:
 
     @staticmethod
     def test_closed_dataset_cannot_retrieve_sample(
-            image_directory_dataset_with_sample_paths_file_path: str,
+            image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly refuses to return a sample for a closed dataset.
 
         Parameters
         ----------
-            image_directory_dataset_with_sample_paths_file_path: str
+            image_directory_dataset_with_label_indices_path: str
                 The path to the image directory dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -556,7 +909,7 @@ class TestImageDirectoryDataset:
         label_map = LabelMap(label_map_file_path)
         image_directory_dataset = ImageDirectoryDataset(
             name="Test Dataset",
-            path=image_directory_dataset_with_sample_paths_file_path,
+            path=image_directory_dataset_with_label_indices_path,
             label_index_regex=r'^.*/label-([0-9]+)/.*$',
             label_word_net_id_regex=None,
             input_width=64,
@@ -571,18 +924,18 @@ class TestImageDirectoryDataset:
             image_directory_dataset.get_sample(0)
 
         with pytest.raises(ValueError):
-            image_directory_dataset[0]
+            _ = image_directory_dataset[0]
 
     @staticmethod
     def test_cannot_retrieve_sample_for_out_of_bounds_index(
-            image_directory_dataset_with_sample_paths_file_path: str,
+            image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
         dataset.
 
         Parameters
         ----------
-            image_directory_dataset_with_sample_paths_file_path: str
+            image_directory_dataset_with_label_indices_path: str
                 The path to the image directory dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -591,7 +944,7 @@ class TestImageDirectoryDataset:
         label_map = LabelMap(label_map_file_path)
         image_directory_dataset = ImageDirectoryDataset(
             name="Test Dataset",
-            path=image_directory_dataset_with_sample_paths_file_path,
+            path=image_directory_dataset_with_label_indices_path,
             label_index_regex=r'^.*/label-([0-9]+)/.*$',
             label_word_net_id_regex=None,
             input_width=64,
@@ -605,7 +958,7 @@ class TestImageDirectoryDataset:
             image_directory_dataset.get_sample(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
 
         with pytest.raises(LookupError):
-            image_directory_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
+            _ = image_directory_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
 
     @staticmethod
     def test_sample_paths_file(
@@ -873,16 +1226,102 @@ class TestImageDirectoryDataset:
             up_sampling_method='none',
             label_map=label_map
         )
+
         samples = image_directory_dataset[2:6]
         assert len(samples) == 4
+
         samples = image_directory_dataset[[2, 10, 12, 20, 19]]
         assert len(samples) == 5
+
         samples = image_directory_dataset[(8, 13, 27)]
         assert len(samples) == 3
+
         samples = image_directory_dataset[numpy.array([21, 4])]
         assert len(samples) == 2
+
         samples = image_directory_dataset[range(10)]
         assert len(samples) == 10
+
+
+class TestSample:
+    """Represents the tests for the Sample class."""
+
+    @staticmethod
+    def test_sample_creation() -> None:
+        """Tests whether a sample can be created."""
+
+        image = numpy.random.randint(256, size=(32, 32, 3), dtype=numpy.uint8)
+        label = Label(0, '00000000', 'Class 0')
+        sample = Sample(0, image.copy(), label)
+        assert sample.index == 0
+        assert numpy.array_equal(sample.data, image)
+        assert sample.labels == [label]
+
+    @staticmethod
+    def test_sample_creation_with_multiple_labels() -> None:
+        """Tests whether a sample can be created with multiple labels."""
+
+        image = numpy.random.randint(256, size=(32, 32, 3), dtype=numpy.uint8)
+        label_0 = Label(0, '00000000', 'Class 0')
+        label_1 = Label(1, '00000001', 'Class 1')
+        sample = Sample(0, image.copy(), [label_0, label_1])
+        assert sample.index == 0
+        assert numpy.array_equal(sample.data, image)
+        assert sample.labels == [label_0, label_1]
+
+    @staticmethod
+    def test_sample_creation_with_pytorch_image() -> None:
+        """Tests whether a sample can be created with an image that has the PyTorch channel order."""
+
+        image = numpy.random.randint(256, size=(3, 32, 64), dtype=numpy.uint8)
+        label = Label(0, '00000000', 'Class 0')
+        sample = Sample(0, image.copy(), label)
+        assert sample.index == 0
+        assert sample.data.shape[0] == 32
+        assert sample.data.shape[1] == 64
+        assert sample.data.shape[2] == 3
+        assert numpy.array_equal(sample.data, numpy.moveaxis(image, [0, 1, 2], [2, 0, 1]))
+        assert sample.labels == [label]
+
+    @staticmethod
+    def test_sample_creation_with_float_image() -> None:
+        """Tests whether a sample can be created with an image that has the float data type and pixel values between 0.0
+        and 255.0.
+        """
+
+        image = numpy.random.randint(256, size=(32, 32, 3)).astype(dtype=numpy.float64)
+        label = Label(0, '00000000', 'Class 0')
+        sample = Sample(0, image.copy(), label)
+        assert sample.index == 0
+        assert numpy.array_equal(sample.data, image.astype(numpy.uint8))
+        assert sample.labels == [label]
+
+    @staticmethod
+    def test_sample_creation_with_float_image_between_zero_and_one() -> None:
+        """Tests whether a sample can be created with an image that has the float data type and pixel values between 0.0
+        and 1.0.
+        """
+
+        image = numpy.random.uniform(low=0.0, high=1.0, size=(32, 32, 3))
+        label = Label(0, '00000000', 'Class 0')
+        sample = Sample(0, image.copy(), label)
+        assert sample.index == 0
+        assert numpy.array_equal(sample.data, (image * 255.0).astype(numpy.uint8))
+        assert sample.labels == [label]
+
+    @staticmethod
+    def test_sample_creation_with_float_image_between_negative_one_and_one() -> None:
+        """Tests whether a sample can be created with an image that has the float data type and pixel values between
+        -1.0 and 1.0.
+        """
+
+        image = numpy.random.uniform(low=-1.0, high=1.0, size=(32, 32, 3))
+        label = Label(0, '00000000', 'Class 0')
+        sample = Sample(0, image.copy(), label)
+        assert sample.index == 0
+        assert numpy.array_equal(sample.data, ((image + 1) * (255.0 / 2.0)).astype(numpy.uint8))
+        assert sample.labels == [label]
+
 
 class TestLabelMap:
     """Represents the tests for the LabelMap class."""
@@ -967,3 +1406,105 @@ class TestLabelMap:
 
         with pytest.raises(LookupError):
             label_map.get_labels([])
+
+
+class TestLabel:
+    """Represents the tests for the Label class."""
+
+    @staticmethod
+    def test_label_creation() -> None:
+        """Tests whether a label can be created."""
+
+        label = Label(0, '00000000', 'Class 0')
+        assert label.index == 0
+        assert label.word_net_id == '00000000'
+        assert label.name == 'Class 0'
+
+
+class TestWorkspace:
+    """Represents the tests for the Workspace class."""
+
+    @staticmethod
+    def test_workspace_creation() -> None:
+        """Tests whether a workspace can be created."""
+
+        workspace = Workspace()
+        assert not workspace.is_closed
+        assert len(workspace.projects) == 0
+
+    @staticmethod
+    def test_workspace_can_be_closed_multiple_times() -> None:
+        """Tests whether a workspace can be closed multiple times without raising an error."""
+
+        workspace = Workspace()
+        workspace.close()
+        workspace.close()
+
+    @staticmethod
+    def test_project_can_be_added_to_workspace(project_file_path: str) -> None:
+        """Tests whether a project can be added to a workspace.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used in for the tests.
+        """
+
+        workspace = Workspace()
+        workspace.add_project(project_file_path)
+
+        assert len(workspace.projects) == 1
+        assert workspace.get_project_names() == ['Test Project']
+        assert workspace.get_project('Test Project').name == 'Test Project'
+
+    @staticmethod
+    def test_multiple_projects_can_be_added_to_workspace(project_file_path: str) -> None:
+        """Tests whether multiple projects can be added to a workspace.
+
+        Parameters
+        ----------
+            project_file_path: str
+                The path to the project file that is used in for the tests.
+        """
+
+        workspace = Workspace()
+        workspace.add_project(project_file_path)
+        workspace.projects[0].name = 'Test Project 1'
+        workspace.add_project(project_file_path)
+        workspace.projects[1].name = 'Test Project 2'
+
+        assert len(workspace.projects) == 2
+        assert workspace.get_project_names() == ['Test Project 1', 'Test Project 2']
+        assert workspace.get_project('Test Project 1').name == 'Test Project 1'
+        assert workspace.get_project('Test Project 2').name == 'Test Project 2'
+
+        workspace.close()
+        for project in workspace.projects:
+            assert project.is_closed
+
+    @staticmethod
+    def test_cannot_add_or_get_projects_of_closed_workspace() -> None:
+        """Tests whether the workspace raises an error when adding or retrieving a project after the workspace was
+        closed.
+        """
+
+        workspace = Workspace()
+        workspace.close()
+
+        with pytest.raises(ValueError):
+            workspace.add_project('')
+
+        with pytest.raises(ValueError):
+            workspace.get_project('Test Project')
+
+        with pytest.raises(ValueError):
+            workspace.get_project_names()
+
+    @staticmethod
+    def test_workspace_cannot_find_unknown_project() -> None:
+        """Tests whether a project can be added to a workspace."""
+
+        workspace = Workspace()
+
+        with pytest.raises(LookupError):
+            workspace.get_project('Test Project')

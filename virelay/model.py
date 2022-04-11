@@ -57,7 +57,7 @@ class Project:
                 self.label_map = LabelMap(os.path.join(working_directory, project['label_map']))
 
                 # Loads the dataset of the project
-                if project['dataset'] is not None:
+                if 'dataset' in project:
                     dataset_type = project['dataset']['type']
                     if dataset_type == 'hdf5':
                         self.dataset = Hdf5Dataset(
@@ -81,7 +81,7 @@ class Project:
                         raise ValueError(f'The specified dataset type "{dataset_type}" is unknown.')
 
                 # Loads the attributions of the project
-                if project['attributions'] is not None:
+                if 'attributions' in project:
                     self.attribution_method = project['attributions']['attribution_method']
                     self.attribution_strategy = project['attributions']['attribution_strategy']
                     for attribution_database in project['attributions']['sources']:
@@ -91,7 +91,7 @@ class Project:
                         ))
 
                 # Loads the analyses of the project
-                if project['analyses'] is not None:
+                if 'analyses' in project:
                     for analysis in project['analyses']:
                         analysis_method = analysis['analysis_method']
                         if analysis_method not in self.analyses:
@@ -117,6 +117,7 @@ class Project:
         ------
             ValueError
                 If the project has already been closed, then a ValueError is raised.
+                If the project does not contain a dataset, then a ValueError is raised.
             LookupError
                 If no dataset sample with the specified index could be found, then a LookupError is raised.
 
@@ -128,6 +129,9 @@ class Project:
 
         if self.is_closed:
             raise ValueError('The project has already been closed.')
+
+        if self.dataset is None:
+            raise ValueError('The project does not contain a dataset.')
 
         return self.dataset.get_sample(index)
 
@@ -735,20 +739,12 @@ class AnalysisDatabase:
         eigen_values = None
         if 'eigenvalue' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
             eigen_values = self.analysis_file[category_name]['embedding'][embedding_name].attrs['eigenvalue']
-        base_embedding_name = None
-        if 'embedding' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
-            base_embedding_name = self.analysis_file[category_name]['embedding'][embedding_name].attrs['embedding']
-            if 'eigenvalue' in self.analysis_file[category_name]['embedding'][base_embedding_name].attrs.keys():
-                eigen_values = self.analysis_file[category_name]['embedding'][base_embedding_name].attrs['eigenvalue']
-        base_embedding_axes_indices = None
-        if 'index' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
-            base_embedding_axes_indices = self.analysis_file[category_name]['embedding'][embedding_name].attrs['index']
 
         # Wraps the information of the analysis in an object and returns it
         try:
             human_readable_category_name = self.label_map.get_labels(category_name)
         except LookupError:
-            human_readable_category_name = category_name
+            human_readable_category_name = ''
         return Analysis(
             category_name,
             human_readable_category_name,
@@ -757,9 +753,7 @@ class AnalysisDatabase:
             embedding_name,
             embedding,
             attribution_indices,
-            eigen_values,
-            base_embedding_name,
-            base_embedding_axes_indices
+            eigen_values
         )
 
     def close(self):
@@ -811,9 +805,7 @@ class Analysis:
             embedding_name,
             embedding,
             attribution_indices,
-            eigen_values,
-            base_embedding_name,
-            base_embedding_axes_indices
+            eigen_values
     ):
         """
         Initializes a new Analysis instance.
@@ -849,16 +841,6 @@ class Analysis:
                 The eigen values of the embedding. The eigen values must only be specified for normal embeddings that
                 are not based on another embedding (see the description for the base_embedding_name parameter for more
                 information).
-            base_embedding_name: str
-                There are two types of embeddings: normal embeddings and embeddings of embeddings. Embeddings of
-                embeddings are embeddings that are based on another embedding (e.g. the spectral embedding has a lot of
-                dimensions, so a T-SNE embedding is performed on the spectral embedding, which embeds the spectral
-                embedding in two-dimensional space). This is the name of the embedding on which the embedding is based.
-                When this is a normal embedding, then this should be None.
-            base_embedding_axes_indices: numpy.ndarray
-                The indices of the axes of the embedding on which this embedding is based. This value must only be
-                specified for embeddings that are based on other embeddings and not normal embeddings (see the
-                description for the base_embedding_name parameter for more information).
         """
 
         self.category_name = category_name
@@ -869,8 +851,6 @@ class Analysis:
         self.embedding = embedding
         self.attribution_indices = attribution_indices
         self.eigen_values = eigen_values
-        self.base_embedding_name = base_embedding_name
-        self.base_embedding_axes_indices = base_embedding_axes_indices
 
 
 class Hdf5Dataset:

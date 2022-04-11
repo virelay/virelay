@@ -3,23 +3,10 @@
 
 import os
 import glob
-import json
-import random
-from pytest import TempPathFactory
 
-import yaml
-import h5py
 import numpy
 import pytest
-from PIL import Image
 
-from corelay.processor.base import Processor
-from corelay.processor.affinity import SparseKNN
-from corelay.processor.distance import SciPyPDist
-from corelay.processor.flow import Sequential, Parallel
-from corelay.pipeline.spectral import SpectralClustering
-from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeClustering
-from corelay.processor.embedding import TSNEEmbedding, UMAPEmbedding, EigenDecomposition
 from virelay.model import (
     Project,
     AttributionDatabase,
@@ -39,528 +26,138 @@ NUMBER_OF_CLASSES = 3
 NUMBER_OF_SAMPLES = 40
 
 
-class Flatten(Processor):
-    """Represents a processor, which flattens the data."""
-
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
-        """Applies the processor to the data.
-
-        Parameters
-        ----------
-            data (numpy.ndarray): The data that is to be processed.
-
-        Returns
-        -------
-            numpy.ndarray:
-                Returns the processed data.
-        """
-
-        return data.reshape(data.shape[0], numpy.prod(data.shape[1:]))
-
-
-class SumChannel(Processor):
-    """Represents a processor, which produces the sum over the channels of the data."""
-
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
-        """Applies the processor to the data.
-
-        Parameters
-        ----------
-            data (numpy.ndarray): The data that is to be processed.
-
-        Returns
-        -------
-            numpy.ndarray:
-                Returns the processed data.
-        """
-
-        return data.sum(1)
-
-
-class Normalize(Processor):
-    """Represents a processor, which normalizes the data."""
-
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
-        """Applies the processor to the data.
-
-        Parameters
-        ----------
-            data (numpy.ndarray): The data that is to be processed.
-
-        Returns
-        -------
-            numpy.ndarray:
-                Returns the processed data.
-        """
-
-        data = data / data.sum((1, 2), keepdims=True)
-        return data
-
-
-@pytest.fixture(scope='session')
-def label_map_file_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates a label map file.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the label file will be created. This a an automatically created
-            temporary path and comes from the built-in tmp_path fixture of PyTest.
-
-    Returns
-    -------
-        str
-            Returns the path to the created label map file.
-    """
-
-    label_map = [
-        {
-            'index': label_index,
-            'word_net_id': f'{label_index:08d}',
-            'name': f'Class {label_index:d}',
-        } for label_index in range(NUMBER_OF_CLASSES)
-    ]
-
-    label_map_file_path = tmp_path_factory.getbasetemp() / 'label-map.json'
-    with open(label_map_file_path, 'w', encoding='utf-8') as label_map_file:
-        json.dump(label_map, label_map_file)
-
-    return label_map_file_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def input_file_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an input file.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the input file will be created. This a an automatically created
-            temporary path and comes from the built-in tmp_path fixture of PyTest.
-
-    Returns
-    -------
-        str
-            Returns the path to the created input file.
-    """
-
-    data = None
-    data_labels = None
-    input_file_path = tmp_path_factory.getbasetemp() / 'input.h5'
-    for label_index in range(NUMBER_OF_CLASSES):
-
-        new_data = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
-        if data is None:
-            data = new_data
-        else:
-            data = numpy.concatenate((data, new_data), axis=0)
-        new_data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
-        if data_labels is None:
-            data_labels = new_data_labels
-        else:
-            data_labels = numpy.concatenate((data_labels, new_data_labels), axis=0)
-
-    with h5py.File(input_file_path, 'w') as input_file:
-        input_file.create_dataset(
-            'data',
-            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
-            dtype='float32',
-            data=data
-        )
-        input_file.create_dataset(
-            'label',
-            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
-            dtype='uint16',
-            data=data_labels
-        )
-
-    return input_file_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def attribution_file_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an attribution file.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the attribution file will be created. This a an automatically
-            created temporary path and comes from the built-in tmp_path fixture of PyTest.
-
-    Returns
-    -------
-        str
-            Returns the path to the created attribution file.
-    """
-
-    attributions = None
-    predictions = None
-    data_labels = None
-    attribution_file_path = tmp_path_factory.getbasetemp() / 'attribution.h5'
-    for label_index in range(NUMBER_OF_CLASSES):
-
-        new_attributions = numpy.random.uniform(-1, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
-        if attributions is None:
-            attributions = new_attributions
-        else:
-            attributions = numpy.concatenate((attributions, new_attributions), axis=0)
-        new_predictions = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, NUMBER_OF_CLASSES))
-        if predictions is None:
-            predictions = new_predictions
-        else:
-            predictions = numpy.concatenate((predictions, new_predictions), axis=0)
-        new_data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
-        if data_labels is None:
-            data_labels = new_data_labels
-        else:
-            data_labels = numpy.concatenate((data_labels, new_data_labels), axis=0)
-
-    with h5py.File(attribution_file_path, 'w') as input_file:
-        input_file.create_dataset(
-            'attribution',
-            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
-            dtype='float32',
-            data=attributions
-        )
-        input_file.create_dataset(
-            'prediction',
-            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, NUMBER_OF_CLASSES),
-            dtype='float32',
-            data=predictions
-        )
-        input_file.create_dataset(
-            'label',
-            shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
-            dtype='uint16',
-            data=data_labels
-        )
-
-    return attribution_file_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def analysis_file_path(tmp_path_factory: TempPathFactory, attribution_file_path: str, label_map_file_path: str) -> str:
-    """A test fixture, which creates an analysis file.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the analysis file will be created. This a an automatically
-            created temporary path and comes from the built-in tmp_path fixture of PyTest.
-        attribution_file_path: str
-            The path to the attribution file that contains the attributions for which the analysis is to be generated.
-            This comes from the attribution_file_path fixture.
-        label_map_file_path: str
-            The path to the label map file. This comes from the label_map_file_path fixture.
-
-    Returns
-    -------
-        str
-            Returns the path to the created analysis file.
-    """
-
-    analysis_file_path = tmp_path_factory.getbasetemp() / 'analysis.h5'
-
-    number_of_clusters_to_try = [2, 3]
-    analysis_pipeline = SpectralClustering(
-        preprocessing=Sequential([
-            SumChannel(),
-            Normalize(),
-            Flatten()
-        ]),
-        pairwise_distance=SciPyPDist(metric='euclidean'),
-        affinity=SparseKNN(n_neighbors=32, symmetric=True),
-        embedding=EigenDecomposition(n_eigval=32, is_output=True),
-        clustering=Parallel([
-            Parallel([
-                KMeans(n_clusters=number_of_clusters) for number_of_clusters in number_of_clusters_to_try
-            ], broadcast=True),
-            Parallel([
-                DBSCAN(eps=number_of_clusters / 10.0) for number_of_clusters in number_of_clusters_to_try
-            ], broadcast=True),
-            HDBSCAN(),
-            Parallel([
-                AgglomerativeClustering(n_clusters=k) for k in number_of_clusters_to_try
-            ], broadcast=True),
-            Parallel([
-                UMAPEmbedding(),
-                TSNEEmbedding(),
-            ], broadcast=True)
-        ], broadcast=True, is_output=True)
-    )
-
-    with open(label_map_file_path, 'r', encoding='utf-8') as label_map_file:
-        label_map = json.load(label_map_file)
-    label_map = {element['index']: element['word_net_id'] for element in label_map}
-
-    with h5py.File(attribution_file_path, 'r') as attribution_file, h5py.File(analysis_file_path, 'w') as analysis_file:
-
-        data_labels = attribution_file['label'][:]
-
-        for label_index in [int(element) for element in label_map]:
-            index, = numpy.nonzero(data_labels == label_index)
-            data = attribution_file['attribution'][index, :]
-
-            (eigenvalues, embedding), (kmeans, dbscan, hdbscan, agglo, (umap, tsne)) = analysis_pipeline(data)
-
-            analysis_name = label_map.get(label_index, f'{label_index:03d}')
-            analysis_group = analysis_file.require_group(analysis_name)
-            analysis_group['index'] = index.astype('uint32')
-
-            embedding_group = analysis_group.require_group('embedding')
-            embedding_group['spectral'] = embedding.astype('float32')
-            embedding_group['spectral'].attrs['eigenvalue'] = eigenvalues.astype('float32')
-
-            embedding_group['tsne'] = tsne.astype('float32')
-            embedding_group['tsne'].attrs['embedding'] = 'spectral'
-            embedding_group['tsne'].attrs['index'] = numpy.array([0, 1])
-
-            embedding_group['umap'] = umap.astype('float32')
-            embedding_group['umap'].attrs['embedding'] = 'spectral'
-            embedding_group['umap'].attrs['index'] = numpy.array([0, 1])
-
-            cluster_group = analysis_group.require_group('cluster')
-            for number_of_clusters, clustering in zip(number_of_clusters_to_try, kmeans):
-                cluster_id = f'kmeans-{number_of_clusters:02d}'
-                cluster_group[cluster_id] = clustering
-                cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                cluster_group[cluster_id].attrs['k'] = number_of_clusters
-                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
-
-            for number_of_clusters, clustering in zip(number_of_clusters_to_try, dbscan):
-                cluster_id = f'dbscan-eps={number_of_clusters / 10.0:.1f}'
-                cluster_group[cluster_id] = clustering
-                cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
-
-            cluster_id = 'hdbscan'
-            cluster_group[cluster_id] = hdbscan
-            cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-            cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
-
-            for number_of_clusters, clustering in zip(number_of_clusters_to_try, agglo):
-                cluster_id = f'agglomerative-{number_of_clusters:02d}'
-                cluster_group[cluster_id] = clustering
-                cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                cluster_group[cluster_id].attrs['k'] = number_of_clusters
-                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
-
-    return analysis_file_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def project_file_path(
-        tmp_path_factory: TempPathFactory,
-        input_file_path: str,
-        attribution_file_path: str,
-        analysis_file_path: str,
-        label_map_file_path: str) -> str:
-    """A test fixture, which creates an project file.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the project file will be created. This a an automatically created
-            temporary path and comes from the built-in tmp_path fixture of PyTest.
-        input_file_path: str
-            The path to the input file. This comes from the input_file_path fixture.
-        attribution_file_path: str
-            The path to the attribution file. This comes from the attribution_file_path fixture.
-        analysis_file_path: str
-            The path to the analysis file. This comes from the analysis_file_path fixture.
-        label_map_file_path: str
-            The path to the label map file. This comes from the label_map_file_path fixture.
-
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
-    """
-
-    project_file_path = tmp_path_factory.getbasetemp() / 'project.yaml'
-
-    project = {
-        'project': {
-            'name': 'Test Project',
-            'model': 'No Model',
-            'label_map': os.path.relpath(label_map_file_path, start=tmp_path_factory.getbasetemp().as_posix()),
-            'dataset': {
-                'name': "Random Data",
-                'type': 'hdf5',
-                'path': os.path.relpath(input_file_path, start=tmp_path_factory.getbasetemp().as_posix()),
-                'input_width': 32,
-                'input_height': 32,
-                'down_sampling_method': 'none',
-                'up_sampling_method': 'none',
-            },
-            'attributions': {
-                'attribution_method': 'Random Attribution',
-                'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())],
-            },
-            'analyses': [
-                {
-                    'analysis_method': 'Spectral Analysis',
-                    'sources': [os.path.relpath(analysis_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
-                }
-            ]
-        }
-    }
-
-    with open(project_file_path, 'w', encoding='utf-8') as project_file:
-        yaml.dump(project, project_file, default_flow_style=False)
-
-    return project_file_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def image_directory_dataset_with_label_indices_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
-    of the directories represent the labels of the images. In this version of the fixture, the label directories have
-    the index of the label in them.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the project file will be created. This a an automatically created
-            temporary path and comes from the built-in tmp_path fixture of PyTest.
-
-    Returns
-    -------
-        str
-            Returns the path to the created image dataset.
-    """
-
-    image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-label-indices'
-    image_directory_dataset_path.mkdir()
-
-    for label_index in range(NUMBER_OF_CLASSES):
-        label_directory_path = image_directory_dataset_path / f'label-{label_index}'
-        label_directory_path.mkdir()
-
-        for image_index in range(NUMBER_OF_SAMPLES):
-            image = Image.new(
-                'RGB',
-                (64, 64),
-                color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            )
-            image.save(label_directory_path / f'image-{image_index}.png')
-
-    return image_directory_dataset_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def image_directory_dataset_with_wordnet_ids_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
-    of the directories represent the labels of the images. In this version of the fixture, the label directories have
-    the WordNet ID of the label in them.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the project file will be created. This a an automatically created
-            temporary path and comes from the built-in tmp_path fixture of PyTest.
-
-    Returns
-    -------
-        str
-            Returns the path to the created image dataset.
-    """
-
-    image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-wordnet-ids'
-    image_directory_dataset_path.mkdir()
-
-    for label_index in range(NUMBER_OF_CLASSES):
-        label_directory_path = image_directory_dataset_path / f'wordnet-{label_index:08d}'
-        label_directory_path.mkdir()
-
-        for image_index in range(NUMBER_OF_SAMPLES):
-            image = Image.new(
-                'RGB',
-                (64, 64),
-                color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            )
-            image.save(label_directory_path / f'image-{image_index}.png')
-
-    return image_directory_dataset_path.as_posix()
-
-
-@pytest.fixture(scope='session')
-def image_directory_dataset_with_sample_paths_file_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
-    of the directories represent the labels of the images. In this version of the fixture, a file exists, which lists
-    all samples of the dataset. Only every second image is actually added to the sample paths file, so that it can be
-    validated that the dataset actually loaded the samples from the sample paths file.
-
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            The path to a temporary directory in which the project file will be created. This a an automatically created
-            temporary path and comes from the built-in tmp_path fixture of PyTest.
-
-    Returns
-    -------
-        str
-            Returns the path to the created image dataset.
-    """
-
-    image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-sample-paths-file'
-    image_directory_dataset_path.mkdir()
-
-    image_file_paths = []
-    for label_index in range(NUMBER_OF_CLASSES):
-        label_directory_path = image_directory_dataset_path / f'label-{label_index}'
-        label_directory_path.mkdir()
-
-        for image_index in range(NUMBER_OF_SAMPLES):
-            image = Image.new(
-                'RGB',
-                (64, 64),
-                color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            )
-            image_file_path = label_directory_path / f'image-{image_index}.png'
-            image.save(image_file_path)
-            image_file_paths.append(image_file_path.as_posix())
-
-    with open(image_directory_dataset_path.as_posix() + '_paths.txt', 'w', encoding='utf-8') as sample_paths_file:
-        sample_paths_file.write('\n'.join(image_file_paths[::2]))
-
-    return image_directory_dataset_path.as_posix()
-
-
 class TestProject:
     """Represents the tests for the Project class."""
 
     @staticmethod
-    def test_project_creation(project_file_path: str) -> None:
-        """Tests whether a project can be created.
+    def test_project_creation_with_hdf5_dataset(project_file_with_hdf5_dataset_path: str) -> None:
+        """Tests whether a project with an HDF5 dataset can be created.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
         assert not project.is_closed
         assert project.name == 'Test Project'
         assert project.model == 'No Model'
-        assert project.dataset.name == 'Random Data'
+        assert project.dataset.name == 'HDF5 Dataset'
         assert project.attribution_method == 'Random Attribution'
         assert len(project.analyses) == 1
         assert 'Spectral Analysis' in project.analyses
 
     @staticmethod
-    def test_closed_attribution_database_cannot_be_used(project_file_path: str) -> None:
+    def test_project_creation_with_image_directory_dataset(project_file_with_image_directory_dataset_path: str) -> None:
+        """Tests whether a project with an image directory dataset can be created.
+
+        Parameters
+        ----------
+            project_file_with_hdf5_dataset_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_with_image_directory_dataset_path)
+        assert not project.is_closed
+        assert project.name == 'Test Project'
+        assert project.model == 'No Model'
+        assert project.dataset.name == 'Image Directory Dataset'
+        assert project.attribution_method == 'Random Attribution'
+        assert len(project.analyses) == 1
+        assert 'Spectral Analysis' in project.analyses
+
+    @staticmethod
+    def test_project_creation_with_multiple_analysis_databases(
+            project_file_with_multiple_analysis_databases_path: str) -> None:
+        """Tests whether a project without attributions or analyses can be created.
+
+        Parameters
+        ----------
+            project_file_with_multiple_analysis_databases_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_with_multiple_analysis_databases_path)
+
+        project.get_analysis_methods()
+        project.get_analysis_categories('Spectral Analysis')
+        project.get_analysis_clustering_names('Spectral Analysis')
+        project.get_analysis_embedding_names('Spectral Analysis')
+        project.get_analysis('Spectral Analysis', '00000000', 'agglomerative-02', 'spectral')
+
+    @staticmethod
+    def test_project_creation_without_attributions_or_analyses(
+            project_file_without_attributions_or_analyses_path: str) -> None:
+        """Tests whether a project without attributions or analyses can be created.
+
+        Parameters
+        ----------
+            project_file_without_attributions_or_analyses_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_without_attributions_or_analyses_path)
+
+        with pytest.raises(LookupError):
+            project.get_attribution(0)
+
+        with pytest.raises(LookupError):
+            project.get_analysis('analysis-method', 'category-name', 'clustering-name', 'embedding-name')
+
+    @staticmethod
+    def test_project_creation_with_unknown_dataset_type(project_file_with_unknown_dataset_type_path: str) -> None:
+        """Tests whether creating a project with an unknown dataset type fails.
+
+        Parameters
+        ----------
+            project_file_with_unknown_dataset_type_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        with pytest.raises(ValueError):
+            Project(project_file_with_unknown_dataset_type_path)
+
+    @staticmethod
+    def test_project_creation_without_dataset(project_file_without_dataset_path: str) -> None:
+        """Tests whether a project without a dataset can be created.
+
+        Parameters
+        ----------
+            project_file_without_dataset_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_without_dataset_path)
+        assert project.dataset is None
+
+        with pytest.raises(ValueError):
+            project.get_sample(0)
+
+    @staticmethod
+    def test_project_creation_with_broken_project_file(broken_project_file_path: str) -> None:
+        """Tests whether creating a project from a broken YAML file fails.
+
+        Parameters
+        ----------
+            broken_project_file_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        with pytest.raises(ValueError):
+            Project(broken_project_file_path)
+
+    @staticmethod
+    def test_closed_project_cannot_be_used(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project correctly refuses to operate when it was already closed.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
         project.close()
 
         with pytest.raises(ValueError):
@@ -585,30 +182,30 @@ class TestProject:
             project.get_analysis('analysis-method', 'category-name', 'clustering-name', 'embedding-name')
 
     @staticmethod
-    def test_attribution_database_can_be_closed_multiple_times(project_file_path: str) -> None:
+    def test_project_can_be_closed_multiple_times(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project can be closed multiple times without raising an error.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
         project.close()
         project.close()
 
     @staticmethod
-    def test_attribution_database_can_retrieve_sample(project_file_path: str) -> None:
-        """Tests whether a sample can be retrieved from the project.
+    def test_project_with_hdf5_dataset_can_retrieve_sample(project_file_with_hdf5_dataset_path: str) -> None:
+        """Tests whether a sample can be retrieved from a project with an HDF5 dataset.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
 
         with pytest.raises(LookupError):
             project.get_sample(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
@@ -621,16 +218,39 @@ class TestProject:
         assert sample.data.dtype == numpy.uint8
 
     @staticmethod
-    def test_attribution_database_can_retrieve_attribution(project_file_path: str) -> None:
+    def test_project_with_image_directory_dataset_can_retrieve_sample(
+            project_file_with_image_directory_dataset_path: str) -> None:
+        """Tests whether a sample can be retrieved from a project with image directory dataset.
+
+        Parameters
+        ----------
+            project_file_with_image_directory_dataset_path: str
+                The path to the project file that is used for the tests.
+        """
+
+        project = Project(project_file_with_image_directory_dataset_path)
+
+        with pytest.raises(LookupError):
+            project.get_sample(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+        sample = project.get_sample(0)
+        assert sample.index == 0
+        assert sample.labels == ['Class 0']
+        assert isinstance(sample.data, numpy.ndarray)
+        assert sample.data.shape == (64, 64, 3)
+        assert sample.data.dtype == numpy.uint8
+
+    @staticmethod
+    def test_project_can_retrieve_attribution(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an attribution can be retrieved from the project.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
 
         with pytest.raises(LookupError):
             project.get_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
@@ -646,31 +266,31 @@ class TestProject:
         assert attribution.prediction.dtype == numpy.float32
 
     @staticmethod
-    def test_attribution_database_can_retrieve_analysis_methods(project_file_path: str) -> None:
+    def test_project_can_retrieve_analysis_methods(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a analysis methods can be retrieved from the project.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
         analysis_methods = project.get_analysis_methods()
         assert len(analysis_methods) == 1
         assert analysis_methods[0] == 'Spectral Analysis'
 
     @staticmethod
-    def test_attribution_database_can_retrieve_analysis_categories(project_file_path: str) -> None:
+    def test_project_can_retrieve_analysis_categories(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an analysis categories can be retrieved from the project.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
 
         with pytest.raises(LookupError):
             project.get_analysis_categories('Unknown Analysis Method')
@@ -681,16 +301,17 @@ class TestProject:
             assert category.human_readable_name == label.name
 
     @staticmethod
-    def test_attribution_database_can_retrieve_analysis_clustering_names(project_file_path: str) -> None:
+    def test_project_can_retrieve_analysis_clustering_names(
+            project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an analysis clustering names can be retrieved from the project.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
 
         with pytest.raises(LookupError):
             project.get_analysis_clustering_names('Unknown Analysis Method')
@@ -709,16 +330,17 @@ class TestProject:
             assert expected_clustering_name == actual_clustering_name
 
     @staticmethod
-    def test_attribution_database_can_retrieve_analysis_embedding_names(project_file_path: str) -> None:
+    def test_project_can_retrieve_analysis_embedding_names(
+            project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an analysis embedding names can be retrieved from the project.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
 
         with pytest.raises(LookupError):
             project.get_analysis_embedding_names('Unknown Analysis Method')
@@ -729,16 +351,16 @@ class TestProject:
             assert expected_embedding_name == actual_embedding_name
 
     @staticmethod
-    def test_attribution_database_can_retrieve_analyses(project_file_path: str) -> None:
+    def test_project_can_retrieve_analyses(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether analyses can be retrieved from the project.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_path)
+        project = Project(project_file_with_hdf5_dataset_path)
 
         with pytest.raises(LookupError):
             project.get_analysis(
@@ -761,7 +383,7 @@ class TestProject:
         assert analysis.embedding_name == 'spectral'
         assert isinstance(analysis.clustering, numpy.ndarray)
         assert analysis.clustering.shape == (40,)
-        assert analysis.clustering.dtype == numpy.int64
+        assert analysis.clustering.dtype == numpy.int32
         assert isinstance(analysis.embedding, numpy.ndarray)
         assert analysis.embedding.shape == (40, 32)
         assert analysis.embedding.dtype == numpy.float32
@@ -771,8 +393,6 @@ class TestProject:
         assert isinstance(analysis.eigen_values, numpy.ndarray)
         assert analysis.eigen_values.shape == (32,)
         assert analysis.eigen_values.dtype == numpy.float32
-        assert analysis.base_embedding_name is None
-        assert analysis.base_embedding_axes_indices is None
 
 
 class TestAttributionDatabase:
@@ -860,6 +480,26 @@ class TestAttributionDatabase:
         assert not attribution_database.has_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
 
     @staticmethod
+    def test_attribution_database_with_sample_indices_can_check_whether_attribution_is_available(
+            attribution_file_with_sample_indices_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether it can be checked if the attribution database contains a specific attribution.
+
+        Parameters
+        ----------
+            attribution_file_with_sample_indices_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_with_sample_indices_path, label_map)
+
+        assert attribution_database.has_attribution(0)
+        assert not attribution_database.has_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+    @staticmethod
     def test_attribution_database_can_retrieve_attribution(
             attribution_file_path: str,
             label_map_file_path: str) -> None:
@@ -875,6 +515,36 @@ class TestAttributionDatabase:
 
         label_map = LabelMap(label_map_file_path)
         attribution_database = AttributionDatabase(attribution_file_path, label_map)
+
+        with pytest.raises(LookupError):
+            attribution_database.get_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
+
+        attribution = attribution_database.get_attribution(0)
+        assert attribution.index == 0
+        assert isinstance(attribution.data, numpy.ndarray)
+        assert attribution.data.shape == (32, 32, 3)
+        assert attribution.data.dtype == numpy.float32
+        assert attribution.labels == ['Class 0']
+        assert isinstance(attribution.prediction, numpy.ndarray)
+        assert attribution.prediction.shape == (NUMBER_OF_CLASSES,)
+        assert attribution.prediction.dtype == numpy.float32
+
+    @staticmethod
+    def test_attribution_database_with_sample_indices_can_retrieve_attribution(
+            attribution_file_with_sample_indices_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether an attribution can be retrieved from an attribution database that contains sample indices.
+
+        Parameters
+        ----------
+            attribution_file_with_sample_indices_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        attribution_database = AttributionDatabase(attribution_file_with_sample_indices_path, label_map)
 
         with pytest.raises(LookupError):
             attribution_database.get_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
@@ -1056,36 +726,38 @@ class TestAnalysisDatabase:
     """Represents the tests for the AnalysisDatabase class."""
 
     @staticmethod
-    def test_analysis_database_creation(analysis_file_path: str, label_map_file_path: str) -> None:
+    def test_analysis_database_creation(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether an analysis database can be created.
 
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
         assert not analysis_database.is_closed
 
     @staticmethod
-    def test_closed_analysis_database_cannot_be_used(analysis_file_path: str, label_map_file_path: str) -> None:
+    def test_closed_analysis_database_cannot_be_used(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
         """Tests whether the analysis database correctly refuses to operate when it was already closed.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
         analysis_database.close()
 
         with pytest.raises(ValueError):
@@ -1104,55 +776,84 @@ class TestAnalysisDatabase:
             analysis_database.get_analysis('category-name', 'clustering-name', 'embedding-name')
 
     @staticmethod
-    def test_analysis_database_can_be_closed_multiple_times(analysis_file_path: str, label_map_file_path: str) -> None:
+    def test_analysis_database_can_be_closed_multiple_times(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
         """Tests whether the analysis database can be closed multiple times without raising an error.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
         analysis_database.close()
         analysis_database.close()
 
     @staticmethod
-    def test_analysis_database_can_retrieve_categories(analysis_file_path: str, label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_categories(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
         """Tests whether categories can be retrieved from the analysis database.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
         categories = analysis_database.get_categories()
         for category, label in zip(categories, label_map.labels):
             assert category.name == label.word_net_id
             assert category.human_readable_name == label.name
 
     @staticmethod
-    def test_analysis_database_can_retrieve_clustering_names(analysis_file_path: str, label_map_file_path: str) -> None:
-        """Tests whether clustering names can be retrieved from the analysis database.
+    def test_analysis_database_can_retrieve_categories_with_missing_labels_in_label_map(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether categories can be retrieved from the analysis database, even if the human-readable category
+        names cannot be retrieved from the label map.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        label_map.labels = []
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
+        categories = analysis_database.get_categories()
+        for category, label in zip(categories, label_map.labels):
+            assert category.name == label.word_net_id
+            assert category.human_readable_name == ''
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_clustering_names(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether clustering names can be retrieved from the analysis database.
+
+        Parameters
+        ----------
+            spectral_analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
         expected_clustering_names = [
             'agglomerative-02',
             'agglomerative-03',
@@ -1167,19 +868,21 @@ class TestAnalysisDatabase:
             assert expected_clustering_name == actual_clustering_name
 
     @staticmethod
-    def test_analysis_database_can_retrieve_embedding_names(analysis_file_path: str, label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_embedding_names(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
         """Tests whether embedding names can be retrieved from the analysis database.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
         expected_embedding_names = ['spectral', 'tsne', 'umap']
         actual_embedding_names = analysis_database.get_embedding_names()
         for expected_embedding_name, actual_embedding_name in zip(expected_embedding_names, actual_embedding_names):
@@ -1187,20 +890,20 @@ class TestAnalysisDatabase:
 
     @staticmethod
     def test_analysis_database_can_check_whether_analysis_is_available(
-            analysis_file_path: str,
+            spectral_analysis_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether it can be checked if the analysis database contains a specific analysis.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
 
         assert not analysis_database.has_analysis('unknown-category', 'unknown-clustering', 'unknown-embedding')
         assert not analysis_database.has_analysis('00000000', 'unknown-clustering', 'unknown-embedding')
@@ -1208,19 +911,21 @@ class TestAnalysisDatabase:
         assert analysis_database.has_analysis('00000000', 'agglomerative-02', 'spectral')
 
     @staticmethod
-    def test_analysis_database_can_retrieve_analyses(analysis_file_path: str, label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_analyses(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
         """Tests whether analyses can be retrieved from the analysis database.
 
         Parameters
         ----------
-            analysis_file_path: str
+            spectral_analysis_file_path: str
                 The path to the attributions file that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        analysis_database = AnalysisDatabase(analysis_file_path, label_map)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
 
         with pytest.raises(LookupError):
             analysis_database.get_analysis('unknown-category', 'unknown-clustering', 'unknown-embedding')
@@ -1236,7 +941,7 @@ class TestAnalysisDatabase:
         assert analysis.embedding_name == 'spectral'
         assert isinstance(analysis.clustering, numpy.ndarray)
         assert analysis.clustering.shape == (40,)
-        assert analysis.clustering.dtype == numpy.int64
+        assert analysis.clustering.dtype == numpy.int32
         assert isinstance(analysis.embedding, numpy.ndarray)
         assert analysis.embedding.shape == (40, 32)
         assert analysis.embedding.dtype == numpy.float32
@@ -1246,8 +951,90 @@ class TestAnalysisDatabase:
         assert isinstance(analysis.eigen_values, numpy.ndarray)
         assert analysis.eigen_values.shape == (32,)
         assert analysis.eigen_values.dtype == numpy.float32
-        assert analysis.base_embedding_name is None
-        assert analysis.base_embedding_axes_indices is None
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_analyses_with_missing_labels_in_label_map(
+            spectral_analysis_file_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether analyses can be retrieved from the analysis database, even if the human-readable category names
+        cannot be retrieved from the label map.
+
+        Parameters
+        ----------
+            spectral_analysis_file_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        label_map.labels = []
+        analysis_database = AnalysisDatabase(spectral_analysis_file_path, label_map)
+
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('unknown-category', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('00000000', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('00000000', 'agglomerative-02', 'unknown-embedding')
+
+        analysis = analysis_database.get_analysis('00000000', 'agglomerative-02', 'spectral')
+        assert analysis.category_name == '00000000'
+        assert analysis.human_readable_category_name == ''
+        assert analysis.clustering_name == 'agglomerative-02'
+        assert analysis.embedding_name == 'spectral'
+        assert isinstance(analysis.clustering, numpy.ndarray)
+        assert analysis.clustering.shape == (40,)
+        assert analysis.clustering.dtype == numpy.int32
+        assert isinstance(analysis.embedding, numpy.ndarray)
+        assert analysis.embedding.shape == (40, 32)
+        assert analysis.embedding.dtype == numpy.float32
+        assert isinstance(analysis.attribution_indices, numpy.ndarray)
+        assert analysis.attribution_indices.shape == (40,)
+        assert analysis.attribution_indices.dtype == numpy.uint32
+        assert isinstance(analysis.eigen_values, numpy.ndarray)
+        assert analysis.eigen_values.shape == (32,)
+        assert analysis.eigen_values.dtype == numpy.float32
+
+    @staticmethod
+    def test_analysis_database_can_retrieve_analyses_without_eigenvalues(
+            spectral_analysis_file_without_eigenvalues_path: str,
+            label_map_file_path: str) -> None:
+        """Tests whether analyses can be retrieved from the analysis database that does not contain eigenvalues.
+
+        Parameters
+        ----------
+            spectral_analysis_file_without_eigenvalues_path: str
+                The path to the attributions file that is used for the tests.
+            label_map_file_path: str
+                The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        analysis_database = AnalysisDatabase(spectral_analysis_file_without_eigenvalues_path, label_map)
+
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('unknown-category', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('00000000', 'unknown-clustering', 'unknown-embedding')
+        with pytest.raises(LookupError):
+            analysis_database.get_analysis('00000000', 'agglomerative-02', 'unknown-embedding')
+
+        analysis = analysis_database.get_analysis('00000000', 'agglomerative-02', 'spectral')
+        assert analysis.category_name == '00000000'
+        assert analysis.human_readable_category_name == 'Class 0'
+        assert analysis.clustering_name == 'agglomerative-02'
+        assert analysis.embedding_name == 'spectral'
+        assert isinstance(analysis.clustering, numpy.ndarray)
+        assert analysis.clustering.shape == (40,)
+        assert analysis.clustering.dtype == numpy.int32
+        assert isinstance(analysis.embedding, numpy.ndarray)
+        assert analysis.embedding.shape == (40, 32)
+        assert analysis.embedding.dtype == numpy.float32
+        assert isinstance(analysis.attribution_indices, numpy.ndarray)
+        assert analysis.attribution_indices.shape == (40,)
+        assert analysis.attribution_indices.dtype == numpy.uint32
+        assert analysis.eigen_values is None
 
 
 class TestAnalysisCategory:
@@ -1281,9 +1068,7 @@ class TestAnalysis:
             embedding_name='spectral',
             embedding=embedding,
             attribution_indices=attribution_indices,
-            eigen_values=eigen_values,
-            base_embedding_name=None,
-            base_embedding_axes_indices=None
+            eigen_values=eigen_values
         )
 
         assert analysis.category_name == 'class-0'
@@ -1294,8 +1079,6 @@ class TestAnalysis:
         assert numpy.array_equal(analysis.embedding, embedding)
         assert numpy.array_equal(analysis.attribution_indices, attribution_indices)
         assert numpy.array_equal(analysis.eigen_values, eigen_values)
-        assert analysis.base_embedding_name is None
-        assert analysis.base_embedding_axes_indices is None
 
 
 class TestHdf5Dataset:
@@ -1303,13 +1086,13 @@ class TestHdf5Dataset:
 
     @staticmethod
     def test_dataset_has_correct_size(
-            input_file_path: str,
+            hdf5_dataset_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly reports its size/length.
 
         Parameters
         ----------
-            input_file_path: str
+            hdf5_dataset_file_path: str
                 The path to the HDF5 dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -1318,20 +1101,20 @@ class TestHdf5Dataset:
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=input_file_path,
+            path=hdf5_dataset_file_path,
             label_map=label_map
         )
         assert len(hdf5_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
 
     @staticmethod
     def test_closed_dataset_cannot_retrieve_sample(
-            input_file_path: str,
+            hdf5_dataset_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly refuses to return a sample for a closed dataset.
 
         Parameters
         ----------
-            input_file_path: str
+            hdf5_dataset_file_path: str
                 The path to the HDF5 dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -1340,7 +1123,7 @@ class TestHdf5Dataset:
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=input_file_path,
+            path=hdf5_dataset_file_path,
             label_map=label_map
         )
         hdf5_dataset.close()
@@ -1353,13 +1136,13 @@ class TestHdf5Dataset:
 
     @staticmethod
     def test_dataset_can_be_closed_multiple_times(
-            input_file_path: str,
+            hdf5_dataset_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset can be closed multiple times without raising an error.
 
         Parameters
         ----------
-            input_file_path: str
+            hdf5_dataset_file_path: str
                 The path to the HDF5 dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -1368,7 +1151,7 @@ class TestHdf5Dataset:
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=input_file_path,
+            path=hdf5_dataset_file_path,
             label_map=label_map
         )
         hdf5_dataset.close()
@@ -1376,14 +1159,14 @@ class TestHdf5Dataset:
 
     @staticmethod
     def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
-            input_file_path: str,
+            hdf5_dataset_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
         dataset.
 
         Parameters
         ----------
-            input_file_path: str
+            hdf5_dataset_file_path: str
                 The path to the HDF5 dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -1392,7 +1175,7 @@ class TestHdf5Dataset:
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=input_file_path,
+            path=hdf5_dataset_file_path,
             label_map=label_map
         )
 
@@ -1404,13 +1187,13 @@ class TestHdf5Dataset:
 
     @staticmethod
     def test_dataset_can_retrieve_samples(
-            input_file_path: str,
+            hdf5_dataset_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether a sample can be retrieved from the dataset.
 
         Parameters
         ----------
-            input_file_path: str
+            hdf5_dataset_file_path: str
                 The path to the HDF5 dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -1419,7 +1202,7 @@ class TestHdf5Dataset:
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=input_file_path,
+            path=hdf5_dataset_file_path,
             label_map=label_map
         )
 
@@ -1432,13 +1215,13 @@ class TestHdf5Dataset:
 
     @staticmethod
     def test_dataset_can_retrieve_multiple_samples(
-            input_file_path: str,
+            hdf5_dataset_file_path: str,
             label_map_file_path: str) -> None:
         """Tests whether multiple samples can be retrieved at the same time.
 
         Parameters
         ----------
-            input_file_path: str
+            hdf5_dataset_file_path: str
                 The path to the HDF5 dataset that is used for the tests.
             label_map_file_path: str
                 The path to the label map file that is used for the tests.
@@ -1447,7 +1230,7 @@ class TestHdf5Dataset:
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=input_file_path,
+            path=hdf5_dataset_file_path,
             label_map=label_map
         )
 
@@ -2143,36 +1926,36 @@ class TestWorkspace:
         workspace.close()
 
     @staticmethod
-    def test_project_can_be_added_to_workspace(project_file_path: str) -> None:
+    def test_project_can_be_added_to_workspace(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project can be added to a workspace.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used in for the tests.
         """
 
         workspace = Workspace()
-        workspace.add_project(project_file_path)
+        workspace.add_project(project_file_with_hdf5_dataset_path)
 
         assert len(workspace.projects) == 1
         assert workspace.get_project_names() == ['Test Project']
         assert workspace.get_project('Test Project').name == 'Test Project'
 
     @staticmethod
-    def test_multiple_projects_can_be_added_to_workspace(project_file_path: str) -> None:
+    def test_multiple_projects_can_be_added_to_workspace(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether multiple projects can be added to a workspace.
 
         Parameters
         ----------
-            project_file_path: str
+            project_file_with_hdf5_dataset_path: str
                 The path to the project file that is used in for the tests.
         """
 
         workspace = Workspace()
-        workspace.add_project(project_file_path)
+        workspace.add_project(project_file_with_hdf5_dataset_path)
         workspace.projects[0].name = 'Test Project 1'
-        workspace.add_project(project_file_path)
+        workspace.add_project(project_file_with_hdf5_dataset_path)
         workspace.projects[1].name = 'Test Project 2'
 
         assert len(workspace.projects) == 2

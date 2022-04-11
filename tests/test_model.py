@@ -5,7 +5,7 @@ import os
 import glob
 import json
 import random
-import pathlib
+from pytest import TempPathFactory
 
 import yaml
 import h5py
@@ -97,13 +97,13 @@ class Normalize(Processor):
         return data
 
 
-@pytest.fixture(scope='function')
-def label_map_file_path(tmp_path: pathlib.Path) -> str:
+@pytest.fixture(scope='session')
+def label_map_file_path(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates a label map file.
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the label file will be created. This a an automatically created
             temporary path and comes from the built-in tmp_path fixture of PyTest.
 
@@ -121,20 +121,20 @@ def label_map_file_path(tmp_path: pathlib.Path) -> str:
         } for label_index in range(NUMBER_OF_CLASSES)
     ]
 
-    label_map_file_path = tmp_path / 'label-map.json'
+    label_map_file_path = tmp_path_factory.getbasetemp() / 'label-map.json'
     with open(label_map_file_path, 'w', encoding='utf-8') as label_map_file:
         json.dump(label_map, label_map_file)
 
     return label_map_file_path.as_posix()
 
 
-@pytest.fixture(scope='function')
-def input_file_path(tmp_path: pathlib.Path) -> str:
+@pytest.fixture(scope='session')
+def input_file_path(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an input file.
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the input file will be created. This a an automatically created
             temporary path and comes from the built-in tmp_path fixture of PyTest.
 
@@ -146,7 +146,7 @@ def input_file_path(tmp_path: pathlib.Path) -> str:
 
     data = None
     data_labels = None
-    input_file_path = tmp_path / 'input.h5'
+    input_file_path = tmp_path_factory.getbasetemp() / 'input.h5'
     for label_index in range(NUMBER_OF_CLASSES):
 
         new_data = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
@@ -177,13 +177,13 @@ def input_file_path(tmp_path: pathlib.Path) -> str:
     return input_file_path.as_posix()
 
 
-@pytest.fixture(scope='function')
-def attribution_file_path(tmp_path: pathlib.Path) -> str:
+@pytest.fixture(scope='session')
+def attribution_file_path(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an attribution file.
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the attribution file will be created. This a an automatically
             created temporary path and comes from the built-in tmp_path fixture of PyTest.
 
@@ -196,7 +196,7 @@ def attribution_file_path(tmp_path: pathlib.Path) -> str:
     attributions = None
     predictions = None
     data_labels = None
-    attribution_file_path = tmp_path / 'attribution.h5'
+    attribution_file_path = tmp_path_factory.getbasetemp() / 'attribution.h5'
     for label_index in range(NUMBER_OF_CLASSES):
 
         new_attributions = numpy.random.uniform(-1, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
@@ -238,13 +238,13 @@ def attribution_file_path(tmp_path: pathlib.Path) -> str:
     return attribution_file_path.as_posix()
 
 
-@pytest.fixture(scope='function')
-def analysis_file_path(tmp_path: pathlib.Path, attribution_file_path: str, label_map_file_path: str) -> str:
+@pytest.fixture(scope='session')
+def analysis_file_path(tmp_path_factory: TempPathFactory, attribution_file_path: str, label_map_file_path: str) -> str:
     """A test fixture, which creates an analysis file.
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the analysis file will be created. This a an automatically
             created temporary path and comes from the built-in tmp_path fixture of PyTest.
         attribution_file_path: str
@@ -259,7 +259,7 @@ def analysis_file_path(tmp_path: pathlib.Path, attribution_file_path: str, label
             Returns the path to the created analysis file.
     """
 
-    analysis_file_path = tmp_path / 'analysis.h5'
+    analysis_file_path = tmp_path_factory.getbasetemp() / 'analysis.h5'
 
     number_of_clusters_to_try = [2, 3]
     analysis_pipeline = SpectralClustering(
@@ -348,9 +348,9 @@ def analysis_file_path(tmp_path: pathlib.Path, attribution_file_path: str, label
     return analysis_file_path.as_posix()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def project_file_path(
-        tmp_path: pathlib.Path,
+        tmp_path_factory: TempPathFactory,
         input_file_path: str,
         attribution_file_path: str,
         analysis_file_path: str,
@@ -359,7 +359,7 @@ def project_file_path(
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the project file will be created. This a an automatically created
             temporary path and comes from the built-in tmp_path fixture of PyTest.
         input_file_path: str
@@ -377,17 +377,17 @@ def project_file_path(
             Returns the path to the created project file.
     """
 
-    project_file_path = tmp_path / 'project.yaml'
+    project_file_path = tmp_path_factory.getbasetemp() / 'project.yaml'
 
     project = {
         'project': {
             'name': 'Test Project',
             'model': 'No Model',
-            'label_map': os.path.relpath(label_map_file_path, start=tmp_path.as_posix()),
+            'label_map': os.path.relpath(label_map_file_path, start=tmp_path_factory.getbasetemp().as_posix()),
             'dataset': {
                 'name': "Random Data",
                 'type': 'hdf5',
-                'path': os.path.relpath(input_file_path, start=tmp_path.as_posix()),
+                'path': os.path.relpath(input_file_path, start=tmp_path_factory.getbasetemp().as_posix()),
                 'input_width': 32,
                 'input_height': 32,
                 'down_sampling_method': 'none',
@@ -396,12 +396,12 @@ def project_file_path(
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path.as_posix())],
+                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())],
             },
             'analyses': [
                 {
                     'analysis_method': 'Spectral Analysis',
-                    'sources': [os.path.relpath(analysis_file_path, start=tmp_path.as_posix())]
+                    'sources': [os.path.relpath(analysis_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
                 }
             ]
         }
@@ -413,15 +413,15 @@ def project_file_path(
     return project_file_path.as_posix()
 
 
-@pytest.fixture(scope='function')
-def image_directory_dataset_with_label_indices_path(tmp_path: pathlib.Path) -> str:
+@pytest.fixture(scope='session')
+def image_directory_dataset_with_label_indices_path(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
     of the directories represent the labels of the images. In this version of the fixture, the label directories have
     the index of the label in them.
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the project file will be created. This a an automatically created
             temporary path and comes from the built-in tmp_path fixture of PyTest.
 
@@ -431,7 +431,7 @@ def image_directory_dataset_with_label_indices_path(tmp_path: pathlib.Path) -> s
             Returns the path to the created image dataset.
     """
 
-    image_directory_dataset_path = tmp_path / 'image-dataset-with-label-indices'
+    image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-label-indices'
     image_directory_dataset_path.mkdir()
 
     for label_index in range(NUMBER_OF_CLASSES):
@@ -449,15 +449,15 @@ def image_directory_dataset_with_label_indices_path(tmp_path: pathlib.Path) -> s
     return image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='function')
-def image_directory_dataset_with_wordnet_ids_path(tmp_path: pathlib.Path) -> str:
+@pytest.fixture(scope='session')
+def image_directory_dataset_with_wordnet_ids_path(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
     of the directories represent the labels of the images. In this version of the fixture, the label directories have
     the WordNet ID of the label in them.
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the project file will be created. This a an automatically created
             temporary path and comes from the built-in tmp_path fixture of PyTest.
 
@@ -467,7 +467,7 @@ def image_directory_dataset_with_wordnet_ids_path(tmp_path: pathlib.Path) -> str
             Returns the path to the created image dataset.
     """
 
-    image_directory_dataset_path = tmp_path / 'image-dataset-with-label-indices'
+    image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-wordnet-ids'
     image_directory_dataset_path.mkdir()
 
     for label_index in range(NUMBER_OF_CLASSES):
@@ -485,8 +485,8 @@ def image_directory_dataset_with_wordnet_ids_path(tmp_path: pathlib.Path) -> str
     return image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='function')
-def image_directory_dataset_with_sample_paths_file_path(tmp_path: pathlib.Path) -> str:
+@pytest.fixture(scope='session')
+def image_directory_dataset_with_sample_paths_file_path(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
     of the directories represent the labels of the images. In this version of the fixture, a file exists, which lists
     all samples of the dataset. Only every second image is actually added to the sample paths file, so that it can be
@@ -494,7 +494,7 @@ def image_directory_dataset_with_sample_paths_file_path(tmp_path: pathlib.Path) 
 
     Parameters
     ----------
-        tmp_path: pathlib.Path
+        tmp_path_factory: TempPathFactory
             The path to a temporary directory in which the project file will be created. This a an automatically created
             temporary path and comes from the built-in tmp_path fixture of PyTest.
 
@@ -504,7 +504,7 @@ def image_directory_dataset_with_sample_paths_file_path(tmp_path: pathlib.Path) 
             Returns the path to the created image dataset.
     """
 
-    image_directory_dataset_path = tmp_path / 'image-dataset-with-sample-paths-file'
+    image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-sample-paths-file'
     image_directory_dataset_path.mkdir()
 
     image_file_paths = []

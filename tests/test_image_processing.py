@@ -17,7 +17,7 @@ from virelay.image_processing import (
 )
 
 
-def test_add_border():
+def test_add_border() -> None:
     """Tests the function for adding borders to images."""
 
     # Creates the image on which the tests are performed
@@ -68,7 +68,7 @@ def test_add_border():
     assert numpy.array_equal(expected_image, actual_image)
 
 
-def test_center_crop():
+def test_center_crop() -> None:
     """Tests the function for center cropping images."""
 
     # Creates the image on which the tests are performed
@@ -90,7 +90,7 @@ def test_center_crop():
     assert numpy.array_equal(expected_image, actual_image)
 
 
-def test_render_heatmap_unknown_color_map():
+def test_render_heatmap_unknown_color_map() -> None:
     """Tests the function for rendering heatmap images using an unknown color map."""
 
     attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
@@ -98,7 +98,7 @@ def test_render_heatmap_unknown_color_map():
         render_heatmap(attribution_data, 'unknown-color-map')
 
 
-def test_render_heatmap_blue_white_red():
+def test_render_heatmap_blue_white_red() -> None:
     """Tests the function for rendering heatmap images using the blue-white-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -122,7 +122,7 @@ def test_render_heatmap_blue_white_red():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_afm_hot():
+def test_render_heatmap_afm_hot() -> None:
     """Tests the function for rendering heatmap images using the afm-hot color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -146,7 +146,7 @@ def test_render_heatmap_afm_hot():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_jet():
+def test_render_heatmap_jet() -> None:
     """Tests the function for rendering heatmap images using the jet color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -170,7 +170,7 @@ def test_render_heatmap_jet():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_seismic():
+def test_render_heatmap_seismic() -> None:
     """Tests the function for rendering heatmap images using the seismic color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -194,7 +194,7 @@ def test_render_heatmap_seismic():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_gray_red():
+def test_render_heatmap_gray_red() -> None:
     """Tests the function for rendering heatmap images using the gray-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -218,7 +218,7 @@ def test_render_heatmap_gray_red():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_black_green():
+def test_render_heatmap_black_green() -> None:
     """Tests the function for rendering heatmap images using the black-green color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -242,7 +242,7 @@ def test_render_heatmap_black_green():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_black_fire_red():
+def test_render_heatmap_black_fire_red() -> None:
     """Tests the function for rendering heatmap images using the black-fire-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -266,7 +266,7 @@ def test_render_heatmap_black_fire_red():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_black_yellow():
+def test_render_heatmap_black_yellow() -> None:
     """Tests the function for rendering heatmap images using the black-yellow color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -290,7 +290,7 @@ def test_render_heatmap_black_yellow():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_heatmap_with_multiple_dimensions():
+def test_render_heatmap_with_multiple_dimensions() -> None:
     """Tests the function for rendering heatmap images, where the attribution data has multiple channel dimensions."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -314,7 +314,7 @@ def test_render_heatmap_with_multiple_dimensions():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_superimposed_heatmap_unknown_color_map():
+def test_render_superimposed_heatmap_unknown_color_map() -> None:
     """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution data as
     alpha-channel using an unknown color map."""
 
@@ -324,7 +324,7 @@ def test_render_superimposed_heatmap_unknown_color_map():
         render_superimposed_heatmap(attribution_data, superimpose, 'unknown-color-map')
 
 
-def test_render_superimposed_heatmap():
+def test_render_superimposed_heatmap() -> None:
     """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution data as
     alpha-channel."""
 
@@ -350,7 +350,7 @@ def test_render_superimposed_heatmap():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_render_superimposed_heatmap_with_multiple_dimensions():
+def test_render_superimposed_heatmap_with_multiple_dimensions() -> None:
     """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution data as
     alpha-channel, where the attribution data has multiple channel dimensions."""
 
@@ -376,7 +376,7 @@ def test_render_superimposed_heatmap_with_multiple_dimensions():
     assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_using_matplotlib_bwr():
+def test_generate_heatmap_image_using_matplotlib_bwr() -> None:
     """Tests the function for generating heatmaps using the bwr color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -399,7 +399,7 @@ def test_generate_heatmap_image_using_matplotlib_bwr():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_using_matplotlib_afmhot():
+def test_generate_heatmap_image_using_matplotlib_afmhot() -> None:
     """Tests the function for generating heatmaps using the afmhot color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -422,7 +422,7 @@ def test_generate_heatmap_image_using_matplotlib_afmhot():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_using_matplotlib_jet():
+def test_generate_heatmap_image_using_matplotlib_jet() -> None:
     """Tests the function for generating heatmaps using the jet color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -445,7 +445,7 @@ def test_generate_heatmap_image_using_matplotlib_jet():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_using_matplotlib_seismic():
+def test_generate_heatmap_image_using_matplotlib_seismic() -> None:
     """Tests the function for generating heatmaps using the seismic color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -468,7 +468,7 @@ def test_generate_heatmap_image_using_matplotlib_seismic():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_gray_red():
+def test_generate_heatmap_image_gray_red() -> None:
     """Tests the function for generating heatmaps using the gray-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -491,7 +491,7 @@ def test_generate_heatmap_image_gray_red():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_black_green():
+def test_generate_heatmap_image_black_green() -> None:
     """Tests the function for generating heatmaps using the black-green color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -514,7 +514,7 @@ def test_generate_heatmap_image_black_green():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_black_fire_red():
+def test_generate_heatmap_image_black_fire_red() -> None:
     """Tests the function for generating heatmaps using the black-fire-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
@@ -537,7 +537,7 @@ def test_generate_heatmap_image_black_fire_red():
     assert numpy.allclose(expected_heatmap, actual_heatmap)
 
 
-def test_generate_heatmap_image_black_yellow():
+def test_generate_heatmap_image_black_yellow() -> None:
     """Tests the function for generating heatmaps using the black-yellow color map."""
 
     # Creates the raw heatmap on which the tests are performed

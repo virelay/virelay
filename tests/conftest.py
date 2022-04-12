@@ -1,15 +1,21 @@
 """Contains the fixtures that are needed for the unit tests."""
+# pylint: disable=too-many-lines
 
 import os
 import json
 import random
-from pytest import TempPathFactory
 
 import yaml
 import h5py
 import numpy
 import pytest
 from PIL import Image
+from pytest import TempPathFactory
+from flask import Flask
+from flask.testing import FlaskClient
+
+from virelay.server import Server
+from virelay.model import Workspace
 
 NUMBER_OF_CLASSES = 3
 NUMBER_OF_SAMPLES = 40
@@ -371,28 +377,28 @@ def spectral_analysis_file_path(
 
                 eigenvalues = numpy.random.uniform(size=(32,)).astype(numpy.float32)
                 embedding = numpy.random.normal(size=(NUMBER_OF_SAMPLES, 32)).astype(numpy.float32)
-                kmeans = tuple([numpy.random.randint(
+                kmeans = (numpy.random.randint(
                     number_of_clusters,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
-                ) for number_of_clusters in number_of_clusters_to_try])
-                dbscan = tuple([numpy.random.randint(
+                ) for number_of_clusters in number_of_clusters_to_try)
+                dbscan = (numpy.random.randint(
                     low=-1,
                     high=1,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
-                ) for _ in number_of_clusters_to_try])
+                ) for _ in number_of_clusters_to_try)
                 hdbscan = numpy.random.randint(
                     low=-1,
                     high=1,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
                 )
-                agglomerative = tuple([numpy.random.randint(
+                agglomerative = (numpy.random.randint(
                     number_of_clusters,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
-                ) for number_of_clusters in number_of_clusters_to_try])
+                ) for number_of_clusters in number_of_clusters_to_try)
                 umap = numpy.random.uniform(
                     high=10.0,
                     size=(NUMBER_OF_SAMPLES, len(number_of_clusters_to_try))
@@ -486,28 +492,28 @@ def spectral_analysis_file_without_eigenvalues_path(
                 index, = numpy.nonzero(data_labels == label_index)
 
                 embedding = numpy.random.normal(size=(NUMBER_OF_SAMPLES, 32)).astype(numpy.float32)
-                kmeans = tuple([numpy.random.randint(
+                kmeans = (numpy.random.randint(
                     number_of_clusters,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
-                ) for number_of_clusters in number_of_clusters_to_try])
-                dbscan = tuple([numpy.random.randint(
+                ) for number_of_clusters in number_of_clusters_to_try)
+                dbscan = (numpy.random.randint(
                     low=-1,
                     high=1,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
-                ) for _ in number_of_clusters_to_try])
+                ) for _ in number_of_clusters_to_try)
                 hdbscan = numpy.random.randint(
                     low=-1,
                     high=1,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
                 )
-                agglomerative = tuple([numpy.random.randint(
+                agglomerative = (numpy.random.randint(
                     number_of_clusters,
                     size=(NUMBER_OF_SAMPLES,),
                     dtype=numpy.int32
-                ) for number_of_clusters in number_of_clusters_to_try])
+                ) for number_of_clusters in number_of_clusters_to_try)
                 umap = numpy.random.uniform(
                     high=10.0,
                     size=(NUMBER_OF_SAMPLES, len(number_of_clusters_to_try))
@@ -622,6 +628,70 @@ def project_file_with_hdf5_dataset_path(
         yaml.dump(project, project_file, default_flow_style=False)
 
     return project_file_with_hdf5_dataset_path.as_posix()
+
+
+@pytest.fixture(scope='session')
+def project_file_without_eigenvalues_in_analysis_database_path(
+        tmp_path_factory: TempPathFactory,
+        hdf5_dataset_file_path: str,
+        attribution_file_path: str,
+        spectral_analysis_file_without_eigenvalues_path: str,
+        label_map_file_path: str) -> str:
+    """A test fixture, which creates an project file where the analysis database does not contain eigenvalues.
+
+    Parameters
+    ----------
+        tmp_path_factory: TempPathFactory
+            A factory for creating a temporary directory in which the project file will be created.
+        hdf5_dataset_file_path: str
+            The path to the HDF5 dataset file.
+        attribution_file_path: str
+            The path to the attribution file.
+        spectral_analysis_file_without_eigenvalues_path: str
+            The path to the spectral analysis file.
+        label_map_file_path: str
+            The path to the label map file.
+
+    Returns
+    -------
+        str
+            Returns the path to the created project file.
+    """
+
+    project_file_without_eigenvalues_in_analysis_database_path = \
+        tmp_path_factory.getbasetemp() / 'project-without-eigenvalues-in-analysis-database.yaml'
+
+    project = {
+        'project': {
+            'name': 'Test Project',
+            'model': 'No Model',
+            'label_map': os.path.relpath(label_map_file_path, start=tmp_path_factory.getbasetemp().as_posix()),
+            'dataset': {
+                'name': "HDF5 Dataset",
+                'type': 'hdf5',
+                'path': os.path.relpath(hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
+            },
+            'attributions': {
+                'attribution_method': 'Random Attribution',
+                'attribution_strategy': 'true_label',
+                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
+            },
+            'analyses': [
+                {
+                    'analysis_method': 'Spectral Analysis',
+                    'sources': [os.path.relpath(
+                        spectral_analysis_file_without_eigenvalues_path,
+                        start=tmp_path_factory.getbasetemp().as_posix()
+                    )]
+                }
+            ]
+        }
+    }
+
+    with open(project_file_without_eigenvalues_in_analysis_database_path, 'w', encoding='utf-8') as project_file:
+        yaml.dump(project, project_file, default_flow_style=False)
+
+    return project_file_without_eigenvalues_in_analysis_database_path.as_posix()
 
 
 @pytest.fixture(scope='session')
@@ -947,3 +1017,127 @@ def broken_project_file_path(tmp_path_factory: TempPathFactory) -> str:
         project_file.write('unbalanced brackets: ][')
 
     return broken_project_file_path.as_posix()
+
+
+@pytest.fixture()
+def app(project_file_with_hdf5_dataset_path: str) -> Flask:
+    """A test fixture, which creates a ViRelAy server and returns corresponding Flask app.
+
+    Parameters
+    ----------
+        project_file_with_hdf5_dataset_path: str
+            The path to the project file that is used in for the tests.
+
+    Returns
+    -------
+        Flask
+            Returns the Flask app for the ViRelAy server.
+    """
+
+    workspace = Workspace()
+    workspace.add_project(project_file_with_hdf5_dataset_path)
+    server = Server(workspace)
+    server.app.config['TESTING'] = True
+    yield server.app
+    workspace.close()
+
+
+@pytest.fixture()
+def app_without_eigenvalues_in_analysis_database(
+        project_file_without_eigenvalues_in_analysis_database_path: str) -> Flask:
+    """A test fixture, which creates a ViRelAy server and returns corresponding Flask app.
+
+    Parameters
+    ----------
+        project_file_without_eigenvalues_in_analysis_database_path: str
+            The path to the project file that is used in for the tests.
+
+    Returns
+    -------
+        Flask
+            Returns the Flask app for the ViRelAy server.
+    """
+
+    workspace = Workspace()
+    workspace.add_project(project_file_without_eigenvalues_in_analysis_database_path)
+    server = Server(workspace)
+    server.app.config['TESTING'] = True
+    yield server.app
+    workspace.close()
+
+
+@pytest.fixture()
+def app_with_empty_workspace() -> Flask:
+    """A test fixture, which creates a ViRelAy server for an empty workspace and returns corresponding Flask app.
+
+    Returns
+    -------
+        Flask
+            Returns the Flask app for the ViRelAy server.
+    """
+
+    workspace = Workspace()
+    server = Server(workspace)
+    server.app.config['TESTING'] = True
+    yield server.app
+    workspace.close()
+
+
+@pytest.fixture()
+def app_in_debug_mode() -> Flask:
+    """A test fixture, which creates a ViRelAy server in debug mode and returns corresponding Flask app.
+
+    Returns
+    -------
+        Flask
+            Returns the Flask app for the ViRelAy server.
+    """
+
+    workspace = Workspace()
+    server = Server(workspace, is_in_debug_mode=True)
+    server.app.config['TESTING'] = True
+    yield server.app
+    workspace.close()
+
+
+@pytest.fixture()
+def test_client(app: Flask) -> FlaskClient:
+    """Creates a test HTTP client for a Flask app that hosts a ViRelAy server.
+
+    Args:
+        app (Flask): The Flask application for which the test client is to be created.
+
+    Returns:
+        FlaskClient: Returns the created test HTTP client for the Flask application
+    """
+
+    return app.test_client()
+
+
+@pytest.fixture()
+def test_client_without_eigenvalues_in_analysis(app_without_eigenvalues_in_analysis_database: Flask) -> FlaskClient:
+    """Creates a test HTTP client for a Flask app that hosts a ViRelAy server.
+
+    Args:
+        app_without_eigenvalues_in_analysis_database (Flask): The Flask application for which the test client is to be
+            created.
+
+    Returns:
+        FlaskClient: Returns the created test HTTP client for the Flask application
+    """
+
+    return app_without_eigenvalues_in_analysis_database.test_client()
+
+
+@pytest.fixture()
+def test_client_with_app_in_debug_model(app_in_debug_mode: Flask) -> FlaskClient:
+    """Creates a test HTTP client for a Flask app that hosts a ViRelAy server that is in debug mode.
+
+    Args:
+        app_in_debug_mode (Flask): The Flask application for which the test client is to be created.
+
+    Returns:
+        FlaskClient: Returns the created test HTTP client for the Flask application
+    """
+
+    return app_in_debug_mode.test_client()

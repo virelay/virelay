@@ -507,10 +507,6 @@ class Server:
         }
         if analysis.eigenvalues is not None:
             analysis_dictionary['eigenvalues'] = numpy.array(analysis.eigenvalues).tolist()
-        if analysis.base_embedding_name is not None:
-            analysis_dictionary['baseEmbeddingName'] = analysis.base_embedding_name
-        if analysis.base_embedding_axes_indices is not None:
-            analysis_dictionary['baseEmbeddingAxesIndices'] = numpy.array(analysis.base_embedding_axes_indices).tolist()
 
         # Returns the retrieved analysis
         return http_ok(analysis_dictionary)

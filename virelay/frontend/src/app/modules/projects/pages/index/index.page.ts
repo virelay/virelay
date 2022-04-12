@@ -302,12 +302,12 @@ export class IndexPage implements OnInit {
     /**
      * Contains the data for the plot of the eigen values.
      */
-    public eigenValuesGraphData: Array<Plotly.Data>;
+    public eigenvaluesGraphData: Array<Plotly.Data>;
 
     /**
      * Contains the layout of the plot of the eigen values.
      */
-    public eigenValuesGraphLayout: Partial<Plotly.Layout> = {
+    public eigenvaluesGraphLayout: Partial<Plotly.Layout> = {
         title: 'Eigen Values',
         margin: {
             l: 32,
@@ -378,11 +378,11 @@ export class IndexPage implements OnInit {
             return;
         }
 
-        this.eigenValuesGraphData = new Array<Plotly.Data>();
-        this.eigenValuesGraphData.push({
+        this.eigenvaluesGraphData = new Array<Plotly.Data>();
+        this.eigenvaluesGraphData.push({
             name: 'Eigen Values',
-            x: this.analysis.eigenValues.map((_, index) => index).reverse(),
-            y: this.analysis.eigenValues,
+            x: this.analysis.eigenvalues.map((_, index) => index).reverse(),
+            y: this.analysis.eigenvalues,
             type: 'bar',
             width: 0.25,
             hoverinfo: 'x',

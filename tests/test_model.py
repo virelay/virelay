@@ -390,9 +390,9 @@ class TestProject:
         assert isinstance(analysis.attribution_indices, numpy.ndarray)
         assert analysis.attribution_indices.shape == (40,)
         assert analysis.attribution_indices.dtype == numpy.uint32
-        assert isinstance(analysis.eigen_values, numpy.ndarray)
-        assert analysis.eigen_values.shape == (32,)
-        assert analysis.eigen_values.dtype == numpy.float32
+        assert isinstance(analysis.eigenvalues, numpy.ndarray)
+        assert analysis.eigenvalues.shape == (32,)
+        assert analysis.eigenvalues.dtype == numpy.float32
 
 
 class TestAttributionDatabase:
@@ -948,9 +948,9 @@ class TestAnalysisDatabase:
         assert isinstance(analysis.attribution_indices, numpy.ndarray)
         assert analysis.attribution_indices.shape == (40,)
         assert analysis.attribution_indices.dtype == numpy.uint32
-        assert isinstance(analysis.eigen_values, numpy.ndarray)
-        assert analysis.eigen_values.shape == (32,)
-        assert analysis.eigen_values.dtype == numpy.float32
+        assert isinstance(analysis.eigenvalues, numpy.ndarray)
+        assert analysis.eigenvalues.shape == (32,)
+        assert analysis.eigenvalues.dtype == numpy.float32
 
     @staticmethod
     def test_analysis_database_can_retrieve_analyses_with_missing_labels_in_label_map(
@@ -992,9 +992,9 @@ class TestAnalysisDatabase:
         assert isinstance(analysis.attribution_indices, numpy.ndarray)
         assert analysis.attribution_indices.shape == (40,)
         assert analysis.attribution_indices.dtype == numpy.uint32
-        assert isinstance(analysis.eigen_values, numpy.ndarray)
-        assert analysis.eigen_values.shape == (32,)
-        assert analysis.eigen_values.dtype == numpy.float32
+        assert isinstance(analysis.eigenvalues, numpy.ndarray)
+        assert analysis.eigenvalues.shape == (32,)
+        assert analysis.eigenvalues.dtype == numpy.float32
 
     @staticmethod
     def test_analysis_database_can_retrieve_analyses_without_eigenvalues(
@@ -1034,7 +1034,7 @@ class TestAnalysisDatabase:
         assert isinstance(analysis.attribution_indices, numpy.ndarray)
         assert analysis.attribution_indices.shape == (40,)
         assert analysis.attribution_indices.dtype == numpy.uint32
-        assert analysis.eigen_values is None
+        assert analysis.eigenvalues is None
 
 
 class TestAnalysisCategory:
@@ -1059,7 +1059,7 @@ class TestAnalysis:
         clustering = numpy.random.randint(NUMBER_OF_CLASSES, size=NUMBER_OF_SAMPLES)
         embedding = numpy.random.uniform(size=(NUMBER_OF_CLASSES, 16))
         attribution_indices = numpy.random.randint(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES, size=NUMBER_OF_SAMPLES)
-        eigen_values = numpy.random.normal(size=NUMBER_OF_SAMPLES)
+        eigenvalues = numpy.random.normal(size=NUMBER_OF_SAMPLES)
         analysis = Analysis(
             category_name='class-0',
             human_readable_category_name='Class 0',
@@ -1068,7 +1068,7 @@ class TestAnalysis:
             embedding_name='spectral',
             embedding=embedding,
             attribution_indices=attribution_indices,
-            eigen_values=eigen_values
+            eigenvalues=eigenvalues
         )
 
         assert analysis.category_name == 'class-0'
@@ -1078,7 +1078,7 @@ class TestAnalysis:
         assert analysis.embedding_name == 'spectral'
         assert numpy.array_equal(analysis.embedding, embedding)
         assert numpy.array_equal(analysis.attribution_indices, attribution_indices)
-        assert numpy.array_equal(analysis.eigen_values, eigen_values)
+        assert numpy.array_equal(analysis.eigenvalues, eigenvalues)
 
 
 class TestHdf5Dataset:

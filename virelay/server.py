@@ -112,13 +112,13 @@ class Server:
             def send_wrap(target):
                 return lambda: flask.send_file(
                     resource_stream('virelay', os.path.join(frontend_path, target)),
-                    attachment_filename=os.path.basename(target),
+                    download_name=os.path.basename(target),
                 )
 
             def send_wrap_arg(target):
                 return lambda file_name: flask.send_file(
                     resource_stream('virelay', os.path.join(frontend_path, target).format(file_name)),
-                    attachment_filename=os.path.basename(target.format(file_name)),
+                    download_name=os.path.basename(target.format(file_name)),
                 )
 
             self.app.add_url_rule(
@@ -413,20 +413,14 @@ class Server:
         except LookupError as error:
             return http_not_found(error, self.is_in_debug_mode)
 
-        # If the user wants the heatmap to be superimposed onto its original image, then the sample has to be loaded
-        superimpose = flask.request.args.get('superimpose', 'false').upper() == 'TRUE'
-        if superimpose:
-            try:
-                sample = project.get_sample(attribution.index)
-            except LookupError as error:
-                return http_not_found(error, self.is_in_debug_mode)
-
         # Gets the color map that is to be used to convert the raw attribution to a heatmap from the URL parameters, if
         # none was specified, then it defaults to Black Fire-Red
         color_map_name = flask.request.args.get('colorMap', 'black-fire-red')
 
         # Renders the heatmap and returns it
+        superimpose = flask.request.args.get('superimpose', 'false').upper() == 'TRUE'
         if superimpose:
+            sample = project.get_sample(attribution.index)
             heatmap = attribution.render_heatmap(color_map_name, superimpose=sample.data)
         else:
             heatmap = attribution.render_heatmap(color_map_name)
@@ -635,7 +629,7 @@ def send_image_file(image):
 
     Parameters
     ----------
-        image: numpy.ndarray
+        image: numpy.ndarray | PIL.Image
             The image as a NumPy array that is to be send to the client.
 
     Returns

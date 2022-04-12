@@ -316,18 +316,14 @@ class TestProject:
         with pytest.raises(LookupError):
             project.get_analysis_clustering_names('Unknown Analysis Method')
 
-        expected_clustering_names = [
-            'agglomerative-02',
-            'agglomerative-03',
-            'dbscan-eps=0.2',
-            'dbscan-eps=0.3',
-            'hdbscan',
-            'kmeans-02',
-            'kmeans-03'
-        ]
-        actual_clustering_names = project.get_analysis_clustering_names('Spectral Analysis')
-        for expected_clustering_name, actual_clustering_name in zip(expected_clustering_names, actual_clustering_names):
-            assert expected_clustering_name == actual_clustering_name
+        clustering_names = project.get_analysis_clustering_names('Spectral Analysis')
+        assert clustering_names[0] == 'agglomerative-02'
+        assert clustering_names[1] == 'agglomerative-03'
+        assert clustering_names[2] == 'dbscan-eps=0.2'
+        assert clustering_names[3] == 'dbscan-eps=0.3'
+        assert clustering_names[4] == 'hdbscan'
+        assert clustering_names[5] == 'kmeans-02'
+        assert clustering_names[6] == 'kmeans-03'
 
     @staticmethod
     def test_project_can_retrieve_analysis_embedding_names(

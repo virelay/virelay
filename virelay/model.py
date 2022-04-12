@@ -736,9 +736,9 @@ class AnalysisDatabase:
         clustering = analysis['cluster'][clustering_name][()]
         embedding = analysis['embedding'][embedding_name][()]
         attribution_indices = analysis['index'][()]
-        eigen_values = None
+        eigenvalues = None
         if 'eigenvalue' in self.analysis_file[category_name]['embedding'][embedding_name].attrs.keys():
-            eigen_values = self.analysis_file[category_name]['embedding'][embedding_name].attrs['eigenvalue']
+            eigenvalues = self.analysis_file[category_name]['embedding'][embedding_name].attrs['eigenvalue']
 
         # Wraps the information of the analysis in an object and returns it
         try:
@@ -753,7 +753,7 @@ class AnalysisDatabase:
             embedding_name,
             embedding,
             attribution_indices,
-            eigen_values
+            eigenvalues
         )
 
     def close(self):
@@ -805,7 +805,7 @@ class Analysis:
             embedding_name,
             embedding,
             attribution_indices,
-            eigen_values
+            eigenvalues
     ):
         """
         Initializes a new Analysis instance.
@@ -837,7 +837,7 @@ class Analysis:
                 analysis.
             attribution_indices: numpy.ndarray
                 Contains a list of the indices of the attributions that correspond to the embeddings and cluster points.
-            eigen_values: numpy.ndarray
+            eigenvalues: numpy.ndarray
                 The eigen values of the embedding. The eigen values must only be specified for normal embeddings that
                 are not based on another embedding (see the description for the base_embedding_name parameter for more
                 information).
@@ -850,7 +850,7 @@ class Analysis:
         self.embedding_name = embedding_name
         self.embedding = embedding
         self.attribution_indices = attribution_indices
-        self.eigen_values = eigen_values
+        self.eigenvalues = eigenvalues
 
 
 class Hdf5Dataset:

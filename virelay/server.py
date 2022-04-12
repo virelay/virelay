@@ -505,8 +505,8 @@ class Server:
             'embeddingName': analysis.embedding_name,
             'embedding': zipped_embedding
         }
-        if analysis.eigen_values is not None:
-            analysis_dictionary['eigenValues'] = numpy.array(analysis.eigen_values).tolist()
+        if analysis.eigenvalues is not None:
+            analysis_dictionary['eigenvalues'] = numpy.array(analysis.eigenvalues).tolist()
         if analysis.base_embedding_name is not None:
             analysis_dictionary['baseEmbeddingName'] = analysis.base_embedding_name
         if analysis.base_embedding_axes_indices is not None:

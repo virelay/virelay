@@ -19,7 +19,7 @@ export class Analysis {
             if (analysis.embedding) {
                 this.embedding = analysis.embedding.map(embedding => new Embedding(embedding));
             }
-            this.eigenValues = analysis.eigenValues;
+            this.eigenvalues = analysis.eigenvalues;
             this.baseEmbeddingName = analysis.baseEmbeddingName;
             this.baseEmbeddingAxesIndices = analysis.baseEmbeddingAxesIndices;
         }
@@ -53,7 +53,7 @@ export class Analysis {
     /**
      * Contains the eigen values of the analysis.
      */
-    public eigenValues?: Array<number>;
+    public eigenvalues?: Array<number>;
 
     /**
      * Contains the name of the embedding on which the embedding was based.

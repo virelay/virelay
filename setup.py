@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+
+"""The installation script for ViRelAy."""
+
 from setuptools import setup, find_packages
 
 
-with open('README.md', 'r', encoding='utf-8') as fd:
-    long_description = fd.read()
-
+with open('README.md', 'r', encoding='utf-8') as read_me_file:
+    long_description = read_me_file.read()
 
 setup(
     name='virelay',

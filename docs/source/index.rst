@@ -11,7 +11,7 @@ Welcome to the documentation of ViRelAy, a visualization tool for the analysis o
     :alt: Screenshot of the ViRelAy UI
     :align: center
 
-    Figure1: A screenshot of the ViRelAy user interface.
+    Figure 1: A screenshot of the ViRelAy user interface.
 
 Contents
 --------

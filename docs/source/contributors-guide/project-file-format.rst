@@ -28,4 +28,4 @@ Project files are described in `YAML <https://yaml.org/>`_. Multiple project fil
           sources:
             - ilsvrc2012-small-sg/analysis/ilsvrc2012-small.smoothgrad.h5
 
-Paths are relative to the project file. HDF5 files are structured as described in :repo:`docs/database_specifications.md`. An example how to structure HDF5 file for use with virelay is shown in :repo:`docs/example/hdf5_structure.py`. An example for a label map is given in :repo:`docs/example/ilsvrc2012/label-map.json`.
+Paths are relative to the project file. HDF5 files are structured as described in :repo:`docs/database_specifications.md`. An example how to structure HDF5 file for use with virelay is shown in :repo:`docs/examples/hdf5_structure.py`. An example for a label map is given in :repo:`docs/examples/ilsvrc2012/label-map.json`.

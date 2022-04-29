@@ -38,17 +38,17 @@ If you find ViRelAy useful for your research, why not cite our related [paper](h
 To get started, you first have to install ViRelAy on your system. The easiest way to install ViRelAy is to use the package available on PyPi, which can be easily installed using your favorite package manager, e.g., `pip`:
 
 ```shell
-pip install virelay
+$ pip install virelay
 ```
 
 ViRelAy uses a custom file format, which usually comprises a project file in [YAML](https://yaml.org/) format, a dataset either in [HDF5](https://www.hdfgroup.org/solutions/hdf5/) format or in a directory structure, one or more attribution databases in HDF5 format, and one or more analyses databases for various analyses methods in HDF5 format. For more information on the project file format, please refer to the [project file format documentation](https://virelay.readthedocs.io/en/latest/contributors-guide/project-file-format.html) and for more information on the formats for the dataset, attribution, and analyses databases, see the [database specifications](https://virelay.readthedocs.io/en/latest/contributors-guide/database-specification.html).
 
 ViRelAy projects can be generated using [CoRelAy](https://github.com/virelay/corelay), but if you want to get a fast first glimpse at ViRelAy, you can also create a randomly generated [example project](https://virelay.readthedocs.io/en/latest/getting-started/example-project.html).
 
-When you have a project ready, you can open it in ViRelAy like so using the following command. Please note, that starting ViRelAy using the command line interface, will start a rather slow development server. For improved load times or when running ViRelAy on a server, please run it using the WSGI HTTP server [Gunicorn](https://virelay.readthedocs.io/en/latest/user-guide/using-virelay-with-gunicorn.html).
+When you have a project ready, you can open it in ViRelAy like so using the following command. Please note that starting ViRelAy using the command line interface, will start a rather slow development server. For improved load times or when running ViRelAy on a server, please run it using the WSGI HTTP server [Gunicorn](https://virelay.readthedocs.io/en/latest/user-guide/using-virelay-with-gunicorn.html).
 
 ```shell
-python -m virelay <project-file> [<project-file>, ...]
+$ python -m virelay <project-file> [<project-file>, ...]
 ```
 
 This will start the server at http://localhost:8080 and automatically open your default browser. Optionally, you can specify an alternative host and port using the `--host` and `--port` command line arguments. For more in-depth instructions, please refer to our [getting started guide](https://virelay.readthedocs.io/en/latest/getting-started/index.html).

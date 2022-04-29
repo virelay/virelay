@@ -8,8 +8,7 @@ To start ViRelAy using Gunicorn, you can use the ``gunicorn`` command and tell i
 
 .. code-block:: console
 
-    $ gunicorn -w 4 -b 127.0.0.1:8080 \
-        "virelay.application:create_app(projects=['path/to/project-1.yaml', 'project-2.yaml'])"
+    $ gunicorn -w 4 -b 127.0.0.1:8080 "virelay.application:create_app(projects=['path/to/project-1.yaml', 'project-2.yaml'])"
 
 
 With the above command, the server binds to 127.0.0.1 on port 8080 and uses 4 worker processes. ViRelAy will load the two projects ``project-1.yaml`` and ``project-2.yaml``. You can specify as many projects as you like. Alternatively, the environment variable ``VIRELAY_PROJECTS`` may be used to specify the project paths like so:

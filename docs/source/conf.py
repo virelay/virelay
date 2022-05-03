@@ -155,7 +155,7 @@ def linkcode_resolve(domain, info):
 
 # Sets the basic project information
 project = 'ViRelAy'
-project_copyright = '2021, ViRelAy'
+project_copyright = '2022, ViRelAy'
 author = 'ViRelAy Contributors'
 
 # Specifies the Sphinx extensions that are used by this documentation
@@ -190,7 +190,7 @@ copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 copybutton_here_doc_delimiter = "EOT"
 
-# Configures the Sphinx plugin, whichallows BibTeX citations to be inserted into documentation
+# Configures the Sphinx plugin, which allows BibTeX citations to be inserted into documentation
 bibtex_bibfiles = ['bibliography.bib']
 bibtex_default_style = 'author_year_style'
 bibtex_reference_style = 'author_year'

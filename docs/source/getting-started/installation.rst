@@ -2,7 +2,7 @@
 Installation
 ============
 
-To get started, you first have to install ViRelAy on your system. The easiest way to install ViRelAy is to use the package of the latest ViRelAy release available on PyPi, which can be easily installed using your favorite Python package manager, e.g., ``pip``:
+To get started, you first have to install ViRelAy on your system. The easiest way to install ViRelAy is to use the package of the latest ViRelAy release available on PyPI, which can be easily installed using your favorite Python package manager, e.g., ``pip``:
 
 .. code-block:: console
 

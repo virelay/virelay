@@ -217,6 +217,5 @@ def main():
     make_dataset_example()
 
 
-# If the script is directly invoked, then the main function is called
 if __name__ == '__main__':
     main()

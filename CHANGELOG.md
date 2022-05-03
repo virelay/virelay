@@ -4,8 +4,9 @@
 
 Unreleased
 
-- Added extensive documentation, which are available on [ReadTheDocs](https://virelay.readthedocs.io)
-- Added a unit testing suite for the backend API, which has 100% code coverage and 100% test coverage
+- Added extensive documentation, which is available on [ReadTheDocs](https://virelay.readthedocs.io)
+- Added a unit testing suite for the backend API, which has 100% code coverage
+- Polished and extended the scripts for generating a random test project and a real-world project
 - Updated all external dependencies of the frontend to their latest version
 - Replaced the deprecated `THREE.Geometry` with `THREE.BufferedGeometry` in the embedding renderer
 - Introduced linting using PyLint and Flake8 and fixed all linting warnings
@@ -29,6 +30,10 @@ Unreleased
   - Simplified the code in the `get_attribution_heatmap` method of the `Server` class (previously it was tested twice whether the heatmap is to be superimposed onto the input image, now this check is only performed once)
   - Removed multiple instances of dead code (code that never ran, because the conditions to run the code were always false)
   - Fixed multiple docstrings in classes, methods, and functions (this fixes incorrect documentation, typos, or partially missing documentation)
+  - Fixed a bug in the heatmap rendering, where the resulting heatmap had an extra dimension, which caused the conversion to a PNG to fail
+  - Fixed a bug in the eigenvalue plot in the frontend, where, when an embedding did not use eigenvalue decomposition or there are no eigenvalues available for the embedding, then the ViRelAy frontend raised an error, now the eigenvalue plot is simply not displayed when an embedding has no eigenvalues
+  - Fixed a bug in the overlay image mode of ViRelAy, when there was no negative component in an attribution, then the heatmap was displayed instead of the heatmap superimposed onto the input image
+  - When superimposing a heatmap onto an input image, the negative and positive components are now weighted equally, thus making the negative and positive attribution parts comparable
 
 ## v0.3.1
 

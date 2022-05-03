@@ -4,13 +4,13 @@ meta-analysis and ultimately a test project for ViRelAy.
 
 import os
 import json
+import argparse
 
 import h5py
-import click
-import numpy as np
+import numpy
 
 
-def append_samples_to_dataset(dataset_file_path, samples, labels):
+def append_samples_to_dataset(dataset_file_path: str, samples: numpy.ndarray, labels: numpy.ndarray) -> None:
     """Appends the specified samples to the dataset.
 
     Parameters
@@ -71,7 +71,11 @@ def append_samples_to_dataset(dataset_file_path, samples, labels):
         dataset_file['label'][number_of_existing_samples:] = labels
 
 
-def append_attributions_to_attribution_database(attributions_file_path, attributions, predictions, labels):
+def append_attributions_to_attribution_database(
+        attributions_file_path: str,
+        attributions: numpy.ndarray,
+        predictions: numpy.ndarray,
+        labels: numpy.ndarray) -> None:
     """Appends the specified attributions to the attributions database.
 
     Parameters
@@ -150,28 +154,21 @@ def append_attributions_to_attribution_database(attributions_file_path, attribut
         attributions_file['label'][number_of_existing_attributions:] = labels
 
 
-@click.command()
-@click.argument('dataset-file-path', type=click.Path(dir_okay=False))
-@click.argument('attributions-file-path', type=click.Path(dir_okay=False))
-@click.argument('label-map-file-path', type=click.Path(dir_okay=False))
-@click.option('--number-of-classes', type=int, default=10)
-@click.option('--number-of-samples', type=int, default=100)
-@click.option('--overwrite/--append', type=bool, default=False)
-def main(
-        dataset_file_path,
-        attributions_file_path,
-        label_map_file_path,
-        number_of_classes,
-        number_of_samples,
-        overwrite):
-    """The entrypoint to the make_test_data script, which randomly generates a dataset and attributions for the samples
-    in the dataset and writes them to an HDF5 dataset file and an HDF5 attribution database file.
+def make_test_data(
+        dataset_file_path: str,
+        attribution_file_path: str,
+        label_map_file_path: str,
+        number_of_classes: int,
+        number_of_samples: int,
+        append: bool) -> None:
+    """Randomly generates a dataset and attributions for the samples in the dataset and writes them to an HDF5 dataset
+    file and an HDF5 attribution database file.
 
     Parameters
     ----------
         dataset_file_path: str
             The path to the dataset file that is to be created or appended to.
-        attributions_file_path: str
+        attribution_file_path: str
             The path to the attributions database file that is to be created or appended to.
         label_map_file_path: str
             The path to the label map file that is to be created.
@@ -180,7 +177,7 @@ def main(
         number_of_samples: int
             The number of dataset samples that are to be generated randomly (directly corresponds to the number of
             attributions that are to be generated randomly, because a single attribution is generated for each sample).
-        overwrite: bool
+        append: bool
             Determines whether the new dataset samples and attributions are to be appended to existing dataset and
             attribution database files or whether existing files are to be overwritten. If no dataset or attribution
             database files exist, they are generated either way.
@@ -188,17 +185,17 @@ def main(
 
     # Creates the label map file
     label_map = [{
-        'index': i,
-        'word_net_id': f'{i:08d}',
-        'name': f'Class {i:d}',
-    } for i in range(number_of_classes)]
+        'index': index,
+        'word_net_id': f'{index:08d}',
+        'name': f'Class {index:d}',
+    } for index in range(number_of_classes)]
     with open(label_map_file_path, 'w', encoding='utf-8') as label_map_file:
         json.dump(label_map, label_map_file)
 
     # If a previous dataset and attribution database is to be overwritten, then they are deleted so that they can be
     # re-created instead of appending to them
-    if overwrite:
-        for file_path in (dataset_file_path, attributions_file_path):
+    if not append:
+        for file_path in (dataset_file_path, attribution_file_path):
             if os.path.exists(file_path):
                 os.remove(file_path)
 
@@ -206,17 +203,81 @@ def main(
     for label_index in range(number_of_classes):
 
         # Creates the dataset samples, their labels, their attributions, and the classifier predictions randomly
-        samples = np.random.uniform(0, 1, size=(number_of_samples, 3, 32, 32))
-        labels = np.array([label_index] * number_of_samples)
-        attributions = np.random.uniform(-1, 1, size=(number_of_samples, 3, 32, 32))
-        predictions = np.random.uniform(0, 1, size=(number_of_samples, number_of_classes))
+        samples = numpy.random.uniform(0, 1, size=(number_of_samples, 3, 32, 32))
+        labels = numpy.array([label_index] * number_of_samples)
+        attributions = numpy.random.uniform(-1, 1, size=(number_of_samples, 3, 32, 32))
+        predictions = numpy.random.uniform(0, 1, size=(number_of_samples, number_of_classes))
 
         # Appends the new dataset samples and attributions to the dataset and attribution database files (if the dataset
         # file or the attribution database file already exist, they are created on the fly)
         append_samples_to_dataset(dataset_file_path, samples, labels)
-        append_attributions_to_attribution_database(attributions_file_path, attributions, predictions, labels)
+        append_attributions_to_attribution_database(attribution_file_path, attributions, predictions, labels)
 
 
-# If the script is directly invoked, then the main function is called
+def main() -> None:
+    """The entrypoint to the make_test_data script."""
+
+    argument_parser = argparse.ArgumentParser(
+        prog='make_test_data',
+        description='''Generates a random dataset and random attributions for this dataset, which can then be used to
+            generate a meta-analysis and ultimately a test project for ViRelAy.
+        '''
+    )
+    argument_parser.add_argument(
+        'dataset_file_path',
+        type=str,
+        help='The path to the dataset file that is to be created or appended to.'
+    )
+    argument_parser.add_argument(
+        'attribution_file_path',
+        type=str,
+        help='The path to the attributions database file that is to be created or appended to.'
+    )
+    argument_parser.add_argument(
+        'label_map_file_path',
+        type=str,
+        help='The path to the label map file that is to be created.'
+    )
+    argument_parser.add_argument(
+        '-c',
+        '--number-of-classes',
+        dest='number_of_classes',
+        type=int,
+        default=10,
+        help='The number of classes for which samples are to be generated randomly. Defaults to 10.'
+    )
+    argument_parser.add_argument(
+        '-s',
+        '--number-of-samples',
+        dest='number_of_samples',
+        type=int,
+        default=100,
+        help='''The number of dataset samples that are to be generated randomly (directly corresponds to the number of
+            attributions that are to be generated randomly, because a single attribution is generated for each sample).
+            Defaults to 100.
+        '''
+    )
+    argument_parser.add_argument(
+        '-a',
+        '--append',
+        dest='append',
+        action='store_true',
+        help='''Determines whether the new dataset samples and attributions are to be appended to existing dataset and
+            attribution database files or whether existing files are to be overwritten. If no dataset or attribution
+            database files exist, they are generated either way.
+        '''
+    )
+    arguments = argument_parser.parse_args()
+
+    make_test_data(
+        arguments.dataset_file_path,
+        arguments.attribution_file_path,
+        arguments.label_map_file_path,
+        arguments.number_of_classes,
+        arguments.number_of_samples,
+        arguments.append
+    )
+
+
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    main()

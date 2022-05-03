@@ -3,9 +3,9 @@ project can be created.
 """
 
 import json
+import argparse
 
 import h5py
-import click
 import numpy
 
 from corelay.base import Param
@@ -21,7 +21,7 @@ from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeC
 class Flatten(Processor):
     """Represents a CoRelAy processor, which flattens its input data."""
 
-    def function(self, data):
+    def function(self, data: numpy.ndarray) -> numpy.ndarray:
         """Applies the flattening to the input data.
 
         Parameters
@@ -41,7 +41,7 @@ class Flatten(Processor):
 class SumChannel(Processor):
     """Represents a CoRelAy processor, which sums its input data across channels, i.e., its second axis."""
 
-    def function(self, data):
+    def function(self, data: numpy.ndarray) -> numpy.ndarray:
         """Applies the summation over the channels to the input data.
 
         Parameters
@@ -61,7 +61,7 @@ class SumChannel(Processor):
 class Absolute(Processor):
     """Represents a CoRelAy processor, which computes the absolute value of its input data."""
 
-    def function(self, data):
+    def function(self, data: numpy.ndarray) -> numpy.ndarray:
         """Computes the absolute value of the specified input data.
 
         Parameters
@@ -90,7 +90,7 @@ class Normalize(Processor):
 
     axes = Param(tuple, (1, 2))
 
-    def function(self, data):
+    def function(self, data: numpy.ndarray) -> numpy.ndarray:
         """Normalizes the specified input data.
 
         Parameters
@@ -118,7 +118,7 @@ class Histogram(Processor):
 
     bins = Param(int, 256)
 
-    def function(self, data):
+    def function(self, data: numpy.ndarray) -> numpy.ndarray:
         """Computes histograms over the specified input data. One histogram is computed for each channel and each sample
         in a batch of input data.
 
@@ -141,31 +141,6 @@ class Histogram(Processor):
                     density=True
                 ) for sample in channel
             ]) for channel in data.transpose(3, 0, 1, 2)])
-
-
-def integer_tuple(command_line_argument):
-    """Represents a custom Click type, which is a tuple of integers. This can be used to retrieve multiple
-    comma-separated values for a single argument. The integers must only be separated by a comma, without any white
-    spaces.
-
-    Parameters
-    ----------
-        command_line_argument: str
-            The command line argument from which the integer tuple is to be parsed. This must be a comma-separated list
-            of integers and must not contain any white spaces.
-
-    Returns
-    -------
-        tuple[int]
-            Returns the integer tuple that was parsed from the command line argument.
-    """
-
-    # If the command line argument is already a tuple, then it is returned right away
-    if isinstance(command_line_argument, tuple):
-        return command_line_argument
-
-    # Parses the command separated integers into a tuple and returns it
-    return tuple(int(elem) for elem in command_line_argument.split(','))
 
 
 # Contains the various pre-processing method and distance metric variants that can be used to compute the analysis
@@ -205,38 +180,28 @@ VARIANTS = {
 }
 
 
-@click.command()
-@click.argument('attributions-file-path', type=click.Path(exists=True, dir_okay=False))
-@click.argument('analysis-file-path', type=click.Path(dir_okay=False))
-@click.option('--number-of-clusters-list', type=integer_tuple, default=','.join(str(elem) for elem in range(2, 31)))
-@click.option('--class-indices', type=integer_tuple)
-@click.option('--label-map-file-path', type=click.Path(exists=True, dir_okay=False))
-@click.option('--variant', type=click.Choice(list(VARIANTS)), default='spectral')
-@click.option('--number-of-eigenvalues', type=int, default=32)
-@click.option('--number-of-neighbors', type=int, default=32)
-def main(
-        variant,
-        attributions_file_path,
-        analysis_file_path,
-        class_indices,
-        label_map_file_path,
-        number_of_eigenvalues,
-        number_of_clusters_list,
-        number_of_neighbors):
-    """The entrypoint to the meta_analysis script, which performs a meta-analysis over the specified attribution data
-    and writes the results into an analysis database.
+def meta_analysis(
+        attribution_file_path: str,
+        analysis_file_path: str,
+        variant: str,
+        class_indices: list[int],
+        label_map_file_path: str,
+        number_of_eigenvalues: int,
+        number_of_clusters_list: list[int],
+        number_of_neighbors: int) -> None:
+    """Performs a meta-analysis over the specified attribution data and writes the results into an analysis database.
 
     Parameters
     ----------
-        variant: str
-            The meta-analysis variant that is to be performed. Can be one of "absspectral", "spectral", "fullspectral",
-            or "histogram". Defaults to "spectral".
-        attributions_file_path: str
+        attribution_file_path: str
             The path to the attribution database file, that contains the attributions for which the meta-analysis is to
             be performed.
         analysis_file_path: str
             The path to the analysis database file, into which the results of the meta-analysis are to be written.
-        class_indices: tuple[int]
+        variant: str
+            The meta-analysis variant that is to be performed. Can be one of "absspectral", "spectral", "fullspectral",
+            or "histogram".
+        class_indices: list[int]
             The indices of the classes for which the meta-analysis is to be performed. If not specified, then the
             meta-analysis is performed for all classes.
         label_map_file_path: str
@@ -244,7 +209,7 @@ def main(
             names and WordNet IDs.
         number_of_eigenvalues: int
             The number of eigenvalues of the eigenvalue decomposition.
-        number_of_clusters_list: tuple[int]
+        number_of_clusters_list: list[int]
             A list that can contain multiple numbers of clusters. For each number of clusters in this list, all
             clustering methods and the meta-analysis are performed.
         number_of_neighbors: int
@@ -283,26 +248,28 @@ def main(
     if label_map_file_path is not None:
         with open(label_map_file_path, 'r', encoding='utf-8') as label_map_file:
             label_map = json.load(label_map_file)
-        label_map = {label['index']: label['word_net_id'] for label in label_map}
+        wordnet_id_map = {label['index']: label['word_net_id'] for label in label_map}
+        class_name_map = {label['index']: label['name'] for label in label_map}
     else:
-        label_map = {}
+        wordnet_id_map = {}
+        class_name_map = {}
 
     # Retrieves the labels of the samples
-    with h5py.File(attributions_file_path, 'r') as attributions_file:
+    with h5py.File(attribution_file_path, 'r') as attributions_file:
         labels = attributions_file['label'][:]
 
     # Gets the indices of the classes for which the meta-analysis is to be performed, if non were specified, the the
     # meta-analysis is performed for all classes
     if class_indices is None:
-        class_indices = [int(class_index) for class_index in label_map]
+        class_indices = [int(label['index']) for label in label_map]
 
     # Cycles through all classes and performs the meta-analysis for each of them
     for class_index in class_indices:
 
         # Loads the attribution data for the samples of the current class
-        print(f'Loading class {class_index:03d}')
-        with h5py.File(attributions_file_path, 'r') as attributions_file:
-            indices_of_samples_in_class, _ = numpy.nonzero(labels == class_index)
+        print(f'Loading class {class_name_map[class_index]}')
+        with h5py.File(attribution_file_path, 'r') as attributions_file:
+            indices_of_samples_in_class, = numpy.nonzero(labels == class_index)
             attribution_data = attributions_file['attribution'][indices_of_samples_in_class, :]
             if 'train' in attributions_file:
                 train_flag = attributions_file['train'][indices_of_samples_in_class.tolist()]
@@ -310,15 +277,15 @@ def main(
                 train_flag = None
 
         # Performs the meta-analysis for the attributions of the current class
-        print(f'Computing class {class_index:03d}')
+        print(f'Computing class {class_name_map[class_index]}')
         (eigenvalues, embedding), (kmeans, dbscan, hdbscan, agglomerative, (umap, tsne)) = pipeline(attribution_data)
 
         # Saves the meta-analysis to the analysis database
-        print(f'Saving class {class_index:03d}')
-        with h5py.File(analysis_file_path, 'a') as analysis_file:
+        print(f'Saving class {class_name_map[class_index]}')
+        with h5py.File(analysis_file_path, 'w') as analysis_file:
 
             # The name of the analysis is the name of the class
-            analysis_name = label_map.get(class_index, f'{class_index:03d}')
+            analysis_name = wordnet_id_map.get(class_index, f'{class_index:08d}')
 
             # Adds the indices of the samples in the current class to the analysis database
             analysis_group = analysis_file.require_group(analysis_name)
@@ -386,6 +353,97 @@ def main(
                 cluster_group['train_split'] = train_flag
 
 
-# If the script is directly invoked, then the main function is called
+def main() -> None:
+    """The entrypoint to the meta_analysis script."""
+
+    argument_parser = argparse.ArgumentParser(
+        prog='meta_analysis',
+        description='''Performs a meta-analysis on an attribution database and writes them into an analysis database,
+            from which a ViRelAy project can be created.
+        '''
+    )
+    argument_parser.add_argument(
+        'attribution_file_path',
+        type=str,
+        help='''The path to the attribution database file, that contains the attributions for which the meta-analysis is
+            to be performed.
+        '''
+    )
+    argument_parser.add_argument(
+        'analysis_file_path',
+        type=str,
+        help='The path to the analysis database file, into which the results of the meta-analysis are to be written.'
+    )
+    argument_parser.add_argument(
+        '-V',
+        '--variant',
+        dest='variant',
+        type=str,
+        choices=['absspectral', 'spectral', 'fullspectral', 'histogram'],
+        default='spectral',
+        help='The meta-analysis variant that is to be performed. Defaults to "spectral".'
+    )
+    argument_parser.add_argument(
+        '-c',
+        '--class-indices',
+        dest='class_indices',
+        type=int,
+        nargs='*',
+        help='''The indices of the classes for which the meta-analysis is to be performed. If not specified, then the
+            meta-analysis is performed for all classes.
+        '''
+    )
+    argument_parser.add_argument(
+        '-l',
+        '--label-map-file-path',
+        dest='label_map_file_path',
+        type=str,
+        help='''The path to the label map file, which contains a mapping between the class indices and their
+            corresponding names and WordNet IDs.
+        '''
+    )
+    argument_parser.add_argument(
+        '-e',
+        '--number-of-eigenvalues',
+        dest='number_of_eigenvalues',
+        type=int,
+        default=32,
+        help='The number of eigenvalues of the eigenvalue decomposition. Defaults to 32.'
+    )
+    argument_parser.add_argument(
+        '-n',
+        '--number-of-neighbors',
+        dest='number_of_neighbors',
+        type=int,
+        default=32,
+        help='''The number of neighbors that are to be considered in the k-nearest neighbor clustering algorithm.
+            Defaults to 32.
+        '''
+    )
+    argument_parser.add_argument(
+        '-C',
+        '--number-of-clusters-list',
+        dest='number_of_clusters_list',
+        type=int,
+        nargs='*',
+        default=list(range(2, 31)),
+        help='''A list that can contain multiple numbers of clusters. For each number of clusters in this list, all
+            clustering methods and the meta-analysis are performed. Defaults to a list from 2 to 30 clusters.
+        '''
+    )
+    arguments = argument_parser.parse_args()
+
+    meta_analysis(
+        arguments.attribution_file_path,
+        arguments.analysis_file_path,
+        arguments.variant,
+        arguments.class_indices,
+        arguments.label_map_file_path,
+        arguments.number_of_eigenvalues,
+        arguments.number_of_clusters_list,
+        arguments.number_of_neighbors
+    )
+
+
 if __name__ == '__main__':
-    main()  # pylint: disable=no-value-for-parameter
+    main()

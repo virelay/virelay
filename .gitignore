@@ -3,6 +3,7 @@
 .vscode
 .idea
 .venv
+*venv
 .exrc
 
 # Python output
@@ -14,9 +15,6 @@ __pycache__
 # Setup output
 build/
 dist/
-
-# Results output
-result
 
 # Testing
 .tox
@@ -41,3 +39,9 @@ docs/doctree
 docs/source/_generated
 docs/source/api-reference/*
 !docs/source/api-reference/index.rst
+
+# Trained models and datasets/attributions/analyses
+*.pt
+*.h5
+project.yaml
+label-map.json

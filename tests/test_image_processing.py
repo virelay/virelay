@@ -106,16 +106,16 @@ def test_render_heatmap_blue_white_red() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 255]],
-         [[56, 56, 255]],
-         [[112, 112, 255]],
-         [[170, 170, 255]],
-         [[226, 226, 255]],
-         [[255, 226, 226]],
-         [[255, 170, 170]],
-         [[255, 112, 112]],
-         [[255, 56, 56]],
-         [[255, 0, 0]]],
+        [[0, 0, 255],
+         [56, 56, 255],
+         [112, 112, 255],
+         [170, 170, 255],
+         [226, 226, 255],
+         [255, 226, 226],
+         [255, 170, 170],
+         [255, 112, 112],
+         [255, 56, 56],
+         [255, 0, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'blue-white-red')
@@ -130,16 +130,16 @@ def test_render_heatmap_afm_hot() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 0]],
-         [[56, 0, 0]],
-         [[112, 0, 0]],
-         [[170, 42, 0]],
-         [[226, 98, 0]],
-         [[255, 156, 29]],
-         [[255, 212, 84]],
-         [[255, 255, 143]],
-         [[255, 255, 198]],
-         [[255, 255, 255]]],
+        [[0, 0, 0],
+         [56, 0, 0],
+         [112, 0, 0],
+         [170, 42, 0],
+         [226, 98, 0],
+         [255, 156, 29],
+         [255, 212, 84],
+         [255, 255, 143],
+         [255, 255, 198],
+         [255, 255, 255]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'afm-hot')
@@ -154,16 +154,16 @@ def test_render_heatmap_jet() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 127]],
-         [[0, 0, 254]],
-         [[0, 96, 255]],
-         [[0, 212, 255]],
-         [[76, 255, 170]],
-         [[170, 255, 76]],
-         [[255, 229, 0]],
-         [[255, 122, 0]],
-         [[254, 18, 0]],
-         [[127, 0, 0]]],
+        [[0, 0, 127],
+         [0, 0, 254],
+         [0, 96, 255],
+         [0, 212, 255],
+         [76, 255, 170],
+         [170, 255, 76],
+         [255, 229, 0],
+         [255, 122, 0],
+         [254, 18, 0],
+         [127, 0, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'jet')
@@ -178,16 +178,16 @@ def test_render_heatmap_seismic() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 76]],
-         [[0, 0, 154]],
-         [[0, 0, 233]],
-         [[85, 85, 255]],
-         [[197, 197, 255]],
-         [[255, 197, 197]],
-         [[255, 85, 85]],
-         [[239, 0, 0]],
-         [[183, 0, 0]],
-         [[127, 0, 0]]],
+        [[0, 0, 76],
+         [0, 0, 154],
+         [0, 0, 233],
+         [85, 85, 255],
+         [197, 197, 255],
+         [255, 197, 197],
+         [255, 85, 85],
+         [239, 0, 0],
+         [183, 0, 0],
+         [127, 0, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'seismic')
@@ -202,16 +202,16 @@ def test_render_heatmap_gray_red() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 255]],
-         [[45, 45, 243]],
-         [[90, 90, 232]],
-         [[136, 136, 221]],
-         [[181, 181, 209]],
-         [[209, 181, 181]],
-         [[221, 136, 136]],
-         [[232, 90, 90]],
-         [[243, 45, 45]],
-         [[255, 0, 0]]],
+        [[0, 0, 255],
+         [45, 45, 243],
+         [90, 90, 232],
+         [136, 136, 221],
+         [181, 181, 209],
+         [209, 181, 181],
+         [221, 136, 136],
+         [232, 90, 90],
+         [243, 45, 45],
+         [255, 0, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'gray-red')
@@ -226,16 +226,16 @@ def test_render_heatmap_black_green() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 255]],
-         [[0, 0, 198]],
-         [[0, 0, 141]],
-         [[0, 0, 85]],
-         [[0, 0, 28]],
-         [[0, 28, 0]],
-         [[0, 84, 0]],
-         [[0, 141, 0]],
-         [[0, 198, 0]],
-         [[0, 255, 0]]],
+        [[0, 0, 255],
+         [0, 0, 198],
+         [0, 0, 141],
+         [0, 0, 85],
+         [0, 0, 28],
+         [0, 28, 0],
+         [0, 84, 0],
+         [0, 141, 0],
+         [0, 198, 0],
+         [0, 255, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'black-green')
@@ -250,16 +250,16 @@ def test_render_heatmap_black_fire_red() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[255, 255, 255]],
-         [[141, 255, 255]],
-         [[28, 255, 255]],
-         [[0, 85, 255]],
-         [[0, 0, 113]],
-         [[113, 0, 0]],
-         [[255, 84, 0]],
-         [[255, 255, 28]],
-         [[255, 255, 141]],
-         [[255, 255, 255]]],
+        [[255, 255, 255],
+         [141, 255, 255],
+         [28, 255, 255],
+         [0, 85, 255],
+         [0, 0, 113],
+         [113, 0, 0],
+         [255, 84, 0],
+         [255, 255, 28],
+         [255, 255, 141],
+         [255, 255, 255]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'black-fire-red')
@@ -274,16 +274,16 @@ def test_render_heatmap_black_yellow() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 255]],
-         [[0, 0, 198]],
-         [[0, 0, 141]],
-         [[0, 0, 85]],
-         [[0, 0, 28]],
-         [[28, 28, 0]],
-         [[84, 84, 0]],
-         [[141, 141, 0]],
-         [[198, 198, 0]],
-         [[255, 255, 0]]],
+        [[0, 0, 255],
+         [0, 0, 198],
+         [0, 0, 141],
+         [0, 0, 85],
+         [0, 0, 28],
+         [28, 28, 0],
+         [84, 84, 0],
+         [141, 141, 0],
+         [198, 198, 0],
+         [255, 255, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'black-yellow')
@@ -298,16 +298,16 @@ def test_render_heatmap_with_multiple_dimensions() -> None:
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
-        [[[0, 0, 255]],
-         [[56, 56, 255]],
-         [[112, 112, 255]],
-         [[170, 170, 255]],
-         [[226, 226, 255]],
-         [[255, 226, 226]],
-         [[255, 170, 170]],
-         [[255, 112, 112]],
-         [[255, 56, 56]],
-         [[255, 0, 0]]],
+        [[0, 0, 255],
+         [56, 56, 255],
+         [112, 112, 255],
+         [170, 170, 255],
+         [226, 226, 255],
+         [255, 226, 226],
+         [255, 170, 170],
+         [255, 112, 112],
+         [255, 56, 56],
+         [255, 0, 0]],
         dtype=numpy.uint8
     )
     actual_heatmap = render_heatmap(attribution_data, 'blue-white-red')

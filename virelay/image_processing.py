@@ -150,6 +150,7 @@ def render_heatmap(attribution_data, color_map):
         raise ValueError(f'The color map "{color_map}" is not supported.')
     heatmap_image *= 255.0
     heatmap_image = heatmap_image.astype(numpy.uint8)
+    heatmap_image = heatmap_image.squeeze()
     return heatmap_image
 
 

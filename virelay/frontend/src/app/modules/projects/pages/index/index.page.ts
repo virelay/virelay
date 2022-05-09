@@ -295,20 +295,20 @@ export class IndexPage implements OnInit {
             });
         }
 
-        // Refreshes the plot that displays the eigen values
-        this.refreshEigenValuePlot();
+        // Refreshes the plot that displays the eigenvalues
+        this.refreshEigenvaluePlot();
     }
 
     /**
-     * Contains the data for the plot of the eigen values.
+     * Contains the data for the plot of the eigenvalues.
      */
     public eigenvaluesGraphData: Array<Plotly.Data>;
 
     /**
-     * Contains the layout of the plot of the eigen values.
+     * Contains the layout of the plot of the eigenvalues.
      */
     public eigenvaluesGraphLayout: Partial<Plotly.Layout> = {
-        title: 'Eigen Values',
+        title: 'Eigenvalues',
         margin: {
             l: 32,
             r: 16,
@@ -370,11 +370,12 @@ export class IndexPage implements OnInit {
     public shareLinkUrlCopied: null | 'successful' | 'failed';
 
     /**
-     * Refreshes the eigen value plot.
+     * Refreshes the eigenvalue plot.
      */
-    private refreshEigenValuePlot(): void {
+    private refreshEigenvaluePlot(): void {
 
-        if (!this.analysis) {
+        if (!this.analysis || !this.analysis.eigenvalues) {
+            this.eigenvaluesGraphData = null;
             return;
         }
 

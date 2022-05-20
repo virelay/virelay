@@ -30,7 +30,7 @@ export class AttributionsService {
         return await lastValueFrom(this.httpClient
             .get<Attribution>(`${environment.apiBaseUrl}/api/projects/${projectId}/attributions/${index}`, {
                 headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-                params: new HttpParams().set('image_mode', imageMode)
+                params: new HttpParams().set('imageMode', imageMode)
             })
             .pipe(map(attribution => new Attribution(attribution, environment.apiBaseUrl))));
     }

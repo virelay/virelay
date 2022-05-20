@@ -1019,10 +1019,10 @@ class ImageDirectoryDataset:
                 label_word_net_id_regex must be specified.
             input_width: int
                 The width of the input to the model. This is used to resize the dataset samples to the same size as the
-                the model expects its inputs to be.
+                model expects its inputs to be.
             input_height: int
                 The height of the input to the model. This is used to resize the dataset samples to the same size as the
-                the model expects its inputs to be.
+                model expects its inputs to be.
             down_sampling_method: str
                 The method that is to be used to down-sample images from the dataset that are larger than the input to
                 the model.

@@ -48,14 +48,14 @@ ViRelAy projects can be generated using [CoRelAy](https://github.com/virelay/cor
 When you have a project ready, you can open it in ViRelAy like so using the following command. Please note that starting ViRelAy using the command line interface, will start a rather slow development server. For improved load times or when running ViRelAy on a server, please run it using the WSGI HTTP server [Gunicorn](https://virelay.readthedocs.io/en/latest/user-guide/using-virelay-with-gunicorn.html).
 
 ```shell
-$ python -m virelay <project-file> [<project-file>, ...]
+$ python -m virelay <project-file> [<project-file> ...]
 ```
 
 This will start the server at http://localhost:8080 and automatically open your default browser. Optionally, you can specify an alternative host and port using the `--host` and `--port` command line arguments. For more in-depth instructions, please refer to our [getting started guide](https://virelay.readthedocs.io/en/latest/getting-started/index.html).
 
 ## Contributing
 
-If you'd like to contribute, there are multiple ways you can help out. If you find a bug or have a feature request, please feel free to open an issue on GitHub. If you want to contribute code, please fork the repository and use a feature branch. Pull requests are always welcome. Before forking, please open an issue where you describe what you want to do. This helps to align your ideas with ours and may prevent you from doing work, that we are already planning on doing. If you have contributed to the project, please add yourself to the [contributors list](CONTRIBUTORS.md).
+If you would like to contribute, there are multiple ways you can help out. If you find a bug or have a feature request, please feel free to open an issue on GitHub. If you want to contribute code, please fork the repository and use a feature branch. Pull requests are always welcome. Before forking, please open an issue where you describe what you want to do. This helps to align your ideas with ours and may prevent you from doing work, that we are already planning on doing. If you have contributed to the project, please add yourself to the [contributors list](CONTRIBUTORS.md).
 
 To help speed up the merging of your pull request, please comment and document your code extensively, try to emulate the coding style of the project, and update the documentation if necessary. For more information on how to contribute, please refer to the [developer documentation](https://virelay.readthedocs.io/en/latest/contributors-guide/index.html).
 

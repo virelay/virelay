@@ -234,7 +234,7 @@ class TestServer:
         assert attribution['urls']['jet'] == '/api/projects/0/dataset/0/image'
         assert attribution['urls']['seismic'] == '/api/projects/0/dataset/0/image'
 
-        http_response = test_client.get('/api/projects/0/attributions/0?image_mode=attribution')
+        http_response = test_client.get('/api/projects/0/attributions/0?imageMode=attribution')
         assert http_response.status_code == 200
         assert http_response.content_type == 'application/json'
         attribution = http_response.get_json()
@@ -260,7 +260,7 @@ class TestServer:
         assert attribution['urls']['seismic'] == \
             '/api/projects/0/attributions/0/heatmap?colorMap=seismic&superimpose=False'
 
-        http_response = test_client.get('/api/projects/0/attributions/0?image_mode=overlay')
+        http_response = test_client.get('/api/projects/0/attributions/0?imageMode=overlay')
         assert http_response.status_code == 200
         assert http_response.content_type == 'application/json'
         attribution = http_response.get_json()

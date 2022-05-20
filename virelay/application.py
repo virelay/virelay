@@ -9,7 +9,7 @@ from .model import Workspace
 
 
 def create_app(projects=None):
-    """Create an application in a way understood by gunicorn etc."""
+    """Create an application in a way understood by Gunicorn etc."""
 
     if projects is None:
         try:
@@ -71,9 +71,9 @@ class Application:
             action='store_true',
             help='''
                 Determines whether the application is run in debug mode. When the application is in debug mode, all
-                FLASK and Werkzeug logs are printed to stdout, FLASK debugging is activated (FLASK will print out the
+                Flask and Werkzeug logs are printed to stdout, Flask debugging is activated (Flask will print out the
                 debugger PIN for attaching the debugger), and automatic reloading (when files change) is activated.
-                Furthermore, the frontend of the application will not be served by flask and instead has to be served
+                Furthermore, the frontend of the application will not be served by Flask and instead has to be served
                 externally (e.g. via ng serve).
             '''
         )
@@ -91,12 +91,12 @@ class Application:
         for project_path in arguments.project:
             self.workspace.add_project(project_path)
 
-        # Registers the cleanup method, which will be called when the application is quit (the FLASK server is long
+        # Registers the cleanup method, which will be called when the application is quit (the Flask server is long
         # running and will only exit when the user sends a signal, e.g. via Ctrl+C, to stop the process, atexit
-        # registers a callback, which is exected, when the Python interpreter is shut down)
+        # registers a callback, which is executed, when the Python interpreter is shut down)
         atexit.register(self.shutdown)
 
-        # Creates the FLASK server, which serves the frontend website as well as the RESTful API
+        # Creates the Flask server, which serves the frontend website as well as the RESTful API
         server = Server(self.workspace, arguments.debug_mode)
         server.run(arguments.host, arguments.port)
 

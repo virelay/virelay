@@ -29,11 +29,11 @@ class Server:
                 The workspace that contains the projects that are to be managed by the server.
             is_in_debug_mode: bool
                 Determines whether the application should run in debug mode or not. Defaults to False. When the
-                application is in debug mode, then all FLASK and Werkzeug logs are printed to stdout, FLASK debugging is
-                activated (FLASK will print out the debugger PIN for attaching the debugger), and the automatic
+                application is in debug mode, then all Flask and Werkzeug logs are printed to stdout, Flask debugging is
+                activated (Flask will print out the debugger PIN for attaching the debugger), and the automatic
                 reloading, when the Python files change is activated. Furthermore, the frontend of the application will
                 not be served via the. Otherwise all these things will be deactivated and the frontend of the
-                application is served via the FLASK server. If the application is to be debugged using Visual Studio
+                application is served via the Flask server. If the application is to be debugged using Visual Studio
                 Code (or any other IDE for that matter), then the application must not be started in debug mode, because
                 Visual Studio will create its own debugger.
         """
@@ -54,10 +54,10 @@ class Server:
             'seismic': 'Seismic'
         }
 
-        # Creates the FLASK application
+        # Creates the Flask application
         self.app = flask.Flask('ViRelAy')
 
-        # Registers the routes of the RESTful API with the FLASK application
+        # Registers the routes of the RESTful API with the Flask application
         self.app.add_url_rule(
             '/api/projects',
             'get_projects',
@@ -105,7 +105,7 @@ class Server:
         )
 
         # When the application is not in debug mode, then the Angular frontend is served via the static file serving
-        # feature in FLASK
+        # feature in Flask
         if not self.is_in_debug_mode:
             frontend_path = 'frontend/distribution'
 
@@ -154,7 +154,7 @@ class Server:
 
     def run(self, host='localhost', port=8080):
         """
-        Starts the FLASK server and returns when the application has finished.
+        Starts the Flask server and returns when the application has finished.
 
         Parameters
         ----------
@@ -164,14 +164,14 @@ class Server:
                 The port at which the application should run. Defaults to 8080.
         """
 
-        # If the application is not run in debug mode, then all FLASK and Werkzeug logs are suppressed to make the
+        # If the application is not run in debug mode, then all Flask and Werkzeug logs are suppressed to make the
         # console output a lot cleaner
         if not self.is_in_debug_mode:
             logging.getLogger('werkzeug').disabled = True
             os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
         # When the application is not in debug mode, then the browser is automatically opened upon application startup
-        # (the problem is, that the FLASK app run() method is blocking, so we cannot start the browser when the app is
+        # (the problem is, that the Flask app run() method is blocking, so we cannot start the browser when the app is
         # run, so we have to set a timer, which will run on a different thread and start the thread after the server,
         # hopefully, has started)
         if not self.is_in_debug_mode:
@@ -182,7 +182,7 @@ class Server:
         if self.is_in_debug_mode:
             flask_cors.CORS(self.app)
 
-        # Starts the FLASK application
+        # Starts the Flask application
         self.app.auto_reload = self.is_in_debug_mode
         self.app.run(host, port, self.is_in_debug_mode)
 
@@ -268,10 +268,11 @@ class Server:
 
         Returns
         -------
-            Returns an HTTP 200 OK response with a JSON string as content, which contains the data of the dataset
-            sample.
-            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
-            If the specified dataset sample does not exist, then an HTTP 404 Not Found response is returned.
+            flask.Response
+                Returns an HTTP 200 OK response with a JSON string as content, which contains the data of the dataset
+                sample.
+                If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+                If the specified dataset sample does not exist, then an HTTP 404 Not Found response is returned.
         """
 
         # Checks if a project with the specified ID exists
@@ -307,9 +308,10 @@ class Server:
 
         Returns
         -------
-            Returns an HTTP 200 OK response with the image of the specified dataset sample as content.
-            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
-            If the specified dataset sample does not exist, then an HTTP 404 Not Found response is returned.
+            flask.Response
+                Returns an HTTP 200 OK response with the image of the specified dataset sample as content.
+                If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+                If the specified dataset sample does not exist, then an HTTP 404 Not Found response is returned.
         """
 
         # Checks if a project with the specified ID exists
@@ -339,9 +341,11 @@ class Server:
 
         Returns
         -------
-            Returns an HTTP 200 OK response with a JSON string as content, which contains the data of the attribution.
-            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
-            If the specified attribution does not exist, then an HTTP 404 Not Found response is returned.
+            flask.Response
+                Returns an HTTP 200 OK response with a JSON string as content, which contains the data of the
+                attribution.
+                If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+                If the specified attribution does not exist, then an HTTP 404 Not Found response is returned.
         """
 
         # Checks if a project with the specified ID exists
@@ -364,7 +368,7 @@ class Server:
             'height': attribution.data.shape[1],
             'urls': {}
         }
-        image_mode = flask.request.args.get('image_mode', 'input')
+        image_mode = flask.request.args.get('imageMode', 'input')
         for color_map in self.color_maps:
             if image_mode in ('overlay', 'attribution'):
                 url = flask.url_for(
@@ -397,9 +401,10 @@ class Server:
 
         Returns
         -------
-            Returns an HTTP 200 OK response with the rendered heatmap image.
-            If the specified project does not exist, then an HTTP 404 Not Found response is returned.
-            If the specified attribution does not exist, then an HTTP 404 Not Found response is returned.
+            flask.Response
+                Returns an HTTP 200 OK response with the rendered heatmap image.
+                If the specified project does not exist, then an HTTP 404 Not Found response is returned.
+                If the specified attribution does not exist, then an HTTP 404 Not Found response is returned.
         """
 
         # Checks if a project with the specified ID exists
@@ -526,7 +531,7 @@ class Server:
 
     def get_color_map_preview(self, color_map):
         """
-        Renders a preview of a color map with a value gradient. Using the URL parameters 'width' and 'height', the size
+        Renders a preview of a color map with a value gradient. Using the URL parameters "width" and "height", the size
         of the preview can be specified. The size defaults to 200x20.
 
         Parameters
@@ -536,8 +541,9 @@ class Server:
 
         Returns
         -------
-            Returns an HTTP 200 OK response with the rendered heatmap preview.
-            If the specified color map is unknown, then an HTTP 400 Bad Request response is returned.
+            flask.Response
+                Returns an HTTP 200 OK response with the rendered heatmap preview.
+                If the specified color map is unknown, then an HTTP 400 Bad Request response is returned.
         """
 
         if color_map not in self.color_maps:

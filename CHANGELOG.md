@@ -2,7 +2,7 @@
 
 ## 0.4.0
 
-Unreleased
+Released on May 31, 2022
 
 - Added extensive documentation, which is available on [ReadTheDocs](https://virelay.readthedocs.io)
 - Added a unit testing suite for the backend API, which has 100% code coverage

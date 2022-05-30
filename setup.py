@@ -29,6 +29,18 @@ setup(
     setup_requires=[
         'setuptools_scm',
     ],
+    extras_require={
+        'docs': [
+            'sphinx-copybutton>=0.4.0',
+            'sphinx-rtd-theme>=1.0.0',
+            'sphinxcontrib.datatemplates>=0.9.0',
+            'sphinxcontrib.bibtex>=2.4.1',
+        ],
+        'tests': [
+            'pytest',
+            'pytest-cov',
+        ]
+    },
     entry_points={
         'console_scripts': [
             'virelay = virelay.__main__:main',

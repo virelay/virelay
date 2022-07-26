@@ -4,6 +4,7 @@ project can be created.
 
 import json
 import argparse
+from typing import List
 
 import h5py
 import numpy
@@ -184,10 +185,10 @@ def meta_analysis(
         attribution_file_path: str,
         analysis_file_path: str,
         variant: str,
-        class_indices: list[int],
+        class_indices: List[int],
         label_map_file_path: str,
         number_of_eigenvalues: int,
-        number_of_clusters_list: list[int],
+        number_of_clusters_list: List[int],
         number_of_neighbors: int) -> None:
     """Performs a meta-analysis over the specified attribution data and writes the results into an analysis database.
 
@@ -201,7 +202,7 @@ def meta_analysis(
         variant: str
             The meta-analysis variant that is to be performed. Can be one of "absspectral", "spectral", "fullspectral",
             or "histogram".
-        class_indices: list[int]
+        class_indices: List[int]
             The indices of the classes for which the meta-analysis is to be performed. If not specified, then the
             meta-analysis is performed for all classes.
         label_map_file_path: str
@@ -209,7 +210,7 @@ def meta_analysis(
             names and WordNet IDs.
         number_of_eigenvalues: int
             The number of eigenvalues of the eigenvalue decomposition.
-        number_of_clusters_list: list[int]
+        number_of_clusters_list: List[int]
             A list that can contain multiple numbers of clusters. For each number of clusters in this list, all
             clustering methods and the meta-analysis are performed.
         number_of_neighbors: int

@@ -264,6 +264,10 @@ def meta_analysis(
     if class_indices is None:
         class_indices = [int(label['index']) for label in label_map]
 
+    # Truncate the analysis database
+    print(f'Truncating {analysis_file_path}')
+    h5py.File(analysis_file_path, 'w').close()
+
     # Cycles through all classes and performs the meta-analysis for each of them
     for class_index in class_indices:
 
@@ -281,9 +285,9 @@ def meta_analysis(
         print(f'Computing class {class_name_map[class_index]}')
         (eigenvalues, embedding), (kmeans, dbscan, hdbscan, agglomerative, (umap, tsne)) = pipeline(attribution_data)
 
-        # Saves the meta-analysis to the analysis database
+        # Append the meta-analysis to the analysis database
         print(f'Saving class {class_name_map[class_index]}')
-        with h5py.File(analysis_file_path, 'w') as analysis_file:
+        with h5py.File(analysis_file_path, 'a') as analysis_file:
 
             # The name of the analysis is the name of the class
             analysis_name = wordnet_id_map.get(class_index, f'{class_index:08d}')

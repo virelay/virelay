@@ -8,18 +8,23 @@ If you have installed ViRelAy from the project's Git repository, then you alread
 
 .. code-block:: console
 
-    $ mkdir test-project
-    $ cd test-project
+    $ mkdir virelay-example virelay-example/test-project
+    $ cd virelay-example
     $ curl -o 'meta_analysis.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/meta_analysis.py'
     $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/make_project.py'
     $ curl -o 'make_test_data.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/test-project/make_test_data.py'
 
-The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed using your favorite Python package manager, e.g., ``pip``. It is recommended to create a virtual environment in order to not pollute your base environment. The test project scripts support many different clustering and embedding methods. To use the UMAP embedding method and the HDBSCAN clustering method, optional support for them has to be installed as well. This can be done like so:
+The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed using your favorite Python package manager, e.g., ``pip``. It is recommended to create a virtual environment with an up-to-date version of ``pip`` for maximal compatibility and in order to not pollute your base environment. The test project scripts support many different clustering and embedding methods. To use the UMAP embedding method and the HDBSCAN clustering method, optional support for them has to be installed as well. This can be done like so:
 
 .. code-block:: console
 
     $ python -m venv .venv
-    $ .venv/bin/pip install 'corelay[umap,hdbscan]'
+    $ .venv/bin/pip install -U pip
+    $ .venv/bin/pip install virelay 'corelay[umap,hdbscan]'
+
+.. note::
+
+    Be aware that only python versions >= 3.7 are officially supported.
 
 A ViRelAy project consists of multiple files. In its most basic configuration
 the required files are:
@@ -70,4 +75,9 @@ The resulting project can then be opened in ViRelAy using the following command:
 
 .. code-block:: console
 
-    $ .venv/bin/python -m virelay test-project/project.yaml
+    $ .venv/bin/gunicorn \
+          --workers 4 \
+          --bind 127.0.0.1:8182 \
+          "virelay.application:create_app(projects=['test-project/project.yaml'])"
+
+Navigate to http://127.0.0.1:8182 to see ViRelAy's user interface.

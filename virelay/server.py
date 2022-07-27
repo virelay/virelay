@@ -168,7 +168,6 @@ class Server:
         # console output a lot cleaner
         if not self.is_in_debug_mode:
             logging.getLogger('werkzeug').disabled = True
-            os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
         # When the application is not in debug mode, then the browser is automatically opened upon application startup
         # (the problem is, that the Flask app run() method is blocking, so we cannot start the browser when the app is

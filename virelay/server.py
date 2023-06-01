@@ -13,7 +13,7 @@ import flask
 import flask_cors
 from PIL import Image
 
-from .image_processing import render_heatmap
+from image_processing import render_heatmap
 
 
 class Server:

@@ -11,7 +11,7 @@ import h5py
 import numpy
 from PIL import Image
 
-from .image_processing import add_border, center_crop, render_heatmap, render_superimposed_heatmap
+from image_processing import add_border, center_crop, render_heatmap, render_superimposed_heatmap
 
 
 class Project:

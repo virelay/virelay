@@ -4,8 +4,8 @@ import os
 import atexit
 import argparse
 
-from .server import Server
-from .model import Workspace
+from server import Server
+from model import Workspace
 
 
 def create_app(projects=None):

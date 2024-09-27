@@ -13,6 +13,7 @@
     - In a previous version, Flask used `application/javascript` as the MIME type for JavaScript files. However, the correct MIME type is `text/javascript`, which is now also used by Flask. For this reason, the unit test for it was updated.
     - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
 - In the GitHub Actions workflow configuration file, the `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
+- Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
 
 ## 0.4.0
 

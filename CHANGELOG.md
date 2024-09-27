@@ -1,8 +1,22 @@
 # Changelog
 
+## 0.5.0
+
+*Release date to be determined.*
+
+- Updated the dependencies in the setup.py file to the their respective latest versions
+  - NumPy was pinned to the version 2.0.2, because this is the last version that seems to be compatible with Python 3.9
+  - The versions of all other packages were set to be greater than or equal to the currently latest version and are restricted to be below the next major version, so that versions with breaking changes will be installed in the future
+  - Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent, therefore they were removed from the supported version of Python, and the versions 3.10, 3.11 and 3.12 were added, which means that now Python 3.9, 3.10, 3.11, and 3.12 are the supported Python versions for the project.
+  - The following changes had to be made to because of the updated Python versions and dependencies:
+    - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. The `importlib.metadata` module is now used as a replacement.
+    - In a previous version, Flask used `application/javascript` as the MIME type for JavaScript files. However, the correct MIME type is `text/javascript`, which is now also used by Flask. For this reason, the unit test for it was updated.
+    - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
+- In the GitHub Actions workflow configuration file, the `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
+
 ## 0.4.0
 
-Released on May 31, 2022
+*Released on May 31, 2022.*
 
 - Added extensive documentation, which is available on [ReadTheDocs](https://virelay.readthedocs.io)
 - Added a unit testing suite for the backend API, which has 100% code coverage
@@ -21,7 +35,7 @@ Released on May 31, 2022
   - Fixed a NumPy warning (`bool` should be used instead `numpy.bool`)
   - Fixed the exception caught when retrieving samples from an `Hdf5Dataset` in the `get_sample` (this would cause the `get_sample` method to pass through the `IndexError` instead of raising a `LookupError` itself, when the sample was not found)
   - In the `Project` class some methods did not fail when the project was closed and others failed with wrong exceptions when the project was closed
-  -  Fixed index bound checks when retrieving attributions using the `get_attribution` method of the `AttributionDatabase` (also indirectly affected the `get_attribution` method of the `Project` class)
+  - Fixed index bound checks when retrieving attributions using the `get_attribution` method of the `AttributionDatabase` (also indirectly affected the `get_attribution` method of the `Project` class)
   - When retrieving analyses using the `get_analysis` method of the `AnalysisDatabase` class, NumPy Arrays are now returned, where previously HDF5 datasets were returned
   - In the `Project` class, the check whether a project contains a dataset, attributions, or analyses was incorrect and is now fixed
   - If a project has no dataset, then retrieving samples now fails with an informative exception
@@ -37,7 +51,7 @@ Released on May 31, 2022
 
 ## v0.3.1
 
-Released on July 5, 2021
+*Released on July 5, 2021.*
 
 - PyPI release
 - updated example in README
@@ -45,14 +59,13 @@ Released on July 5, 2021
 
 ## v0.3.0
 
-Released on June 24, 2021
+*Released on June 24, 2021.*
 
 - Added a license (AGPL)
 - Added a share button, which generates a link that restores the entire current state
 
-
 ## v0.2.0
 
-Released on June 24, 2021
+*Released on June 24, 2021.*
 
 - Initial stable public release

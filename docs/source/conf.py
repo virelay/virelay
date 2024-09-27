@@ -7,9 +7,9 @@ and output behavior.
 import os
 import sys
 import inspect
+import importlib.metadata
 from subprocess import run, CalledProcessError
 
-import pkg_resources
 from pybtex.plugin import register_plugin
 from pybtex.style.labels import BaseLabelStyle
 from pybtex.style.formatting.plain import Style as PlainStyle
@@ -132,7 +132,7 @@ def linkcode_resolve(domain, info):
         # GitHub in its URL to the source code)
         try:
             top_module_name = info['module'].split('.')[0]
-            module_path = pkg_resources.require(top_module_name)[0].location
+            module_path = importlib.metadata.requires(top_module_name)[0].location
             file_path = os.path.relpath(inspect.getsourcefile(object_to_get_url_for), module_path)
             if file_path is None:
                 return None

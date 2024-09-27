@@ -19,33 +19,33 @@ setup(
     url='https://github.com/virelay/virelay',
     packages=find_packages(include=['virelay*']),
     install_requires=[
-        'h5py>=2.10.0',
-        'matplotlib>=3.2.2',
-        'numpy>=1.19.0',
-        'Pillow>=7.2.0',
-        'flask>=1.1.2',
-        'flask_cors>=3.0.8',
-        'pyyaml>=5.3.1',
-        'gunicorn>=20.0.4'
+        'h5py>=3.12.1,<4.0.0',
+        'matplotlib>=3.9.2,<4.0.0',
+        'numpy==2.0.2',
+        'pillow>=10.4.0,<11.0.0',
+        'flask>=3.0.3,<4.0.0',
+        'flask-cors>=5.0.0,<6.0.0',
+        'pyyaml>=6.0.2,<7.0.0',
+        'gunicorn>=23.0.0,<24.0.0'
     ],
     setup_requires=[
-        'setuptools_scm',
+        'setuptools_scm>=8.1.0,<9.0.0'
     ],
     extras_require={
         'docs': [
-            'sphinx-copybutton>=0.4.0',
-            'sphinx-rtd-theme>=1.0.0',
-            'sphinxcontrib.datatemplates>=0.9.0',
-            'sphinxcontrib.bibtex>=2.4.1',
+            'sphinx-copybutton>=0.5.2,<1.0.0',
+            'sphinx-rtd-theme>=2.0.0,<3.0.0',
+            'sphinxcontrib.datatemplates>=0.11.0,<1.0.0',
+            'sphinxcontrib.bibtex>=2.6.3,<3.0.0'
         ],
         'tests': [
-            'pytest',
-            'pytest-cov',
+            'pytest>=8.3.3,<9.0.0',
+            'pytest-cov>=5.0.0,<6.0.0'
         ]
     },
     entry_points={
         'console_scripts': [
-            'virelay = virelay.__main__:main',
+            'virelay = virelay.__main__:main'
         ]
     },
     package_data={
@@ -58,12 +58,13 @@ setup(
             'frontend/distribution/3rdpartylicenses.txt'
         ]
     },
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12'
     ]
 )

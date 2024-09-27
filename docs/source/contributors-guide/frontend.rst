@@ -30,7 +30,7 @@ Before starting to work on the frontend, you need to install `Node.js <https://n
     $ cd virelay/frontend
     $ npm install
 
-During development, the frontend can be started using the following command. This starts a development server, which re-compiles and reloads the application automatically when any source files are changed. Futhermore, this creates source maps for the compiled JavaScript files, which makes debugging much easier, as the TypeScript files can be used for debugging.
+During development, the frontend can be started using the following command. This starts a development server, which re-compiles and reloads the application automatically when any source files are changed. Furthermore, this creates source maps for the compiled JavaScript files, which makes debugging much easier, as the TypeScript files can be used for debugging.
 
 .. code-block:: console
 

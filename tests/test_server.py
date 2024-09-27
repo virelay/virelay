@@ -90,7 +90,7 @@ class TestServer:
         ))[0])
         http_response = test_client.get(f'/{main_file_name}')
         assert http_response.status_code == 200
-        assert http_response.content_type == 'application/javascript; charset=utf-8'
+        assert http_response.content_type == 'text/javascript; charset=utf-8'
 
         http_response = test_client.get('/assets/images/virelay-logo.png')
         assert http_response.status_code == 200

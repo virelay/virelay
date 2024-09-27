@@ -13,12 +13,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tox_env: py37
-            python: "3.7"
-          - tox_env: py38
-            python: "3.8"
           - tox_env: py39
             python: "3.9"
+          - tox_env: py310
+            python: "3.10"
+          - tox_env: py311
+            python: "3.11"
+          - tox_env: py312
+            python: "3.12"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -37,7 +39,6 @@ jobs:
         run: tox -vv --notest -e ${{ matrix.tox_env }}
       - name: Run test
         run: tox --skip-pkg-install -e ${{ matrix.tox_env }}
-
 
   check:
     name: check ${{ matrix.tox_env }}
@@ -66,8 +67,7 @@ jobs:
   docs:
     name: docs
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
         with:

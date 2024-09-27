@@ -73,11 +73,11 @@ Unit Testing
 
 The backend REST API has a unit test suite which strives to always reach 100% code coverage. The tests are not situated in the ViRelAy module, but in a separate tests directory: :repo:`tests`. The ``conftest`` module contains common fixtures that are used by the tests. Each ViRelAy module has an accompanying test module, which contains the tests for it (e.g., the ``image_processing`` ViRelAy module has a ``test_image_processing`` test module). The tests are written using the PyTest framework. The tests for ViRelAy classes are also contained in classes (e.g., the ``Project`` class in the ``model`` ViRelAy module has a matching ``TestProject`` test class), while the tests for functions are also just plain functions. The convention is to name a test function or method with the prefix ``test_`` followed by the name of the function or method being tested, followed by a description of the test. For example, the function that tests whether heatmaps can be rendered with the blue-white-red color map is called ``test_render_heatmap_blue_white_red``. When contributing to the project, you should always ensure that all tests run successfully and that all altered or added functionality is being properly tested.
 
-The easiest way to run the unit tests is through Tox. Tox runs the unit tests using all supported Python version (Python 3.7, 3.8, and 3.9), not only using the locally installed version. This can be achieved using the Tox command line interface and by specifying the environments using the ``-e`` parameter.
+The easiest way to run the unit tests is through Tox. Tox runs the unit tests using all supported Python version (Python 3.9, 3.10, 3.11, and 3.12), not only using the locally installed version. This can be achieved using the Tox command line interface and by specifying the environments using the ``-e`` parameter.
 
 .. code-block:: console
 
-    tox -e py37,py38,py39
+    tox -e py39,py310,py311,py312
 
 The tests can also be directly executed using the ``pytest`` command line interface, like so:
 

@@ -6,7 +6,7 @@ import logging
 import traceback
 import threading
 import webbrowser
-from pkg_resources import resource_stream
+from importlib.resources import files
 
 import numpy
 import flask
@@ -111,14 +111,14 @@ class Server:
 
             def send_wrap(target):
                 return lambda: flask.send_file(
-                    resource_stream('virelay', os.path.join(frontend_path, target)),
-                    download_name=os.path.basename(target),
+                    (files('virelay') / frontend_path / target).open(mode='rb'),
+                    download_name=os.path.basename(target)
                 )
 
             def send_wrap_arg(target):
                 return lambda file_name: flask.send_file(
-                    resource_stream('virelay', os.path.join(frontend_path, target).format(file_name)),
-                    download_name=os.path.basename(target.format(file_name)),
+                    (files('virelay') / frontend_path / target.format(file_name)).open(mode='rb'),
+                    download_name=os.path.basename(target.format(file_name))
                 )
 
             self.app.add_url_rule(

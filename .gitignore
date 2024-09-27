@@ -1,12 +1,12 @@
 
-# IDEs and Code editors
+# IDE and code editor configurations
 .vscode
 .idea
 .venv
 *venv
 .exrc
 
-# Python output
+# Python compilation output
 .python
 *.egg-info
 __pycache__
@@ -16,18 +16,18 @@ __pycache__
 build/
 dist/
 
-# Testing
+# Testing and coverage output
 .tox
 .coverage
 .coverage.*
 .pytest_cache
 htmlcov
 
-# System Files
+# Operation system file preview databases
 .DS_Store
 Thumbs.db
 
-# NPM dependencies
+# Dependencies of the frontend installed via NPM
 node_modules
 
 # Angular cache

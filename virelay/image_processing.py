@@ -264,20 +264,20 @@ def generate_heatmap_image_gray_red(attribution_data):
 
     # Creates the floating point representation of a the base gray color that is used in the heatmap, and creates a
     # new heatmap image, with that base gray as the background color
-    basegray = 0.8
-    heatmap = numpy.ones([attribution_data.shape[0], attribution_data.shape[1], 3]) * basegray
+    base_gray = 0.8
+    heatmap = numpy.ones([attribution_data.shape[0], attribution_data.shape[1], 3]) * base_gray
 
     # Generates the actual heatmap image
     absolute_maximum = numpy.max(attribution_data)
     truncated_values = numpy.maximum(numpy.minimum(attribution_data / absolute_maximum, 1.0), -1.0)
     negatives = attribution_data < 0
-    heatmap[negatives, 0] += truncated_values[negatives] * basegray
-    heatmap[negatives, 1] += truncated_values[negatives] * basegray
-    heatmap[negatives, 2] += -truncated_values[negatives] * (1 - basegray)
+    heatmap[negatives, 0] += truncated_values[negatives] * base_gray
+    heatmap[negatives, 1] += truncated_values[negatives] * base_gray
+    heatmap[negatives, 2] += -truncated_values[negatives] * (1 - base_gray)
     positives = attribution_data >= 0
-    heatmap[positives, 0] += truncated_values[positives] * (1 - basegray)
-    heatmap[positives, 1] += -truncated_values[positives] * basegray
-    heatmap[positives, 2] += -truncated_values[positives] * basegray
+    heatmap[positives, 0] += truncated_values[positives] * (1 - base_gray)
+    heatmap[positives, 1] += -truncated_values[positives] * base_gray
+    heatmap[positives, 2] += -truncated_values[positives] * base_gray
 
     # Returns the created heatmap image
     return heatmap

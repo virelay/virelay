@@ -1,72 +1,95 @@
-name: tests
+
+# This workflow will run the unit tests, the linters, the static type checker, the spell checker, and will build the documentation
+name: ViRelAy Continuous Integration
+
+# This workflow runs when commits are pushed to the master/develop branch or when a pull request for the master/develop branch is opened or pushed to
 on:
   push:
-    branches: [master]
+    branches:
+      - master
+      - develop
   pull_request:
-    branches: [master]
+    branches:
+      - master
+      - develop
 
+# This workflow contains four jobs: test, which runs the unit tests, lint, which runs the linters and the static type checker, spell-check, which runs
+# the spell checker, and docs, which builds the documentation
 jobs:
-  test:
-    name: test ${{matrix.tox_env}}
+
+  # The first job runs the unit tests on Python 3.10, 3.11, and 3.12
+  unit-tests:
+
+    # The job will run on the latest version of Ubuntu using a matrix strategy, where the unit tests are run using Python 3.10, 3.11, and 3.12
+    name: Unit Test ViRelAy Backend on Python ${{matrix.python-version}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - tox_env: py39
-            python: "3.9"
-          - tox_env: py310
-            python: "3.10"
-          - tox_env: py311
-            python: "3.11"
-          - tox_env: py312
-            python: "3.12"
+          - tox-environment: py310
+            python-version: "3.10"
+          - tox-environment: py311
+            python-version: "3.11"
+          - tox-environment: py312
+            python-version: "3.12"
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
+    # run tox itself, 3) installing tox, 4) setting up the test environment, and 5) running the tests
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install base python for tox
-        uses: actions/setup-python@v2
+      - name: Install Base Python for tox
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: Install tox
         run: python -m pip install tox
-      - name: Install python for test
-        uses: actions/setup-python@v2
+      - name: Install Python for Unit Testing
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
-      - name: Setup test environment
-        run: tox -vv --notest -e ${{ matrix.tox_env }}
-      - name: Run test
-        run: tox --skip-pkg-install -e ${{ matrix.tox_env }}
+          python-version: ${{ matrix.python-version }}
+      - name: Setup Test Environment
+        run: tox -vv --notest -e ${{ matrix.tox-environment }}
+      - name: Run Unit Tests
+        run: tox --skip-pkg-install -e ${{ matrix.tox-environment }}
 
-  check:
-    name: check ${{ matrix.tox_env }}
+  # The second job runs the linters (PyLint, PyCodeStyle, and PyDocLint) and the static type checker (MyPy)
+  lint-and-type-check:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint & Type-Check ViRelAy Backend
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        tox_env:
-          - flake8
-          - pylint
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
+    # run tox itself, 3) installing tox, 4) setting up the linting and type-checking environment, and 5) running the linters and the type-checker
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install base python for tox
-        uses: actions/setup-python@v2
+      - name: Install Base Python for tox
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: Install tox
         run: python -m pip install tox
-      - name: Setup test environment
-        run: tox -vv --notest -e ${{ matrix.tox_env }}
-      - name: Run test
-        run: tox --skip-pkg-install -e ${{ matrix.tox_env }}
+      - name: Setup Linting & Type-Checking Environment
+        run: tox -vv --notest -e linting
+      - name: Run Linters & Type-Checker
+        run: tox --skip-pkg-install -e linting
 
+  # The third job runs the spell checker CSpell to spell-check all files in the repository
   spell-check:
+
+    # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the
+    # the workflow to fail if the spell-check fails
     name: Spell-Check Repository
     runs-on: ubuntu-latest
+    continue-on-error: true
+
+    # The job contains several steps: checking out the repository, installing NodeJS, installing the spell checker, and running the spell checker
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -78,26 +101,35 @@ jobs:
           node-version: 20
       - name: Install CSpell
         run: npm install --global git+https://github.com/streetsidesoftware/cspell-cli
-      - name: Run Spell Check
+      - name: Run Spell-Check
         run: npx cspell lint . --config .cspell.json
 
-  docs:
-    name: docs
+  # The fourth job builds the documentation using Sphinx
+  build-documentation:
+
+    # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the
+    # the workflow to fail if the documentation build fails
+    name: Build ViRelAy Documentation
     runs-on: ubuntu-latest
     continue-on-error: true
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
+    # run tox itself, 3) installing TeX Live, which is required by Pybtex, a replacement for BibTeX, used by Sphinx to generate the citations in the
+    # documentation, 4) installing tox, 5) setting up the documentation build environment, and 6) building the documentation
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install base python for tox
-        uses: actions/setup-python@v2
+      - name: Install Base Python for tox
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
-      - name: Install texlive
+          python-version: "3.12"
+      - name: Install TeX Live for Pybtex
         run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
       - name: Install tox
         run: python -m pip install tox
-      - name: Setup test environment
+      - name: Setup Documentation Build Environment
         run: tox -vv --notest -e docs
-      - name: Run test
+      - name: Build Documentation
         run: tox --skip-pkg-install -e docs

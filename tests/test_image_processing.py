@@ -25,7 +25,7 @@ def test_add_border() -> None:
 
     # Validates that a ValueError is raised, when a method is specified that is not supported
     with pytest.raises(ValueError):
-        add_border(input_image, 4, 4, 'unknown_method')
+        add_border(input_image, 4, 4, 'unknown_method')  # type: ignore
 
     # Validates that a border of zeros is properly added
     expected_image = numpy.pad(input_image, ((1, 1), (1, 1), (0, 0)), 'constant', constant_values=0)

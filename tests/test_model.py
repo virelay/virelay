@@ -1,5 +1,4 @@
 """Contains the tests for the model abstractions of ViRelAy."""
-# pylint: disable=too-many-lines
 
 import os
 import glob
@@ -33,16 +32,15 @@ class TestProject:
     def test_project_creation_with_hdf5_dataset(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project with an HDF5 dataset can be created.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
         assert not project.is_closed
         assert project.name == 'Test Project'
         assert project.model == 'No Model'
+        assert project.dataset is not None
         assert project.dataset.name == 'HDF5 Dataset'
         assert project.attribution_method == 'Random Attribution'
         assert len(project.analyses) == 1
@@ -52,30 +50,26 @@ class TestProject:
     def test_project_creation_with_image_directory_dataset(project_file_with_image_directory_dataset_path: str) -> None:
         """Tests whether a project with an image directory dataset can be created.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_image_directory_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_image_directory_dataset_path)
         assert not project.is_closed
         assert project.name == 'Test Project'
         assert project.model == 'No Model'
+        assert project.dataset is not None
         assert project.dataset.name == 'Image Directory Dataset'
         assert project.attribution_method == 'Random Attribution'
         assert len(project.analyses) == 1
         assert 'Spectral Analysis' in project.analyses
 
     @staticmethod
-    def test_project_creation_with_multiple_analysis_databases(
-            project_file_with_multiple_analysis_databases_path: str) -> None:
+    def test_project_creation_with_multiple_analysis_databases(project_file_with_multiple_analysis_databases_path: str) -> None:
         """Tests whether a project without attributions or analyses can be created.
 
-        Parameters
-        ----------
-            project_file_with_multiple_analysis_databases_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_multiple_analysis_databases_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_multiple_analysis_databases_path)
@@ -87,14 +81,11 @@ class TestProject:
         project.get_analysis('Spectral Analysis', '00000000', 'agglomerative-02', 'spectral')
 
     @staticmethod
-    def test_project_creation_without_attributions_or_analyses(
-            project_file_without_attributions_or_analyses_path: str) -> None:
+    def test_project_creation_without_attributions_or_analyses(project_file_without_attributions_or_analyses_path: str) -> None:
         """Tests whether a project without attributions or analyses can be created.
 
-        Parameters
-        ----------
-            project_file_without_attributions_or_analyses_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_without_attributions_or_analyses_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_without_attributions_or_analyses_path)
@@ -109,10 +100,8 @@ class TestProject:
     def test_project_creation_with_unknown_dataset_type(project_file_with_unknown_dataset_type_path: str) -> None:
         """Tests whether creating a project with an unknown dataset type fails.
 
-        Parameters
-        ----------
-            project_file_with_unknown_dataset_type_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_unknown_dataset_type_path (str): The path to the project file that is used for the tests.
         """
 
         with pytest.raises(ValueError):
@@ -122,10 +111,8 @@ class TestProject:
     def test_project_creation_without_dataset(project_file_without_dataset_path: str) -> None:
         """Tests whether a project without a dataset can be created.
 
-        Parameters
-        ----------
-            project_file_without_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_without_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_without_dataset_path)
@@ -138,10 +125,8 @@ class TestProject:
     def test_project_creation_with_broken_project_file(broken_project_file_path: str) -> None:
         """Tests whether creating a project from a broken YAML file fails.
 
-        Parameters
-        ----------
-            broken_project_file_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            broken_project_file_path (str): The path to the project file that is used for the tests.
         """
 
         with pytest.raises(ValueError):
@@ -151,10 +136,8 @@ class TestProject:
     def test_closed_project_cannot_be_used(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project correctly refuses to operate when it was already closed.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -185,10 +168,8 @@ class TestProject:
     def test_project_can_be_closed_multiple_times(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project can be closed multiple times without raising an error.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -199,10 +180,8 @@ class TestProject:
     def test_project_with_hdf5_dataset_can_retrieve_sample(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a sample can be retrieved from a project with an HDF5 dataset.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -212,20 +191,20 @@ class TestProject:
 
         sample = project.get_sample(0)
         assert sample.index == 0
-        assert sample.labels == ['Class 0']
+        assert len(sample.labels) == 1
+        assert sample.labels[0].index == 0
+        assert sample.labels[0].word_net_id == '00000000'
+        assert sample.labels[0].name == 'Class 0'
         assert isinstance(sample.data, numpy.ndarray)
         assert sample.data.shape == (32, 32, 3)
         assert sample.data.dtype == numpy.uint8
 
     @staticmethod
-    def test_project_with_image_directory_dataset_can_retrieve_sample(
-            project_file_with_image_directory_dataset_path: str) -> None:
+    def test_project_with_image_directory_dataset_can_retrieve_sample(project_file_with_image_directory_dataset_path: str) -> None:
         """Tests whether a sample can be retrieved from a project with image directory dataset.
 
-        Parameters
-        ----------
-            project_file_with_image_directory_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_image_directory_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_image_directory_dataset_path)
@@ -235,7 +214,10 @@ class TestProject:
 
         sample = project.get_sample(0)
         assert sample.index == 0
-        assert sample.labels == ['Class 0']
+        assert len(sample.labels) == 1
+        assert sample.labels[0].index == 0
+        assert sample.labels[0].word_net_id == '00000000'
+        assert sample.labels[0].name == 'Class 0'
         assert isinstance(sample.data, numpy.ndarray)
         assert sample.data.shape == (64, 64, 3)
         assert sample.data.dtype == numpy.uint8
@@ -244,10 +226,8 @@ class TestProject:
     def test_project_can_retrieve_attribution(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an attribution can be retrieved from the project.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -257,7 +237,10 @@ class TestProject:
 
         attribution = project.get_attribution(0)
         assert attribution.index == 0
-        assert attribution.labels == ['Class 0']
+        assert len(attribution.labels) == 1
+        assert attribution.labels[0].index == 0
+        assert attribution.labels[0].word_net_id == '00000000'
+        assert attribution.labels[0].name == 'Class 0'
         assert isinstance(attribution.data, numpy.ndarray)
         assert attribution.data.shape == (32, 32, 3)
         assert attribution.data.dtype == numpy.float32
@@ -269,10 +252,8 @@ class TestProject:
     def test_project_can_retrieve_analysis_methods(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a analysis methods can be retrieved from the project.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -284,10 +265,8 @@ class TestProject:
     def test_project_can_retrieve_analysis_categories(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an analysis categories can be retrieved from the project.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -301,14 +280,11 @@ class TestProject:
             assert category.human_readable_name == label.name
 
     @staticmethod
-    def test_project_can_retrieve_analysis_clustering_names(
-            project_file_with_hdf5_dataset_path: str) -> None:
+    def test_project_can_retrieve_analysis_clustering_names(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an analysis clustering names can be retrieved from the project.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -326,14 +302,11 @@ class TestProject:
         assert clustering_names[6] == 'kmeans-03'
 
     @staticmethod
-    def test_project_can_retrieve_analysis_embedding_names(
-            project_file_with_hdf5_dataset_path: str) -> None:
+    def test_project_can_retrieve_analysis_embedding_names(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether an analysis embedding names can be retrieved from the project.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -350,10 +323,8 @@ class TestProject:
     def test_project_can_retrieve_analyses(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether analyses can be retrieved from the project.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used for the tests.
         """
 
         project = Project(project_file_with_hdf5_dataset_path)
@@ -398,13 +369,9 @@ class TestAttributionDatabase:
     def test_attribution_database_creation(attribution_file_path: str, label_map_file_path: str) -> None:
         """Tests whether an attribution database can be created.
 
-
-        Parameters
-        ----------
-            attribution_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -413,17 +380,12 @@ class TestAttributionDatabase:
         assert not attribution_database.is_multi_label
 
     @staticmethod
-    def test_closed_attribution_database_cannot_get_attributions(
-            attribution_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_closed_attribution_database_cannot_get_attributions(attribution_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the attribution database correctly refuses to operate when it was already closed.
 
-        Parameters
-        ----------
-            attribution_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -437,17 +399,12 @@ class TestAttributionDatabase:
             attribution_database.get_attribution(0)
 
     @staticmethod
-    def test_attribution_database_can_be_closed_multiple_times(
-            attribution_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_attribution_database_can_be_closed_multiple_times(attribution_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the attribution database can be closed multiple times without raising an error.
 
-        Parameters
-        ----------
-            attribution_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -456,17 +413,12 @@ class TestAttributionDatabase:
         attribution_database.close()
 
     @staticmethod
-    def test_attribution_database_can_check_whether_attribution_is_available(
-            attribution_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_attribution_database_can_check_whether_attribution_is_available(attribution_file_path: str, label_map_file_path: str) -> None:
         """Tests whether it can be checked if the attribution database contains a specific attribution.
 
-        Parameters
-        ----------
-            attribution_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -481,12 +433,9 @@ class TestAttributionDatabase:
             label_map_file_path: str) -> None:
         """Tests whether it can be checked if the attribution database contains a specific attribution.
 
-        Parameters
-        ----------
-            attribution_file_with_sample_indices_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_with_sample_indices_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -496,17 +445,12 @@ class TestAttributionDatabase:
         assert not attribution_database.has_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
 
     @staticmethod
-    def test_attribution_database_can_retrieve_attribution(
-            attribution_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_attribution_database_can_retrieve_attribution(attribution_file_path: str, label_map_file_path: str) -> None:
         """Tests whether an attribution can be retrieved from the attribution database.
 
-        Parameters
-        ----------
-            attribution_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -520,7 +464,10 @@ class TestAttributionDatabase:
         assert isinstance(attribution.data, numpy.ndarray)
         assert attribution.data.shape == (32, 32, 3)
         assert attribution.data.dtype == numpy.float32
-        assert attribution.labels == ['Class 0']
+        assert len(attribution.labels) == 1
+        assert attribution.labels[0].index == 0
+        assert attribution.labels[0].word_net_id == '00000000'
+        assert attribution.labels[0].name == 'Class 0'
         assert isinstance(attribution.prediction, numpy.ndarray)
         assert attribution.prediction.shape == (NUMBER_OF_CLASSES,)
         assert attribution.prediction.dtype == numpy.float32
@@ -531,12 +478,9 @@ class TestAttributionDatabase:
             label_map_file_path: str) -> None:
         """Tests whether an attribution can be retrieved from an attribution database that contains sample indices.
 
-        Parameters
-        ----------
-            attribution_file_with_sample_indices_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            attribution_file_with_sample_indices_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -550,7 +494,10 @@ class TestAttributionDatabase:
         assert isinstance(attribution.data, numpy.ndarray)
         assert attribution.data.shape == (32, 32, 3)
         assert attribution.data.dtype == numpy.float32
-        assert attribution.labels == ['Class 0']
+        assert len(attribution.labels) == 1
+        assert attribution.labels[0].index == 0
+        assert attribution.labels[0].word_net_id == '00000000'
+        assert attribution.labels[0].name == 'Class 0'
         assert isinstance(attribution.prediction, numpy.ndarray)
         assert attribution.prediction.shape == (NUMBER_OF_CLASSES,)
         assert attribution.prediction.dtype == numpy.float32
@@ -593,7 +540,7 @@ class TestAttribution:
         assert numpy.array_equal(attribution.prediction, prediction)
 
     @staticmethod
-    def test_attribution_render_heatmap_unknown_color_map():
+    def test_attribution_render_heatmap_unknown_color_map() -> None:
         """Tests whether the heatmap rendering of the attribution fails, when the color map is unknown."""
 
         data = numpy.random.uniform(-1, 1, size=(4, 4, 3))
@@ -604,7 +551,7 @@ class TestAttribution:
             attribution.render_heatmap('unknown-color-map')
 
     @staticmethod
-    def test_attribution_render_heatmap():
+    def test_attribution_render_heatmap() -> None:
         """Tests whether a heatmap can be rendered from the attribution."""
 
         # Creates the attribution
@@ -654,9 +601,10 @@ class TestAttribution:
         assert numpy.array_equal(expected_heatmap, actual_heatmap)
 
     @staticmethod
-    def test_attribution_render_superimposed_heatmap_unknown_color_map():
-        """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution
-        data as alpha-channel using an unknown color map."""
+    def test_attribution_render_superimposed_heatmap_unknown_color_map() -> None:
+        """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution data as alpha-channel using an
+        unknown color map.
+        """
 
         data = numpy.random.uniform(-1, 1, size=(4, 4, 3))
         label = Label(0, '00000000', 'Class 0')
@@ -667,7 +615,7 @@ class TestAttribution:
             attribution.render_heatmap('unknown-color-map', superimpose)
 
     @staticmethod
-    def test_attribution_render_superimposed_heatmap():
+    def test_attribution_render_superimposed_heatmap() -> None:
         """Tests whether a heatmap, superimposed onto another image, can be rendered from the attribution."""
 
         # Creates the attribution
@@ -725,13 +673,9 @@ class TestAnalysisDatabase:
     def test_analysis_database_creation(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether an analysis database can be created.
 
-
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -739,17 +683,12 @@ class TestAnalysisDatabase:
         assert not analysis_database.is_closed
 
     @staticmethod
-    def test_closed_analysis_database_cannot_be_used(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_closed_analysis_database_cannot_be_used(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the analysis database correctly refuses to operate when it was already closed.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -772,17 +711,12 @@ class TestAnalysisDatabase:
             analysis_database.get_analysis('category-name', 'clustering-name', 'embedding-name')
 
     @staticmethod
-    def test_analysis_database_can_be_closed_multiple_times(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_analysis_database_can_be_closed_multiple_times(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the analysis database can be closed multiple times without raising an error.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -791,17 +725,12 @@ class TestAnalysisDatabase:
         analysis_database.close()
 
     @staticmethod
-    def test_analysis_database_can_retrieve_categories(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_categories(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether categories can be retrieved from the analysis database.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -815,15 +744,12 @@ class TestAnalysisDatabase:
     def test_analysis_database_can_retrieve_categories_with_missing_labels_in_label_map(
             spectral_analysis_file_path: str,
             label_map_file_path: str) -> None:
-        """Tests whether categories can be retrieved from the analysis database, even if the human-readable category
-        names cannot be retrieved from the label map.
+        """Tests whether categories can be retrieved from the analysis database, even if the human-readable category names cannot be retrieved from
+        the label map.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -835,17 +761,12 @@ class TestAnalysisDatabase:
             assert category.human_readable_name == ''
 
     @staticmethod
-    def test_analysis_database_can_retrieve_clustering_names(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_clustering_names(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether clustering names can be retrieved from the analysis database.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -864,17 +785,12 @@ class TestAnalysisDatabase:
             assert expected_clustering_name == actual_clustering_name
 
     @staticmethod
-    def test_analysis_database_can_retrieve_embedding_names(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_embedding_names(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether embedding names can be retrieved from the analysis database.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -885,17 +801,12 @@ class TestAnalysisDatabase:
             assert expected_embedding_name == actual_embedding_name
 
     @staticmethod
-    def test_analysis_database_can_check_whether_analysis_is_available(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_analysis_database_can_check_whether_analysis_is_available(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether it can be checked if the analysis database contains a specific analysis.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -907,17 +818,12 @@ class TestAnalysisDatabase:
         assert analysis_database.has_analysis('00000000', 'agglomerative-02', 'spectral')
 
     @staticmethod
-    def test_analysis_database_can_retrieve_analyses(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_analysis_database_can_retrieve_analyses(spectral_analysis_file_path: str, label_map_file_path: str) -> None:
         """Tests whether analyses can be retrieved from the analysis database.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -952,15 +858,12 @@ class TestAnalysisDatabase:
     def test_analysis_database_can_retrieve_analyses_with_missing_labels_in_label_map(
             spectral_analysis_file_path: str,
             label_map_file_path: str) -> None:
-        """Tests whether analyses can be retrieved from the analysis database, even if the human-readable category names
-        cannot be retrieved from the label map.
+        """Tests whether analyses can be retrieved from the analysis database, even if the human-readable category names cannot be retrieved from the
+        label map.
 
-        Parameters
-        ----------
-            spectral_analysis_file_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -998,12 +901,9 @@ class TestAnalysisDatabase:
             label_map_file_path: str) -> None:
         """Tests whether analyses can be retrieved from the analysis database that does not contain eigenvalues.
 
-        Parameters
-        ----------
-            spectral_analysis_file_without_eigenvalues_path: str
-                The path to the attributions file that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            spectral_analysis_file_without_eigenvalues_path (str): The path to the attributions file that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1074,6 +974,7 @@ class TestAnalysis:
         assert analysis.embedding_name == 'spectral'
         assert numpy.array_equal(analysis.embedding, embedding)
         assert numpy.array_equal(analysis.attribution_indices, attribution_indices)
+        assert analysis.eigenvalues is not None
         assert numpy.array_equal(analysis.eigenvalues, eigenvalues)
 
 
@@ -1081,17 +982,12 @@ class TestHdf5Dataset:
     """Represents the tests for the Hdf5Dataset class."""
 
     @staticmethod
-    def test_dataset_has_correct_size(
-            hdf5_dataset_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_has_correct_size(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset correctly reports its size/length.
 
-        Parameters
-        ----------
-            hdf5_dataset_file_path: str
-                The path to the HDF5 dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1103,17 +999,12 @@ class TestHdf5Dataset:
         assert len(hdf5_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
 
     @staticmethod
-    def test_closed_dataset_cannot_retrieve_sample(
-            hdf5_dataset_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_closed_dataset_cannot_retrieve_sample(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset correctly refuses to return a sample for a closed dataset.
 
-        Parameters
-        ----------
-            hdf5_dataset_file_path: str
-                The path to the HDF5 dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1131,17 +1022,12 @@ class TestHdf5Dataset:
             _ = hdf5_dataset[0]
 
     @staticmethod
-    def test_dataset_can_be_closed_multiple_times(
-            hdf5_dataset_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_can_be_closed_multiple_times(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset can be closed multiple times without raising an error.
 
-        Parameters
-        ----------
-            hdf5_dataset_file_path: str
-                The path to the HDF5 dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1154,18 +1040,12 @@ class TestHdf5Dataset:
         hdf5_dataset.close()
 
     @staticmethod
-    def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
-            hdf5_dataset_file_path: str,
-            label_map_file_path: str) -> None:
-        """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
-        dataset.
+    def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
+        """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the dataset.
 
-        Parameters
-        ----------
-            hdf5_dataset_file_path: str
-                The path to the HDF5 dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1182,17 +1062,12 @@ class TestHdf5Dataset:
             _ = hdf5_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
 
     @staticmethod
-    def test_dataset_can_retrieve_samples(
-            hdf5_dataset_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_can_retrieve_samples(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether a sample can be retrieved from the dataset.
 
-        Parameters
-        ----------
-            hdf5_dataset_file_path: str
-                The path to the HDF5 dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1204,23 +1079,21 @@ class TestHdf5Dataset:
 
         sample = hdf5_dataset.get_sample(0)
         assert sample.index == 0
-        assert sample.labels == ['Class 0']
+        assert len(sample.labels) == 1
+        assert sample.labels[0].index == 0
+        assert sample.labels[0].word_net_id == '00000000'
+        assert sample.labels[0].name == 'Class 0'
         assert isinstance(sample.data, numpy.ndarray)
         assert sample.data.shape == (32, 32, 3)
         assert sample.data.dtype == numpy.uint8
 
     @staticmethod
-    def test_dataset_can_retrieve_multiple_samples(
-            hdf5_dataset_file_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_can_retrieve_multiple_samples(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether multiple samples can be retrieved at the same time.
 
-        Parameters
-        ----------
-            hdf5_dataset_file_path: str
-                The path to the HDF5 dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1231,18 +1104,23 @@ class TestHdf5Dataset:
         )
 
         samples = hdf5_dataset[2:6]
+        assert isinstance(samples, list)
         assert len(samples) == 4
 
         samples = hdf5_dataset[[2, 10, 12, 20, 19]]
+        assert isinstance(samples, list)
         assert len(samples) == 5
 
         samples = hdf5_dataset[(8, 13, 27)]
+        assert isinstance(samples, list)
         assert len(samples) == 3
 
         samples = hdf5_dataset[numpy.array([21, 4])]
+        assert isinstance(samples, list)
         assert len(samples) == 2
 
         samples = hdf5_dataset[range(10)]
+        assert isinstance(samples, list)
         assert len(samples) == 10
 
 
@@ -1250,17 +1128,12 @@ class TestImageDirectoryDataset:
     """Represents the tests for the ImageDirectoryDataset class."""
 
     @staticmethod
-    def test_dataset_has_correct_size(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_has_correct_size(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset correctly reports its size/length.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1278,79 +1151,84 @@ class TestImageDirectoryDataset:
         assert len(image_directory_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
 
     @staticmethod
-    def test_unsupported_sampling_methods() -> None:
-        """Tests whether the constructor of the image directory dataset properly raises an exception if an unsupported
-        sampling method is specified.
+    def test_unsupported_sampling_methods(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
+        """Tests whether the constructor of the image directory dataset properly raises an exception if an unsupported sampling method is specified.
+
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
+        label_map = LabelMap(label_map_file_path)
         with pytest.raises(ValueError):
             ImageDirectoryDataset(
                 name="Test Dataset",
-                path=None,
+                path=image_directory_dataset_with_label_indices_path,
                 label_index_regex=r'^.*/label-([0-9]+)/.*$',
                 label_word_net_id_regex=None,
                 input_width=64,
                 input_height=64,
                 down_sampling_method='unsupported',
                 up_sampling_method='none',
-                label_map=None
+                label_map=label_map
             )
 
         with pytest.raises(ValueError):
             ImageDirectoryDataset(
                 name="Test Dataset",
-                path=None,
+                path=image_directory_dataset_with_label_indices_path,
                 label_index_regex=None,
                 label_word_net_id_regex=r'^.*/wordnet-([0-9]+)/.*$',
                 input_width=64,
                 input_height=64,
                 down_sampling_method='none',
-                up_sampling_method='unsupported',
-                label_map=None
+                up_sampling_method='unsupported',  # type: ignore
+                label_map=label_map
             )
 
     @staticmethod
-    def test_only_one_label_regex_must_be_specified() -> None:
-        """Tests whether the constructor correctly checks if only one of the possible label RegEx's was specified."""
+    def test_only_one_label_regex_must_be_specified(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
+        """Tests whether the constructor correctly checks if only one of the possible label RegEx's was specified.
 
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
         with pytest.raises(ValueError):
             ImageDirectoryDataset(
                 name="Test Dataset",
-                path=None,
+                path=image_directory_dataset_with_label_indices_path,
                 label_index_regex=None,
                 label_word_net_id_regex=None,
                 input_width=64,
                 input_height=64,
                 down_sampling_method='none',
                 up_sampling_method='none',
-                label_map=None
+                label_map=label_map
             )
 
         with pytest.raises(ValueError):
             ImageDirectoryDataset(
                 name="Test Dataset",
-                path=None,
+                path=image_directory_dataset_with_label_indices_path,
                 label_index_regex=r'^.*/label-([0-9]+)/.*$',
                 label_word_net_id_regex=r'^.*/wordnet-([0-9]+)/.*$',
                 input_width=64,
                 input_height=64,
                 down_sampling_method='none',
                 up_sampling_method='none',
-                label_map=None
+                label_map=label_map
             )
 
     @staticmethod
-    def test_closed_dataset_cannot_retrieve_sample(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
+    def test_closed_dataset_cannot_retrieve_sample(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset correctly refuses to return a sample for a closed dataset.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1377,15 +1255,11 @@ class TestImageDirectoryDataset:
     def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
             image_directory_dataset_with_label_indices_path: str,
             label_map_file_path: str) -> None:
-        """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the
-        dataset.
+        """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the dataset.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1411,14 +1285,11 @@ class TestImageDirectoryDataset:
     def test_dataset_sample_paths_file(
             image_directory_dataset_with_sample_paths_file_path: str,
             label_map_file_path: str) -> None:
-        """Tests whether the image directory dataset can locate samples .
+        """Tests whether the image directory dataset can locate samples.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_sample_paths_file_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_sample_paths_file_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1444,18 +1315,12 @@ class TestImageDirectoryDataset:
         assert len(image_directory_dataset) == number_of_images_in_dataset_directory // 2
 
     @staticmethod
-    def test_dataset_label_index_directory_name(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
-        """Tests whether the image directory dataset can properly parse the labels from directory that contain the index
-        of the respective label.
+    def test_dataset_label_index_directory_name(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
+        """Tests whether the image directory dataset can properly parse the labels from directory that contain the index of the respective label.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1473,18 +1338,12 @@ class TestImageDirectoryDataset:
         image_directory_dataset.get_sample(0)
 
     @staticmethod
-    def test_dataset_label_wordnet_id_directory_name(
-            image_directory_dataset_with_wordnet_ids_path: str,
-            label_map_file_path: str) -> None:
-        """Tests whether the image directory dataset can properly parse the labels from directory that contain the index
-        of the respective label.
+    def test_dataset_label_wordnet_id_directory_name(image_directory_dataset_with_wordnet_ids_path: str, label_map_file_path: str) -> None:
+        """Tests whether the image directory dataset can properly parse the labels from directory that contain the index of the respective label.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_wordnet_ids_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_wordnet_ids_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1502,18 +1361,13 @@ class TestImageDirectoryDataset:
         image_directory_dataset.get_sample(0)
 
     @staticmethod
-    def test_dataset_cannot_determine_labels(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
-        """Tests whether the image directory dataset raises an exception, if it cannot determine the label of a sample,
-        e.g., if the label index or WordNet ID RegEx's are incorrect.
+    def test_dataset_cannot_determine_labels(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
+        """Tests whether the image directory dataset raises an exception, if it cannot determine the label of a sample, e.g., if the label index or
+        WordNet ID RegEx's are incorrect.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1547,18 +1401,13 @@ class TestImageDirectoryDataset:
             image_directory_dataset.get_sample(0)
 
     @staticmethod
-    def test_dataset_down_sampling_methods(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
-        """Tests whether the image directory dataset can properly down-sample the images to the correct input size,
-        using all supported down-sampling methods.
+    def test_dataset_down_sampling_methods(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
+        """Tests whether the image directory dataset can properly down-sample the images to the correct input size, using all supported down-sampling
+        methods.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1597,18 +1446,13 @@ class TestImageDirectoryDataset:
             assert sample.data.shape[1] == 32
 
     @staticmethod
-    def test_dataset_up_sampling_methods(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
-        """Tests whether the image directory dataset can properly up-sample the images to the correct input size,
-        using all supported up-sampling methods.
+    def test_dataset_up_sampling_methods(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
+        """Tests whether the image directory dataset can properly up-sample the images to the correct input size, using all supported up-sampling
+        methods.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1640,7 +1484,7 @@ class TestImageDirectoryDataset:
                 input_width=128,
                 input_height=128,
                 down_sampling_method='none',
-                up_sampling_method=up_sampling_method,
+                up_sampling_method=up_sampling_method,  # type: ignore
                 label_map=label_map
             )
             sample = image_directory_dataset.get_sample(0)
@@ -1648,17 +1492,12 @@ class TestImageDirectoryDataset:
             assert sample.data.shape[1] == 128
 
     @staticmethod
-    def test_dataset_can_retrieve_sample(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_can_retrieve_sample(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
         """Tests whether a sample can be retrieved from the dataset.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1676,23 +1515,21 @@ class TestImageDirectoryDataset:
 
         sample = image_directory_dataset.get_sample(0)
         assert sample.index == 0
-        assert sample.labels == ['Class 0']
+        assert len(sample.labels) == 1
+        assert sample.labels[0].index == 0
+        assert sample.labels[0].word_net_id == '00000000'
+        assert sample.labels[0].name == 'Class 0'
         assert isinstance(sample.data, numpy.ndarray)
         assert sample.data.shape == (64, 64, 3)
         assert sample.data.dtype == numpy.uint8
 
     @staticmethod
-    def test_dataset_can_retrieve_multiple_samples(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
+    def test_dataset_can_retrieve_multiple_samples(image_directory_dataset_with_label_indices_path: str, label_map_file_path: str) -> None:
         """Tests whether multiple samples can be retrieved at the same time.
 
-        Parameters
-        ----------
-            image_directory_dataset_with_label_indices_path: str
-                The path to the image directory dataset that is used for the tests.
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset that is used for the tests.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
@@ -1709,18 +1546,23 @@ class TestImageDirectoryDataset:
         )
 
         samples = image_directory_dataset[2:6]
+        assert isinstance(samples, list)
         assert len(samples) == 4
 
         samples = image_directory_dataset[[2, 10, 12, 20, 19]]
+        assert isinstance(samples, list)
         assert len(samples) == 5
 
         samples = image_directory_dataset[(8, 13, 27)]
+        assert isinstance(samples, list)
         assert len(samples) == 3
 
         samples = image_directory_dataset[numpy.array([21, 4])]
+        assert isinstance(samples, list)
         assert len(samples) == 2
 
         samples = image_directory_dataset[range(10)]
+        assert isinstance(samples, list)
         assert len(samples) == 10
 
 
@@ -1731,7 +1573,7 @@ class TestSample:
     def test_sample_creation() -> None:
         """Tests whether a sample can be created."""
 
-        image = numpy.random.randint(256, size=(32, 32, 3), dtype=numpy.uint8)
+        image = numpy.random.randint(256, size=(32, 32, 3), dtype=numpy.uint8).astype(numpy.float64)
         label = Label(0, '00000000', 'Class 0')
         sample = Sample(0, image.copy(), label)
         assert sample.index == 0
@@ -1742,7 +1584,7 @@ class TestSample:
     def test_sample_creation_with_multiple_labels() -> None:
         """Tests whether a sample can be created with multiple labels."""
 
-        image = numpy.random.randint(256, size=(32, 32, 3), dtype=numpy.uint8)
+        image = numpy.random.randint(256, size=(32, 32, 3), dtype=numpy.uint8).astype(numpy.float64)
         label_0 = Label(0, '00000000', 'Class 0')
         label_1 = Label(1, '00000001', 'Class 1')
         sample = Sample(0, image.copy(), [label_0, label_1])
@@ -1754,7 +1596,7 @@ class TestSample:
     def test_sample_creation_with_pytorch_image() -> None:
         """Tests whether a sample can be created with an image that has the PyTorch channel order."""
 
-        image = numpy.random.randint(256, size=(3, 32, 64), dtype=numpy.uint8)
+        image = numpy.random.randint(256, size=(3, 32, 64), dtype=numpy.uint8).astype(numpy.float64)
         label = Label(0, '00000000', 'Class 0')
         sample = Sample(0, image.copy(), label)
         assert sample.index == 0
@@ -1766,9 +1608,7 @@ class TestSample:
 
     @staticmethod
     def test_sample_creation_with_float_image() -> None:
-        """Tests whether a sample can be created with an image that has the float data type and pixel values between 0.0
-        and 255.0.
-        """
+        """Tests whether a sample can be created with an image that has the float data type and pixel values between 0.0 and 255.0. """
 
         image = numpy.random.randint(256, size=(32, 32, 3)).astype(dtype=numpy.float64)
         label = Label(0, '00000000', 'Class 0')
@@ -1779,9 +1619,7 @@ class TestSample:
 
     @staticmethod
     def test_sample_creation_with_float_image_between_zero_and_one() -> None:
-        """Tests whether a sample can be created with an image that has the float data type and pixel values between 0.0
-        and 1.0.
-        """
+        """Tests whether a sample can be created with an image that has the float data type and pixel values between 0.0 and 1.0."""
 
         image = numpy.random.uniform(low=0.0, high=1.0, size=(32, 32, 3))
         label = Label(0, '00000000', 'Class 0')
@@ -1792,9 +1630,7 @@ class TestSample:
 
     @staticmethod
     def test_sample_creation_with_float_image_between_negative_one_and_one() -> None:
-        """Tests whether a sample can be created with an image that has the float data type and pixel values between
-        -1.0 and 1.0.
-        """
+        """Tests whether a sample can be created with an image that has the float data type and pixel values between -1.0 and 1.0."""
 
         image = numpy.random.uniform(low=-1.0, high=1.0, size=(32, 32, 3))
         label = Label(0, '00000000', 'Class 0')
@@ -1811,82 +1647,76 @@ class TestLabelMap:
     def test_labels_can_be_retrieved_via_index(label_map_file_path: str) -> None:
         """Tests whether labels can be retrieved via index from a label map.
 
-        Parameters
-        ----------
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
 
-        assert label_map.get_label_from_index(0) == 'Class 0'
-        assert label_map.get_label_from_index(1) == 'Class 1'
-        assert label_map.get_label_from_index(2) == 'Class 2'
+        assert label_map.get_label_name_from_index(0) == 'Class 0'
+        assert label_map.get_label_name_from_index(1) == 'Class 1'
+        assert label_map.get_label_name_from_index(2) == 'Class 2'
 
         with pytest.raises(LookupError):
-            label_map.get_label_from_index(3)
+            label_map.get_label_name_from_index(3)
 
     @staticmethod
     def test_labels_can_be_retrieved_via_wordnet_id(label_map_file_path: str) -> None:
         """Tests whether labels can be retrieved via WordNet ID from a label map.
 
-        Parameters
-        ----------
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
 
-        assert label_map.get_label_from_word_net_id('00000000') == 'Class 0'
-        assert label_map.get_label_from_word_net_id('00000001') == 'Class 1'
-        assert label_map.get_label_from_word_net_id('00000002') == 'Class 2'
+        assert label_map.get_label_name_from_word_net_id('00000000') == 'Class 0'
+        assert label_map.get_label_name_from_word_net_id('00000001') == 'Class 1'
+        assert label_map.get_label_name_from_word_net_id('00000002') == 'Class 2'
 
         with pytest.raises(LookupError):
-            label_map.get_label_from_word_net_id("")
+            label_map.get_label_name_from_word_net_id("")
 
     @staticmethod
     def test_labels_can_be_retrieved_via_one_hot_vector(label_map_file_path: str) -> None:
         """Tests whether labels can be retrieved via one-hot vector from a label map.
 
-        Parameters
-        ----------
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
 
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([1, 0, 0])) == ['Class 0']
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([0, 1, 0])) == ['Class 1']
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([0, 0, 1])) == ['Class 2']
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([1, 0, 1])) == ['Class 0', 'Class 2']
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([0, 1, 1])) == ['Class 1', 'Class 2']
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([1, 1, 0])) == ['Class 0', 'Class 1']
-        assert label_map.get_labels_from_n_hot_vector(numpy.array([1, 1, 1])) == ['Class 0', 'Class 1', 'Class 2']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([1, 0, 0])) == ['Class 0']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([0, 1, 0])) == ['Class 1']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([0, 0, 1])) == ['Class 2']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([1, 0, 1])) == ['Class 0', 'Class 2']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([0, 1, 1])) == ['Class 1', 'Class 2']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([1, 1, 0])) == ['Class 0', 'Class 1']
+        assert label_map.get_label_names_from_n_hot_vector(numpy.array([1, 1, 1])) == ['Class 0', 'Class 1', 'Class 2']
 
         with pytest.raises(LookupError):
-            label_map.get_labels_from_n_hot_vector(numpy.array([0, 0, 0, 1]))
+            label_map.get_label_names_from_n_hot_vector(numpy.array([0, 0, 0, 1]))
 
     @staticmethod
     def test_labels_can_be_retrieved_via_generic_retrieval_method(label_map_file_path: str) -> None:
         """Tests whether labels can be retrieved via the general retrieval method of the label map class.
 
-        Parameters
-        ----------
-            label_map_file_path: str
-                The path to the label map file that is used for the tests.
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
 
-        assert label_map.get_labels(numpy.array([0])[0]) == 'Class 0'
-        assert label_map.get_labels(1) == 'Class 1'
-        assert label_map.get_labels('00000002') == 'Class 2'
-        assert label_map.get_labels(numpy.array([1, 1, 0])) == ['Class 0', 'Class 1']
+        assert label_map.get_label_names(numpy.array([0])[0]) == 'Class 0'
+        assert label_map.get_label_names(1) == 'Class 1'
+        assert label_map.get_label_names('00000002') == 'Class 2'
+        assert label_map.get_label_names(numpy.array([1, 1, 0])) == ['Class 0', 'Class 1']
 
         with pytest.raises(LookupError):
-            label_map.get_labels([])
+            label_map.get_label_names([0, 1])  # type: ignore
+        with pytest.raises(LookupError):
+            label_map.get_label_names((0, 1))  # type: ignore
 
 
 class TestLabel:
@@ -1925,10 +1755,8 @@ class TestWorkspace:
     def test_project_can_be_added_to_workspace(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether a project can be added to a workspace.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used in for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used in for the tests.
         """
 
         workspace = Workspace()
@@ -1942,10 +1770,8 @@ class TestWorkspace:
     def test_multiple_projects_can_be_added_to_workspace(project_file_with_hdf5_dataset_path: str) -> None:
         """Tests whether multiple projects can be added to a workspace.
 
-        Parameters
-        ----------
-            project_file_with_hdf5_dataset_path: str
-                The path to the project file that is used in for the tests.
+        Args:
+            project_file_with_hdf5_dataset_path (str): The path to the project file that is used in for the tests.
         """
 
         workspace = Workspace()
@@ -1965,9 +1791,7 @@ class TestWorkspace:
 
     @staticmethod
     def test_cannot_add_or_get_projects_of_closed_workspace() -> None:
-        """Tests whether the workspace raises an error when adding or retrieving a project after the workspace was
-        closed.
-        """
+        """Tests whether the workspace raises an error when adding or retrieving a project after the workspace was closed."""
 
         workspace = Workspace()
         workspace.close()

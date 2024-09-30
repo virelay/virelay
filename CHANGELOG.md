@@ -1,21 +1,47 @@
 # Changelog
 
-## 0.5.0
+## v0.5.0
 
 *Release date to be determined.*
 
-- Updated the dependencies in the setup.py file to the their respective latest versions
-  - NumPy was pinned to the version 2.0.2, because this is the last version that seems to be compatible with Python 3.9
+- Updated the Python dependencies in the `setup.py` file to the their respective latest versions
   - The versions of all other packages were set to be greater than or equal to the currently latest version and are restricted to be below the next major version, so that versions with breaking changes will be installed in the future
-  - Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent, therefore they were removed from the supported version of Python, and the versions 3.10, 3.11 and 3.12 were added, which means that now Python 3.9, 3.10, 3.11, and 3.12 are the supported Python versions for the project.
+  - Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent. Although Python 3.9 will only reach its end of life in October 2025, it is missing the union operator "|" for type hints. Although this operator is not strictly necessary, it makes the type hinting for MyPy much easier to read. Also, the latest NumPy version does not support Python 3.9 anymore. Since ViRelAy is not a library used by other projects and since most operating systems already support Python 3.10, the minimum Python version was updated to 3.10 to make the development process easier. Python 3.11 and 3.12 were also added to the list of supported Python versions. This means that now Python 3.10, 3.11, and 3.12 are the supported Python versions for the project.
   - The following changes had to be made to because of the updated Python versions and dependencies:
-    - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. The `importlib.metadata` module is now used as a replacement.
-    - In a previous version, Flask used `application/javascript` as the MIME type for JavaScript files. However, the correct MIME type is `text/javascript`, which is now also used by Flask. For this reason, the unit test for it was updated.
+    - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. It was replaced by the much simpler `Module.__file__` property.
+    - In previous versions, Flask was using `application/javascript` as the MIME type for JavaScript files. This has now been changed to `text/javascript`. Also, in Python 3.12, Flask now uses `image/x-icon` instead of `image/vnd.microsoft.icon`. For this reason, the unit tests were updated.
     - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
-- In the GitHub Actions workflow configuration file, the `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
+- The Ubuntu and Python versions used by "Read the Docs" to build the documentation were also updated to the latest versions, i.e., Ubuntu 24.04 and Python 3.12.
+- The versions of Python and the versions of the dependencies were also updated in the `tox.ini` configuration file.
+- Improved the Python Linting
+  - The Flake8 linter was replaced by [PyCodeStyle](https://pycodestyle.pycqa.org/en/latest/intro.html) and [PyDocLint](https://jsh9.github.io/pydoclint/), and [MyPy](https://mypy-lang.org/) was added as a static type checker. All four checkers are now included in the `setup.py` as extra dependencies under the name `linting`, so that developers can install them if they want to use them locally, e.g., as a Visual Studio Code integration.
+  - New configurations for PyCodeStyle, PyDocLint, and MyPy were added and the configuration file for PyLint was updated to match the latest version of PyLint.
+  - The PyLint and Flake8 test environments were removed from the `tox.ini` file and the new test environment `linting` was added, which runs all linters and the static type checker.
+  - The maximum line length was increased from 120 to 150, which makes it now easier to break some longer lines
+  - The Flake8 and PyLint jobs were removed from the GitHub Actions Workflow configuration file, and the new job `lint-and-type-check` was added, which runs the tox test environment "linting" to run the linters and the static type checker.
+  - The documentation was updated to reflect the changes in the linting process and to explain how to run the linters and the static type checker locally.
+  - The entire code base was linted and type-checked, and all issues found by the linters and the type checker were fixed. Thanks to the new linters and the new type checker, several obscure bugs were found that would have gone unnoticed otherwise:
+    1. The automatic reload of the Flask server was not working correctly, because instead of using the property "debug", the incorrect property "auto_reload" was used.
+    2. The ViRelAy modules were imported using the relative import syntax instead of the absolute import syntax, which may cause problems because sometimes it is not clear if an import is relative or not, relative imports can be ambiguous, they are brittle and may break when a module is moved, and since Python 3, implicit relative imports are not allowed anymore.
+    3. The `get_label...` methods of the LabelMap class returned the human-readable names of the labels instead of the labels themselves, which was not obvious from the method names. In some parts of the code, the list of human-readable names was used instead of a list of labels, which was incorrect. Now, the LabelMap has a new set of methods for retrieving the labels, and the old methods were renamed to make their purpose clearer. All instances where the methods are used were checked and corrected if necessary.
+    4. In multiple instances, variables were reused, for example, variables that were used to store a NumPy array of an image were reused when creating a Pillow Image from them. This lead to some errors, where a NumPy array was expected, but a Pillow Image was passed instead, and vice versa.
+    5. In many cases, the documentation for methods was either missing, incomplete, or incorrect. The documentation was updated to reflect the actual behavior of the methods.
+    6. In the tests, the names of the fixtures were reused and may therefore have accidentally overwritten each other. The names of the variables and parameters were changed to be unique.
+    7. The unit tests were missing a `__init__.py` file and were thus not a proper Python package. This was fixed by adding the missing file.
+    8. The `__init__.py` file of the ViRelAy package did not contain a docstring, which was added.
+    9. The fixtures for the unit tests are nested, which means they reference each other. Since the parameter names must match the names of the fixtures and since the fixtures were all in the same file, the parameters were shadowing the fixtures. This was fixed by renaming the fixture functions to `get_..._fixture` and adding a name to the fixture attribute.
+    10. Some unit tests were incorrectly comparing `Label` objects with strings, which is now fixed.
+- Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected any spelling mistakes.
+  - The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
+  - Removed LaTeX commands for accented characters from the bibliography file, as they we are using Pybtex to handle the bibliography and it has full Unicode support.
 - Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
+- The GitHub Actions Workflow configuration file was updated
+  - The Workflow configuration file was cleaned up and documented.
+  - The version of the `checkout` action was updated to the latest version v4.
+  - The version of the `setup-python` action was updated to the latest version v5.
+  - The `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
 
-## 0.4.0
+## v0.4.0
 
 *Released on May 31, 2022.*
 

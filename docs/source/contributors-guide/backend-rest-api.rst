@@ -11,12 +11,15 @@ ViRelAy consists of 2 parts: the backend REST API and the frontend website. This
 
 Please refer to the :doc:`../api-reference/index` for detailed information about the modules, their classes, and functions.
 
-When working on the backend REST API, it is recommended that you create a virtual environment, in order not to clutter your base environment. The following dependencies are required: *h5py* for reading HDF5 datasets, attribution databases and analysis databases, *Matplotlib*, *Pillow* and *NumPy* for manipulating images and rendering heatmaps, *Flask* for the REST API, *Flask CORS* for cross-origin resource sharing (which is required so that the frontend can access the REST API), *PyYAML* to read ViRelAy project files, and *Tox* to run tests, run the linters and to build the documentation. All necessary dependencies, except for *Tox*, are installed when you install ViRelAy. You can create a virtual environment and install everything necessary like so:
+When working on the backend REST API, it is recommended that you create a virtual environment, in order not to clutter your base environment. The following dependencies are required: *h5py* for reading HDF5 datasets, attribution databases and analysis databases, *Matplotlib*, *Pillow* and *NumPy* for manipulating images and rendering heatmaps, *Flask* for the REST API, *Flask CORS* for cross-origin resource sharing (which is required so that the frontend can access the REST API), *PyYAML* to read ViRelAy project files, and *Tox* to run tests, run the linters and to build the documentation. All necessary dependencies, except for *Tox*, are installed when you install ViRelAy. There are three sets of extra dependencies that can be installed: ``docs`` for building the documentation, ``tests`` for running the unit tests, and ``linting`` for running the linters. All of these can be run through ``tox``, so you only need to install them if you want to directly use them from the terminal. You clone the repository, create a virtual environment, and install everything necessary by issuing the following commands in your terminal:
 
 .. code-block:: console
 
+    $ git clone https://github.com/virelay/virelay.git
+    $ cd virelay
     $ python -m venv .venv
-    $ .venv/bin/pip install --editable ./virelay
+    $ .venv/bin/pip install --editable .                     # Install ViRelAy, or
+    $ .venv/bin/pip install --editable .[docs,tests,linting] # install ViRelAy with optional extra dependencies
     $ .venv/bin/pip install tox
 
 The backend REST API server can then be run using the following command:
@@ -73,11 +76,11 @@ Unit Testing
 
 The backend REST API has a unit test suite which strives to always reach 100% code coverage. The tests are not situated in the ViRelAy module, but in a separate tests directory: :repo:`tests`. The ``conftest`` module contains common fixtures that are used by the tests. Each ViRelAy module has an accompanying test module, which contains the tests for it (e.g., the ``image_processing`` ViRelAy module has a ``test_image_processing`` test module). The tests are written using the PyTest framework. The tests for ViRelAy classes are also contained in classes (e.g., the ``Project`` class in the ``model`` ViRelAy module has a matching ``TestProject`` test class), while the tests for functions are also just plain functions. The convention is to name a test function or method with the prefix ``test_`` followed by the name of the function or method being tested, followed by a description of the test. For example, the function that tests whether heatmaps can be rendered with the blue-white-red color map is called ``test_render_heatmap_blue_white_red``. When contributing to the project, you should always ensure that all tests run successfully and that all altered or added functionality is being properly tested.
 
-The easiest way to run the unit tests is through Tox. Tox runs the unit tests using all supported Python version (Python 3.9, 3.10, 3.11, and 3.12), not only using the locally installed version. This can be achieved using the Tox command line interface and by specifying the environments using the ``-e`` parameter.
+The easiest way to run the unit tests is through Tox. Tox runs the unit tests using all supported Python version (Python 3.10, 3.11, and 3.12), not only using the locally installed version. This can be achieved using the Tox command line interface and by specifying the environments using the ``-e`` parameter.
 
 .. code-block:: console
 
-    tox -e py39,py310,py311,py312
+    tox -e py310,py311,py312
 
 The tests can also be directly executed using the ``pytest`` command line interface, like so:
 
@@ -102,19 +105,21 @@ The unit tests are run as part continuous integration (CI) pipeline, which we wi
 Linting
 -------
 
-The code style of the backend REST API is checked using both PyLint and Flake8. They are also used to find some forms of runtime bugs. So please make sure to run them regularly and fix all produced warnings. Especially, before committing or creating a pull request, you should absolutely make sure that they both run without warning. Linting runs as part of the CI pipeline, which we will run when a pull request is created. Pull requests with a failing CI pipeline are not accepted.
+The code style of the backend REST API is checked using `PyLint <https://www.pylint.org/>`_, `PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_, and `PyDocLint <https://jsh9.github.io/pydoclint/>`_`. They are also used to find some forms of runtime bugs. Furthermore, we use the static type checker `MyPy <https://mypy-lang.org/>`_ to ensure that there are no type errors in the code. Please make sure to run them regularly and fix all produced warnings. Especially, before committing or creating a pull request, you should absolutely make sure that they all run without warning. Linting and static type checking runs as part of the CI pipeline, which we will run when a pull request is created. Pull requests with a failing CI pipeline are not accepted.
 
-PyLint is configured via the :repo:`pylintrc` file and Flake8's configuration is directly integrated into the Tox configuration in :repo:`tox.ini`.
+The configuration for PyLint can be found in the :repo:`.pylintrc` file, the PyCodeStyle configuration can be found in the :repo:`.pycodestyle` file, PyDocLint's configuration can be found in the :repo:`.pydoclint.toml` file, and the configuration for MyPy can be found in the :repo:`.mypy.ini` file.
 
 Again, the easiest way to execute the linting is through Tox:
 
 .. code-block:: console
 
-    tox -e pylint,flake8
+    tox -e linting
 
-PyLint and Flake8 can also be directly invoked, if you have installed them in your virtual environment:
+However, the linters and the type checker can also be directly run, if you have installed them in your virtual environment (``.venv/bin/pip install --editable .[linting]``):
 
 .. code-block:: console
 
-    pylint --rcfile=pylintrc virelay tests
-    flake8 --config tox.ini virelay tests
+    pylint --rcfile .pylintrc virelay tests setup.py docs/source/conf.py
+    pycodestyle --config .pycodestyle virelay tests setup.py docs/source/conf.py
+    pydoclint --config .pydoclint.toml virelay tests setup.py docs/source/conf.py
+    mypy --config-file .mypy.ini virelay tests setup.py docs/source/conf.py

@@ -4,22 +4,33 @@ import os
 import atexit
 import argparse
 
-from .server import Server
-from .model import Workspace
+import flask
+
+from virelay.server import Server
+from virelay.model import Workspace
 
 
-def create_app(projects=None):
-    """Create an application in a way understood by Gunicorn etc."""
+def create_app(projects: list[str] | None = None) -> flask.Flask:
+    """Create an application in a way understood by Gunicorn etc.
+
+    Args:
+        projects (list[str] | None): List of project files to load into the workspace. Defaults to None.
+
+    Raises:
+        RuntimeError: If no neither the projects parameter nor the VIRELAY_PROJECTS environment variable contains any projects.
+
+    Returns:
+        flask.Flask: Returns the Flask application.
+    """
 
     if projects is None:
         try:
-            projects = os.environ['VIRELAY_PROJECTS']
-        except KeyError as err:
+            colon_separated_projects = os.environ['VIRELAY_PROJECTS']
+            projects = colon_separated_projects.split(':')
+        except KeyError as exception:
             raise RuntimeError(
-                "No Projects specified! Specify by setting environment VIRELAY_PROJECTS=\"project1.yaml:project2.yaml\""
-            ) from err
-        else:
-            projects = projects.split(':')
+                "No Projects specified. Specify by setting environment VIRELAY_PROJECTS=\"project1.yaml:project2.yaml\""
+            ) from exception
 
     workspace = Workspace()
     for project_path in projects:
@@ -34,7 +45,7 @@ def create_app(projects=None):
 class Application:
     """Represents the sequential command line interface for the ViRelAy application."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes a new Application instance."""
 
         # Initializes the command line argument parser
@@ -81,7 +92,7 @@ class Application:
         # Initializes the workspace, which will contain all the loaded projects
         self.workspace = Workspace()
 
-    def run(self):
+    def run(self) -> None:
         """Runs the application."""
 
         # Parses the command line arguments
@@ -100,7 +111,7 @@ class Application:
         server = Server(self.workspace, arguments.debug_mode)
         server.run(arguments.host, arguments.port)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Is invoked, when the application is shut down. Cleans up all resources acquired."""
 
         self.workspace.close()

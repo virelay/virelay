@@ -1,9 +1,9 @@
 """Contains the fixtures that are needed for the unit tests."""
-# pylint: disable=too-many-lines
 
 import os
 import json
 import random
+from typing import Iterator
 
 import yaml
 import h5py
@@ -21,19 +21,15 @@ NUMBER_OF_CLASSES = 3
 NUMBER_OF_SAMPLES = 40
 
 
-@pytest.fixture(scope='session')
-def label_map_file_path(tmp_path_factory: TempPathFactory) -> str:
+@pytest.fixture(name='label_map_file_path', scope='session')
+def get_label_map_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates a label map file.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the label file will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the label file will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created label map file.
+    Returns:
+        str: Returns the path to the created label map file.
     """
 
     label_map = [
@@ -51,19 +47,15 @@ def label_map_file_path(tmp_path_factory: TempPathFactory) -> str:
     return label_map_file_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def hdf5_dataset_file_path(tmp_path_factory: TempPathFactory) -> str:
+@pytest.fixture(name='hdf5_dataset_file_path', scope='session')
+def get_hdf5_dataset_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an HDF5 dataset file.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the HDF5 dataset file will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the HDF5 dataset file will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created input file.
+    Returns:
+        str: Returns the path to the created input file.
     """
 
     data = None
@@ -99,21 +91,16 @@ def hdf5_dataset_file_path(tmp_path_factory: TempPathFactory) -> str:
     return hdf5_dataset_file_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def image_directory_dataset_with_label_indices_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
-    of the directories represent the labels of the images. In this version of the fixture, the label directories have
-    the index of the label in them.
+@pytest.fixture(name='image_directory_dataset_with_label_indices_path', scope='session')
+def get_image_directory_dataset_with_label_indices_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names of the directories represent
+    the labels of the images. In this version of the fixture, the label directories have the index of the label in them.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the image directory dataset will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the image directory dataset will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created image dataset.
+    Returns:
+        str: Returns the path to the created image dataset.
     """
 
     image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-label-indices'
@@ -134,21 +121,16 @@ def image_directory_dataset_with_label_indices_path(tmp_path_factory: TempPathFa
     return image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def image_directory_dataset_with_wordnet_ids_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
-    of the directories represent the labels of the images. In this version of the fixture, the label directories have
-    the WordNet ID of the label in them.
+@pytest.fixture(name='image_directory_dataset_with_wordnet_ids_path', scope='session')
+def get_image_directory_dataset_with_wordnet_ids_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names of the directories represent
+    the labels of the images. In this version of the fixture, the label directories have the WordNet ID of the label in them.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the image directory dataset will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the image directory dataset will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created image dataset.
+    Returns:
+        str: Returns the path to the created image dataset.
     """
 
     image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-wordnet-ids'
@@ -169,22 +151,17 @@ def image_directory_dataset_with_wordnet_ids_path(tmp_path_factory: TempPathFact
     return image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def image_directory_dataset_with_sample_paths_file_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names
-    of the directories represent the labels of the images. In this version of the fixture, a file exists, which lists
-    all samples of the dataset. Only every second image is actually added to the sample paths file, so that it can be
-    validated that the dataset actually loaded the samples from the sample paths file.
+@pytest.fixture(name='image_directory_dataset_with_sample_paths_file_path', scope='session')
+def get_image_directory_dataset_with_sample_paths_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an image dataset, where the image files are in a directory hierarchy were the names of the directories represent
+    the labels of the images. In this version of the fixture, a file exists, which lists all samples of the dataset. Only every second image is
+    actually added to the sample paths file, so that it can be validated that the dataset actually loaded the samples from the sample paths file.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the image directory dataset will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the image directory dataset will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created image dataset.
+    Returns:
+        str: Returns the path to the created image dataset.
     """
 
     image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'image-dataset-with-sample-paths-file'
@@ -211,19 +188,15 @@ def image_directory_dataset_with_sample_paths_file_path(tmp_path_factory: TempPa
     return image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def attribution_file_path(tmp_path_factory: TempPathFactory) -> str:
+@pytest.fixture(name='attribution_file_path', scope='session')
+def get_attribution_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an attribution file.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the attribution file will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the attribution file will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created attribution file.
+    Returns:
+        str: Returns the path to the created attribution file.
     """
 
     attributions = None
@@ -271,20 +244,16 @@ def attribution_file_path(tmp_path_factory: TempPathFactory) -> str:
     return attribution_file_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def attribution_file_with_sample_indices_path(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an attribution file, where the indices of the samples for which attributions are
-    available is in a separate dataset.
+@pytest.fixture(name='attribution_file_with_sample_indices_path', scope='session')
+def get_attribution_file_with_sample_indices_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an attribution file, where the indices of the samples for which attributions are available is in a separate
+    dataset.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the attribution file will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the attribution file will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created attribution file.
+    Returns:
+        str: Returns the path to the created attribution file.
     """
 
     attributions = None
@@ -338,26 +307,17 @@ def attribution_file_with_sample_indices_path(tmp_path_factory: TempPathFactory)
     return attribution_file_with_sample_indices_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def spectral_analysis_file_path(
-        tmp_path_factory: TempPathFactory,
-        attribution_file_path: str,
-        label_map_file_path: str) -> str:
+@pytest.fixture(name='spectral_analysis_file_path', scope='session')
+def get_spectral_analysis_file_path_fixture(tmp_path_factory: TempPathFactory, attribution_file_path: str, label_map_file_path: str) -> str:
     """A test fixture, which creates an analysis file that contains a spectral analysis.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the analysis file will be created.
-        attribution_file_path: str
-            The path to the attribution file that contains the attributions for which the analysis is to be generated.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the analysis file will be created.
+        attribution_file_path (str): The path to the attribution file that contains the attributions for which the analysis is to be generated.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created analysis file.
+    Returns:
+        str: Returns the path to the created analysis file.
     """
 
     spectral_analysis_file_path = tmp_path_factory.getbasetemp() / 'spectral-analysis.h5'
@@ -453,26 +413,20 @@ def spectral_analysis_file_path(
     return spectral_analysis_file_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def spectral_analysis_file_without_eigenvalues_path(
+@pytest.fixture(name='spectral_analysis_file_without_eigenvalues_path', scope='session')
+def get_spectral_analysis_file_without_eigenvalues_path_fixture(
         tmp_path_factory: TempPathFactory,
         attribution_file_path: str,
         label_map_file_path: str) -> str:
     """A test fixture, which creates an analysis file that contains a spectral analysis, but without eigenvalues.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the analysis file will be created.
-        attribution_file_path: str
-            The path to the attribution file that contains the attributions for which the analysis is to be generated.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the analysis file will be created.
+        attribution_file_path (str): The path to the attribution file that contains the attributions for which the analysis is to be generated.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created analysis file.
+    Returns:
+        str: Returns the path to the created analysis file.
     """
 
     spectral_analysis_file_without_eigenvalues_path = \
@@ -567,8 +521,8 @@ def spectral_analysis_file_without_eigenvalues_path(
     return spectral_analysis_file_without_eigenvalues_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_with_hdf5_dataset_path(
+@pytest.fixture(name='project_file_with_hdf5_dataset_path', scope='session')
+def get_project_file_with_hdf5_dataset_path_fixture(
         tmp_path_factory: TempPathFactory,
         hdf5_dataset_file_path: str,
         attribution_file_path: str,
@@ -576,23 +530,15 @@ def project_file_with_hdf5_dataset_path(
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file with an HDF5 dataset.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path: str
-            The path to the HDF5 dataset file.
-        attribution_file_path: str
-            The path to the attribution file.
-        spectral_analysis_file_path: str
-            The path to the spectral analysis file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        attribution_file_path (str): The path to the attribution file.
+        spectral_analysis_file_path (str): The path to the spectral analysis file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_with_hdf5_dataset_path = tmp_path_factory.getbasetemp() / 'project-with-hdf5-dataset.yaml'
@@ -630,8 +576,8 @@ def project_file_with_hdf5_dataset_path(
     return project_file_with_hdf5_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_without_eigenvalues_in_analysis_database_path(
+@pytest.fixture(name='project_file_without_eigenvalues_in_analysis_database_path', scope='session')
+def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
         tmp_path_factory: TempPathFactory,
         hdf5_dataset_file_path: str,
         attribution_file_path: str,
@@ -639,23 +585,15 @@ def project_file_without_eigenvalues_in_analysis_database_path(
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file where the analysis database does not contain eigenvalues.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path: str
-            The path to the HDF5 dataset file.
-        attribution_file_path: str
-            The path to the attribution file.
-        spectral_analysis_file_without_eigenvalues_path: str
-            The path to the spectral analysis file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        attribution_file_path (str): The path to the attribution file.
+        spectral_analysis_file_without_eigenvalues_path (str): The path to the spectral analysis file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_without_eigenvalues_in_analysis_database_path = \
@@ -694,8 +632,8 @@ def project_file_without_eigenvalues_in_analysis_database_path(
     return project_file_without_eigenvalues_in_analysis_database_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_with_image_directory_dataset_path(
+@pytest.fixture(name='project_file_with_image_directory_dataset_path', scope='session')
+def get_project_file_with_image_directory_dataset_path_fixture(
         tmp_path_factory: TempPathFactory,
         image_directory_dataset_with_label_indices_path: str,
         attribution_file_path: str,
@@ -703,23 +641,15 @@ def project_file_with_image_directory_dataset_path(
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file with an image directory dataset.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        image_directory_dataset_with_label_indices_path: str
-            The path to the image directory dataset file.
-        attribution_file_path: str
-            The path to the attribution file.
-        spectral_analysis_file_path: str
-            The path to the analysis file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset file.
+        attribution_file_path (str): The path to the attribution file.
+        spectral_analysis_file_path (str): The path to the analysis file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_with_image_directory_dataset_path = \
@@ -767,8 +697,8 @@ def project_file_with_image_directory_dataset_path(
     return project_file_with_image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_with_multiple_analysis_databases_path(
+@pytest.fixture(name='project_file_with_multiple_analysis_databases_path', scope='session')
+def get_project_file_with_multiple_analysis_databases_path_fixture(
         tmp_path_factory: TempPathFactory,
         hdf5_dataset_file_path: str,
         attribution_file_path: str,
@@ -776,23 +706,15 @@ def project_file_with_multiple_analysis_databases_path(
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file with multiple analysis databases.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path: str
-            The path to the HDF5 dataset file.
-        attribution_file_path: str
-            The path to the attribution file.
-        spectral_analysis_file_path: str
-            The path to the spectral analysis file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        attribution_file_path (str): The path to the attribution file.
+        spectral_analysis_file_path (str): The path to the spectral analysis file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_with_multiple_analysis_databases_path = \
@@ -838,26 +760,20 @@ def project_file_with_multiple_analysis_databases_path(
     return project_file_with_multiple_analysis_databases_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_without_attributions_or_analyses_path(
+@pytest.fixture(name='project_file_without_attributions_or_analyses_path', scope='session')
+def get_project_file_without_attributions_or_analyses_path_fixture(
         tmp_path_factory: TempPathFactory,
         hdf5_dataset_file_path: str,
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file without attributions or analyses.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path: str
-            The path to the HDF5 dataset file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_without_attributions_or_analyses_path = \
@@ -882,29 +798,22 @@ def project_file_without_attributions_or_analyses_path(
     return project_file_without_attributions_or_analyses_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_with_unknown_dataset_type_path(
+@pytest.fixture(name='project_file_with_unknown_dataset_type_path', scope='session')
+def get_project_file_with_unknown_dataset_type_path_fixture(
         tmp_path_factory: TempPathFactory,
         attribution_file_path: str,
         spectral_analysis_file_path: str,
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file with an unknown dataset type.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        attribution_file_path: str
-            The path to the attribution file.
-        spectral_analysis_file_path: str
-            The path to the analysis file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        attribution_file_path (str): The path to the attribution file.
+        spectral_analysis_file_path (str): The path to the analysis file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_with_unknown_dataset_type_path = \
@@ -941,29 +850,22 @@ def project_file_with_unknown_dataset_type_path(
     return project_file_with_unknown_dataset_type_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def project_file_without_dataset_path(
+@pytest.fixture(name='project_file_without_dataset_path', scope='session')
+def get_project_file_without_dataset_path_fixture(
         tmp_path_factory: TempPathFactory,
         attribution_file_path: str,
         spectral_analysis_file_path: str,
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file without dataset.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
-        attribution_file_path: str
-            The path to the attribution file.
-        spectral_analysis_file_path: str
-            The path to the analysis file.
-        label_map_file_path: str
-            The path to the label map file.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
+        attribution_file_path (str): The path to the attribution file.
+        spectral_analysis_file_path (str): The path to the analysis file.
+        label_map_file_path (str): The path to the label map file.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     project_file_without_dataset_path = tmp_path_factory.getbasetemp() / 'project-without-dataset.yaml'
@@ -996,19 +898,15 @@ def project_file_without_dataset_path(
     return project_file_without_dataset_path.as_posix()
 
 
-@pytest.fixture(scope='session')
-def broken_project_file_path(tmp_path_factory: TempPathFactory) -> str:
+@pytest.fixture(name='broken_project_file_path', scope='session')
+def get_broken_project_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
     """A test fixture, which creates an project file, which is an invalid YAML file.
 
-    Parameters
-    ----------
-        tmp_path_factory: TempPathFactory
-            A factory for creating a temporary directory in which the project file will be created.
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
 
-    Returns
-    -------
-        str
-            Returns the path to the created project file.
+    Returns:
+        str: Returns the path to the created project file.
     """
 
     broken_project_file_path = tmp_path_factory.getbasetemp() / 'broken-project.yaml'
@@ -1019,19 +917,15 @@ def broken_project_file_path(tmp_path_factory: TempPathFactory) -> str:
     return broken_project_file_path.as_posix()
 
 
-@pytest.fixture()
-def app(project_file_with_hdf5_dataset_path: str) -> Flask:
+@pytest.fixture(name='app')
+def get_app_fixture(project_file_with_hdf5_dataset_path: str) -> Iterator[Flask]:
     """A test fixture, which creates a ViRelAy server and returns corresponding Flask app.
 
-    Parameters
-    ----------
-        project_file_with_hdf5_dataset_path: str
-            The path to the project file that is used in for the tests.
+    Args:
+        project_file_with_hdf5_dataset_path (str): The path to the project file that is used in for the tests.
 
-    Returns
-    -------
-        Flask
-            Returns the Flask app for the ViRelAy server.
+    Yields:
+        Flask: Yields the Flask app for the ViRelAy server.
     """
 
     workspace = Workspace()
@@ -1042,20 +936,15 @@ def app(project_file_with_hdf5_dataset_path: str) -> Flask:
     workspace.close()
 
 
-@pytest.fixture()
-def app_without_eigenvalues_in_analysis_database(
-        project_file_without_eigenvalues_in_analysis_database_path: str) -> Flask:
+@pytest.fixture(name='app_without_eigenvalues_in_analysis_database')
+def get_app_without_eigenvalues_in_analysis_database_fixture(project_file_without_eigenvalues_in_analysis_database_path: str) -> Iterator[Flask]:
     """A test fixture, which creates a ViRelAy server and returns corresponding Flask app.
 
-    Parameters
-    ----------
-        project_file_without_eigenvalues_in_analysis_database_path: str
-            The path to the project file that is used in for the tests.
+    Args:
+        project_file_without_eigenvalues_in_analysis_database_path (str): The path to the project file that is used in for the tests.
 
-    Returns
-    -------
-        Flask
-            Returns the Flask app for the ViRelAy server.
+    Yields:
+        Flask: Yields the Flask app for the ViRelAy server.
     """
 
     workspace = Workspace()
@@ -1066,14 +955,12 @@ def app_without_eigenvalues_in_analysis_database(
     workspace.close()
 
 
-@pytest.fixture()
-def app_with_empty_workspace() -> Flask:
+@pytest.fixture(name='app_with_empty_workspace')
+def get_app_with_empty_workspace_fixture() -> Iterator[Flask]:
     """A test fixture, which creates a ViRelAy server for an empty workspace and returns corresponding Flask app.
 
-    Returns
-    -------
-        Flask
-            Returns the Flask app for the ViRelAy server.
+    Yields:
+        Flask: Yields the Flask app for the ViRelAy server.
     """
 
     workspace = Workspace()
@@ -1083,14 +970,12 @@ def app_with_empty_workspace() -> Flask:
     workspace.close()
 
 
-@pytest.fixture()
-def app_in_debug_mode() -> Flask:
+@pytest.fixture(name='app_in_debug_mode')
+def get_app_in_debug_mode_fixture() -> Iterator[Flask]:
     """A test fixture, which creates a ViRelAy server in debug mode and returns corresponding Flask app.
 
-    Returns
-    -------
-        Flask
-            Returns the Flask app for the ViRelAy server.
+    Yields:
+        Flask: Yields the Flask app for the ViRelAy server.
     """
 
     workspace = Workspace()
@@ -1100,8 +985,8 @@ def app_in_debug_mode() -> Flask:
     workspace.close()
 
 
-@pytest.fixture()
-def test_client(app: Flask) -> FlaskClient:
+@pytest.fixture(name='test_client')
+def get_test_client_fixture(app: Flask) -> FlaskClient:
     """Creates a test HTTP client for a Flask app that hosts a ViRelAy server.
 
     Args:
@@ -1114,8 +999,8 @@ def test_client(app: Flask) -> FlaskClient:
     return app.test_client()
 
 
-@pytest.fixture()
-def test_client_without_eigenvalues_in_analysis(app_without_eigenvalues_in_analysis_database: Flask) -> FlaskClient:
+@pytest.fixture(name='test_client_without_eigenvalues_in_analysis')
+def get_test_client_without_eigenvalues_in_analysis_fixture(app_without_eigenvalues_in_analysis_database: Flask) -> FlaskClient:
     """Creates a test HTTP client for a Flask app that hosts a ViRelAy server.
 
     Args:
@@ -1129,8 +1014,8 @@ def test_client_without_eigenvalues_in_analysis(app_without_eigenvalues_in_analy
     return app_without_eigenvalues_in_analysis_database.test_client()
 
 
-@pytest.fixture()
-def test_client_with_app_in_debug_model(app_in_debug_mode: Flask) -> FlaskClient:
+@pytest.fixture(name='test_client_with_app_in_debug_model')
+def get_test_client_with_app_in_debug_model_fixture(app_in_debug_mode: Flask) -> FlaskClient:
     """Creates a test HTTP client for a Flask app that hosts a ViRelAy server that is in debug mode.
 
     Args:

@@ -1,39 +1,36 @@
 """Contains some helper functions for processing images."""
 
 import math
+from typing import Literal
 
 import numpy
+import numpy.typing
 import matplotlib.cm
 from PIL import Image
+from numpy.typing import NDArray
 
 
-def add_border(image, new_width, new_height, method):
-    """
-    Up-samples the specified image, by making a border around the image.
+def add_border(
+        image: NDArray[numpy.float64],
+        new_width: int,
+        new_height: int,
+        method: Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']) -> NDArray[numpy.float64]:
+    """Up-samples the specified image, by making a border around the image.
 
-    Parameters
-    ----------
-        image: numpy.ndarray
-            The image that is to be up-sampled.
-        new_width: int
-            The new width to which the image is to be up-sampled.
-        new_height: int
-            The new height to which the image is to be up-sampled.
-        method: str
-            The method that is to be used to create the border. Supported methods are 'fill_zeros' to fill up the border
-            with zeros, 'fill_ones' to fill up the border with ones, 'edge_repeat' to repeat the values at the edge of
-            the image, 'mirror_edge' to mirror the image at the edge, and 'wrap_around' to wrap the image around (e.g.
-            the left edge is filled up with values from the right edge).
+    Args:
+        image (NDArray[numpy.float64]): The image that is to be up-sampled.
+        new_width (int): The new width to which the image is to be up-sampled.
+        new_height (int): The new height to which the image is to be up-sampled.
+        method (Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']): The method that is to be used to create the border.
+            Supported methods are 'fill_zeros' to fill up the border with zeros, 'fill_ones' to fill up the border with ones, 'edge_repeat' to repeat
+            the values at the edge of the image, 'mirror_edge' to mirror the image at the edge, and 'wrap_around' to wrap the image around (e.g. the
+            left edge is filled up with values from the right edge).
 
-    Raises
-    ------
-        ValueError
-            If the specified method is not supported, then a ValueError is raised.
+    Raises:
+        ValueError: If the specified method is not supported, then a ValueError is raised.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the up-sampled image.
+    Returns:
+        NDArray[numpy.float64]: Returns the up-sampled image.
     """
 
     width = image.shape[0]
@@ -45,46 +42,29 @@ def add_border(image, new_width, new_height, method):
     top_padding = math.ceil(float(vertical_padding) / 2.0)
     bottom_padding = math.floor(float(vertical_padding) / 2.0)
 
+    padding = ((left_padding, right_padding), (top_padding, bottom_padding), (0, 0))
     if method in ['fill_zeros', 'fill_ones']:
-        return numpy.pad(
-            image,
-            ((left_padding, right_padding), (top_padding, bottom_padding), (0, 0)),
-            'constant',
-            constant_values=0 if method == 'fill_zeros' else 1
-        )
-
-    internal_methods_map = {
-        'edge_repeat': 'edge',
-        'mirror_edge': 'reflect',
-        'wrap_around': 'wrap'
-    }
-    if method in internal_methods_map:
-        return numpy.pad(
-            image,
-            ((left_padding, right_padding), (top_padding, bottom_padding), (0, 0)),
-            internal_methods_map[method]
-        )
+        return numpy.pad(image, padding, 'constant', constant_values=0 if method == 'fill_zeros' else 1)
+    if method == 'edge_repeat':
+        return numpy.pad(image, padding, 'edge')
+    if method == 'mirror_edge':
+        return numpy.pad(image, padding, 'reflect')
+    if method == 'wrap_around':
+        return numpy.pad(image, padding, 'wrap')
 
     raise ValueError(f'The specified method "{method}" is not supported.')
 
 
-def center_crop(image, new_width, new_height):
-    """
-    Crops the image evenly on all sides to the desired size.
+def center_crop(image: NDArray[numpy.float64], new_width: int, new_height: int) -> NDArray[numpy.float64]:
+    """Crops the image evenly on all sides to the desired size.
 
-    Parameters
-    ----------
-        image: numpy.ndarray
-            The image that is to be down-sampled.
-        new_width: int
-            The new width to which the image is to be down-sampled.
-        new_height: int
-            The new height to which the image is to be down-sampled.
+    Args:
+        image (NDArray[numpy.float64]): The image that is to be down-sampled.
+        new_width (int): The new width to which the image is to be down-sampled.
+        new_height (int): The new height to which the image is to be down-sampled.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the center-cropped image.
+    Returns:
+        NDArray[numpy.float64]: Returns the center-cropped image.
     """
 
     width = image.shape[0]
@@ -97,26 +77,18 @@ def center_crop(image, new_width, new_height):
     return image[left_crop:new_width + left_crop, top_crop:new_height + top_crop]
 
 
-def render_heatmap(attribution_data, color_map):
-    """
-    Takes the raw attribution data and converts it so that the data can be visualized as a heatmap.
+def render_heatmap(attribution_data: NDArray[numpy.float64], color_map: str) -> NDArray[numpy.float64]:
+    """Takes the raw attribution data and converts it so that the data can be visualized as a heatmap.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
-        color_map: str
-            The name of color map that is to be used to render the heatmap.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
+        color_map (str): The name of color map that is to be used to render the heatmap.
 
-    Raises
-    ------
-        ValueError
-            If the specified color map is unknown, then a ValueError is raised.
+    Raises:
+        ValueError: If the specified color map is unknown, then a ValueError is raised.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap image.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap image.
     """
 
     # Creates a dictionary, which maps the name of a custom color map to a method that produces the heatmap image
@@ -154,84 +126,69 @@ def render_heatmap(attribution_data, color_map):
     return heatmap_image
 
 
-def render_superimposed_heatmap(attribution_data, superimpose, color_map):
-    """
-    Renders the heatmap an superimposes it onto the specified image.
+def render_superimposed_heatmap(
+        attribution_data: NDArray[numpy.float64],
+        image_to_superimpose: NDArray[numpy.float64],
+        color_map: str) -> NDArray[numpy.float64]:
+    """Renders the heatmap an superimposes it onto the specified image.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
-        superimpose: numpy.ndarray
-            An image onto which the image is to be superimposed.
-        color_map: str
-            The name of color map that is to be used to render the heatmap.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
+        image_to_superimpose (NDArray[numpy.float64]): An image onto which the image is to be superimposed.
+        color_map (str): The name of color map that is to be used to render the heatmap.
 
-    Raises
-    ------
-        ValueError
-            If the specified color map is unknown, then a ValueError is raised.
-
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap image.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap image.
     """
 
     # Checks if the raw attribution has more than one channel, in that case the channels are summed up
     attribution_data = attribution_data.squeeze()
-    superimpose = superimpose.squeeze()
+    image_to_superimpose = image_to_superimpose.squeeze()
     if len(attribution_data.shape) == 3 and attribution_data.shape[-1] > 1:
         attribution_data = numpy.sum(attribution_data, axis=2)
 
     # Renders the heatmap
-    heatmap = render_heatmap(attribution_data, color_map)
-    heatmap = Image.fromarray(heatmap, 'RGB')
+    heatmap_array = render_heatmap(attribution_data, color_map)
+    heatmap = Image.fromarray(heatmap_array, 'RGB')
 
     # Takes the attribution data, and normalizes it to the range [0, 1], this will be used as the alpha channel top
     # superimpose the heatmap onto the specified image, the positive and negative parts of the attribution data are
     # considered separately, because otherwise the negative attributions would show up less significantly than the
     # positive attributions
     absolute_maximum_attribution_value = numpy.max(numpy.abs(attribution_data))
-    positive_attributions_mask = numpy.maximum(attribution_data, 0)
-    positive_attributions_mask = positive_attributions_mask / absolute_maximum_attribution_value * 0.9
-    positive_attributions_mask = Image.fromarray((positive_attributions_mask * 255).astype(numpy.uint8), 'L')
-    negative_attributions_mask = numpy.abs(numpy.minimum(attribution_data, 0))
-    negative_attributions_mask = negative_attributions_mask / absolute_maximum_attribution_value * 0.9
-    negative_attributions_mask = Image.fromarray((negative_attributions_mask * 255).astype(numpy.uint8), 'L')
+    positive_attributions_mask_array = numpy.maximum(attribution_data, 0)
+    positive_attributions_mask_array = positive_attributions_mask_array / absolute_maximum_attribution_value * 0.9
+    positive_attributions_mask = Image.fromarray((positive_attributions_mask_array * 255).astype(numpy.uint8), 'L')
+    negative_attributions_mask_array = numpy.abs(numpy.minimum(attribution_data, 0))
+    negative_attributions_mask_array = negative_attributions_mask_array / absolute_maximum_attribution_value * 0.9
+    negative_attributions_mask = Image.fromarray((negative_attributions_mask_array * 255).astype(numpy.uint8), 'L')
 
     # Superimposes the positive and the negative attributions onto the specified image
-    superimpose = Image.fromarray(superimpose.astype(numpy.uint8)).convert('LA').convert('RGB')
-    heatmap = heatmap.resize(superimpose.size)
-    positive_attributions_mask = positive_attributions_mask.resize(superimpose.size)
-    negative_attributions_mask = negative_attributions_mask.resize(superimpose.size)
+    loaded_image_to_superimpose = Image.fromarray(image_to_superimpose.astype(numpy.uint8)).convert('LA').convert('RGB')
+    heatmap = heatmap.resize(loaded_image_to_superimpose.size)
+    positive_attributions_mask = positive_attributions_mask.resize(loaded_image_to_superimpose.size)
+    negative_attributions_mask = negative_attributions_mask.resize(loaded_image_to_superimpose.size)
 
-    superimposed_heatmap = Image.composite(heatmap, superimpose, positive_attributions_mask)
+    superimposed_heatmap = Image.composite(heatmap, loaded_image_to_superimpose, positive_attributions_mask)
     superimposed_heatmap = Image.composite(heatmap, superimposed_heatmap, negative_attributions_mask)
 
     # Returns the rendered heatmap
     return numpy.array(superimposed_heatmap)
 
 
-def generate_heatmap_image_using_matplotlib(attribution_data, color_map_name):
-    """
-    Generates a heatmap from the specified attribution data using the color maps provided by matplotlib.
+def generate_heatmap_image_using_matplotlib(attribution_data: NDArray[numpy.float64], color_map_name: str) -> NDArray[numpy.float64]:
+    """Generates a heatmap from the specified attribution data using the color maps provided by Matplotlib.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
-        color_map_name: str
-            The name of the color map that is used to produce the heatmap.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
+        color_map_name (str): The name of the color map that is used to produce the heatmap.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap.
     """
 
     # Gets the color map specified by the name
-    color_map = getattr(matplotlib.cm, color_map_name)
+    color_map = matplotlib.colormaps.get_cmap(color_map_name)
 
     # Brings the raw heatmap data into a value range of 0.0 and 1.0
     attribution_data = attribution_data / numpy.max(numpy.abs(attribution_data))
@@ -239,27 +196,22 @@ def generate_heatmap_image_using_matplotlib(attribution_data, color_map_name):
 
     # Applies the color map to the raw heatmap
     heatmap_height, heatmap_width = attribution_data.shape
-    heatmap = color_map(attribution_data.flatten())
+    heatmap: NDArray[numpy.float64] = color_map(attribution_data.flatten())
     heatmap = heatmap[:, 0:3].reshape([heatmap_height, heatmap_width, 3])
 
     # Returns the created heatmap image
     return heatmap
 
 
-def generate_heatmap_image_gray_red(attribution_data):
-    """
-    Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
-    blue tones are used to visualize negative relevances.
+def generate_heatmap_image_gray_red(attribution_data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+    """Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and blue tones are used to
+    visualize negative relevances.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap.
     """
 
     # Creates the floating point representation of a the base gray color that is used in the heatmap, and creates a
@@ -283,20 +235,15 @@ def generate_heatmap_image_gray_red(attribution_data):
     return heatmap
 
 
-def generate_heatmap_image_black_green(attribution_data):
-    """
-    Generates a heatmap with a black background, where green tones are used to visualize positive relevance values
-    and blue tones are used to visualize negative relevances.
+def generate_heatmap_image_black_green(attribution_data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+    """Generates a heatmap with a black background, where green tones are used to visualize positive relevance values and blue tones are used to
+    visualize negative relevances.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap.
     """
 
     # Creates the heatmap image with all pixel values set to 0
@@ -315,20 +262,15 @@ def generate_heatmap_image_black_green(attribution_data):
     return heatmap
 
 
-def generate_heatmap_image_black_fire_red(attribution_data):
-    """
-    Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and
-    blue tones are used to visualize negative relevances.
+def generate_heatmap_image_black_fire_red(attribution_data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+    """Generates a heatmap with a gray background, where red tones are used to visualize positive relevance values and blue tones are used to
+    visualize negative relevances.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap.
     """
 
     # Prepares the raw heatmap
@@ -353,20 +295,15 @@ def generate_heatmap_image_black_fire_red(attribution_data):
     ], axis=2)
 
 
-def generate_heatmap_image_black_yellow(attribution_data):
-    """
-    Generates a heatmap with a black background, where yellow tones are used to visualize positive relevance values
-    and blue tones are used to visualize negative relevances.
+def generate_heatmap_image_black_yellow(attribution_data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+    """Generates a heatmap with a black background, where yellow tones are used to visualize positive relevance values and blue tones are used to
+    visualize negative relevances.
 
-    Parameters
-    ----------
-        attribution_data: numpy.ndarray
-            The raw attribution data for which the heatmap is to be rendered.
+    Args:
+        attribution_data (NDArray[numpy.float64]): The raw attribution data for which the heatmap is to be rendered.
 
-    Returns
-    -------
-        numpy.ndarray
-            Returns the heatmap.
+    Returns:
+        NDArray[numpy.float64]: Returns the heatmap.
     """
 
     # Creates the heatmap image with all pixel values set to 0

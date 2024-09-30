@@ -24,7 +24,7 @@ The test project scripts require CoRelAy to be installed, which is also availabl
 
 .. note::
 
-    Be aware that only Python 3.9, 3.10, 3.11, and 3.12 are officially supported.
+    Be aware that only Python 3.10, 3.11, and 3.12 are officially supported.
 
 A ViRelAy project consists of multiple files. In its most basic configuration
 the required files are:

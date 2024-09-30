@@ -1,15 +1,17 @@
-"""Represents the configuration for Sphinx, which is executed at build time and can be used to configure Sphinx's input
-and output behavior.
-"""
+"""Represents the configuration for Sphinx, which is executed at build time and can be used to configure Sphinx's input and output behavior."""
 
 # pylint: disable=invalid-name
 
 import os
 import sys
 import inspect
-import importlib.metadata
+from types import ModuleType
+from typing import Any, Iterator, Literal
+from collections.abc import Sequence
 from subprocess import run, CalledProcessError
 
+from sphinx.application import Sphinx
+from pybtex.database import Entry
 from pybtex.plugin import register_plugin
 from pybtex.style.labels import BaseLabelStyle
 from pybtex.style.formatting.plain import Style as PlainStyle
@@ -18,13 +20,14 @@ from pybtex.style.formatting.plain import Style as PlainStyle
 class AuthorYearLabelStyle(BaseLabelStyle):
     """Represents a citation label style, which uses the format "[<first-author> et al., <year>]"."""
 
-    def format_labels(self, sorted_entries):
+    def format_labels(self, sorted_entries: list[Entry]) -> Iterator[str]:
         """Formats the labels of all bibliography entries.
 
-        Parameters
-        ----------
-            sorted_entries: list
-                The sorted list of bibliography entries.
+        Args:
+            sorted_entries (list[Entry]): The sorted list of bibliography entries.
+
+        Yields:
+            str: Yields the formatted labels of all bibliography entries.
         """
 
         for entry in sorted_entries:
@@ -32,19 +35,17 @@ class AuthorYearLabelStyle(BaseLabelStyle):
 
 
 class AuthorYearStyle(PlainStyle):
-    """Represents a custom bibliography style, which uses the citation label format "[<first-author> et al., <year>]".
-    """
+    """Represents a custom bibliography style, which uses the citation label format "[<first-author> et al., <year>]"."""
 
-    default_label_style = AuthorYearLabelStyle
+    default_label_style: str | type = AuthorYearLabelStyle
+    """The label style to use for the bibliography entries."""
 
 
-def setup(app):
+def setup(app: Sphinx) -> None:
     """Is invoked by Sphinx, when this build configuration file is executed.
 
-    Parameters
-    ----------
-        app: sphinx.application.Sphinx
-            The Sphinx application.
+    Args:
+        app (Sphinx): The Sphinx application.
     """
 
     # Sets the name of the directory into which generated documentation files are to be written and makes sure that the
@@ -57,14 +58,11 @@ def setup(app):
     )
 
 
-def get_latest_git_tag():
+def get_latest_git_tag() -> str:
     """Retrieves the latest Git tag in the source code repository.
 
-    Returns
-    -------
-        str
-            Returns the name of the latest Git tag in the source code repository. If no tags are available, then
-            "master" is returned.
+    Returns:
+        str: Returns the name of the latest Git tag in the source code repository. If no tags are available, then "master" is returned.
     """
 
     # Tries to get the most recent tag in the source code repository using the git describe command, which returns the
@@ -81,76 +79,80 @@ def get_latest_git_tag():
         return 'master'
 
 
-def linkcode_resolve(domain, info):
-    """Determines the URL to the source code corresponding to the object in the specified domain with the provided
-    information. This function was adapted from https://gist.github.com/nlgranger/55ff2e7ff10c280731348a16d569cb73.
+def linkcode_resolve(domain: Literal['py', 'c', 'cpp', 'javascript'], info: dict[str, str]) -> str | None:
+    """Determines the URL to the source code corresponding to the object in the specified domain with the provided information. This function was
+    adapted from https://gist.github.com/nlgranger/55ff2e7ff10c280731348a16d569cb73.
 
-    Parameters
-    ----------
-        domain: str
-            Specified the language domain the object is in. Can be one of "py", "c", "cpp", or "javascript".
-        info: dict
-            A dictionary, which contains further information about the object for which the URL is to be retrieved.
-            Depending on the domain, the following keys are guaranteed to be present:
+    Args:
+        domain (Literal['py', 'c', 'cpp', 'javascript']): Specified the language domain the object is in. Can be one of "py", "c", "cpp", or
+            "javascript".
+        info (dict[str, str]): A dictionary, which contains further information about the object for which the URL is to be retrieved. Depending on
+            the domain, the following keys are guaranteed to be present:
+             - domain is "py":
+               - "module", which contains the name of the module.
+               - "fullname", which contains the full name of the object.
+             - domain is "c":
+               - "names", which contains a list of names for the object.
+             - domain is "cpp":
+               - "names", which contains a list of names for the object.
+             - domain is "javascript":
+               - "object", which is the name of the object.
+               - "fullname", which is the name of the item.
 
-            domain is "py":
-                "module", which contains the name of the module
-                "fullname", which contains the full name of the object
-            domain is "c":
-                "names", which contains a list of names for the object
-            domain is "cpp":
-                "names", which contains a list of names for the object
-            domain is "javascript":
-                "object", which is the name of the object
-                "fullname", which is the name of the item.
-
-    Returns
-    -------
-        str | None
-            Returns the URL of the source code corresponding to the specified object. If no URL is available, then None
-            is returned.
+    Returns:
+        str | None: Returns the URL of the source code corresponding to the specified object. If no URL is available, then None is returned.
     """
 
-    # Checks for which language the source code URL is to be retrieved (only Python is supported)
-    url = None
-    if domain == 'py' and 'module' in info and 'fullname' in info:
+    # We are only interested in Python source code URLs
+    if domain != 'py' or 'module' not in info or 'fullname' not in info:
+        return None
 
-        # Gets the module in which the object resides for which the source code URL is to be retrieved
-        module = sys.modules.get(info['module'])
-        if module is None:
-            return None
+    # Gets the module in which the object resides for which the source code URL is to be retrieved
+    module: ModuleType | None = sys.modules.get(info['module'])
+    if module is None:
+        return None
 
-        # Gets the object for which the source code URL is to be retrieved
-        object_to_get_url_for = module
-        for part in info['fullname'].split('.'):
-            try:
-                object_to_get_url_for = getattr(object_to_get_url_for, part)
-            except AttributeError:
-                return None
-
-        # Gets the relative path to the source code file that contains the object (this is the same path that is used by
-        # GitHub in its URL to the source code)
+    # Gets the object for which the source code URL is to be retrieved
+    name_components = info['fullname'].split('.')
+    if not name_components:
+        return None
+    object_to_get_url_for: ModuleType | type[Any] = module
+    for name_component in name_components:
         try:
-            top_module_name = info['module'].split('.')[0]
-            module_path = importlib.metadata.requires(top_module_name)[0].location
-            file_path = os.path.relpath(inspect.getsourcefile(object_to_get_url_for), module_path)
-            if file_path is None:
-                return None
-        except Exception:  # pylint: disable=broad-except
+            object_to_get_url_for = getattr(object_to_get_url_for, name_component)
+        except AttributeError:
             return None
 
-        # Retrieves the line number at which the object's definition starts and the line number where it ends
-        try:
-            source, line_number = inspect.getsourcelines(object_to_get_url_for)
-            line_start, line_stop = line_number, line_number + len(source) - 1
-        except OSError:
-            return None
+    # Gets the absolute path to the source code file that contains the object
+    object_file_path: str | None = inspect.getsourcefile(object_to_get_url_for)
+    if object_file_path is None:
+        return None
 
-        # Composes the URL to the source code file on GitHub
-        url = f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/{file_path}#L{line_start}-L{line_stop}'
+    # The path to the source code file is absolute, so it must be converted to a path relative to the top module's path (this should always be the
+    # virelay module; example: source code file path: /a/b/c/virelay/d/e.py, top module path: /a/b/c/virelay, and what we need is virelay/d/e.py); the
+    # path returned by the __file__ attribute of the top module points to the module's __init__.py file, e.g., /a/b/c/virelay/__init__.py, so we need
+    # to remove the __init__.py part to get the top module's path; then, we also need to remove the directory that the top module is contained in,
+    # e.g., /a/b/c; this is needed because the function that turns the absolute into a relative path removes the common prefix of the two paths, which
+    # would mean that we would end up with d/e.py instead of virelay/d/e.py
+    module_hierarchy = info['module'].split('.')
+    if not module_hierarchy:
+        return None
+    top_module_name = module_hierarchy[0]
+    top_module = sys.modules.get(top_module_name)
+    if top_module is None or top_module.__file__ is None:
+        return None
+    top_module_path = os.path.abspath(os.path.join(os.path.dirname(top_module.__file__), '..'))
+    object_file_path = os.path.relpath(object_file_path, top_module_path)
 
-    # Returns the generated URL
-    return url
+    # Retrieves the line number at which the object's definition starts and the line number where it ends
+    try:
+        source, line_number = inspect.getsourcelines(object_to_get_url_for)
+        line_start, line_stop = line_number, line_number + len(source) - 1
+    except OSError:
+        return None
+
+    # Composes the URL to the source code file on GitHub and returns it
+    return f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/{object_file_path}#L{line_start}-L{line_stop}'
 
 
 # Sets the basic project information
@@ -177,7 +179,7 @@ templates_path = ['_templates']
 
 # Specifies a list of patterns, relative to source directory, that match files and directories to ignore when looking
 # for source files, in this case, nothing needs to be excluded
-exclude_patterns = []
+exclude_patterns: Sequence[str] = []
 
 # Configures the theme that is used for the HTML pages
 html_theme = 'sphinx_rtd_theme'

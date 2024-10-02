@@ -9,7 +9,3 @@ max-doc-length = 150
 # statement on a previous line) must have the same indentation, this is, however, not ideal for method call chaining of fluent APIs, such as the ones
 # that are used in SQLAlchemy
 ignore = E131
-
-# Warnings W503 and W504 are mutually exclusive - they concern the position of line breaks in relation to binary operators. We choose to place them
-# before the operators as per PEP recommendation, hence we select 504 here
-select = W504

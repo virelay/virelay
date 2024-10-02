@@ -40,6 +40,7 @@
   - The version of the `checkout` action was updated to the latest version v4.
   - The version of the `setup-python` action was updated to the latest version v5.
   - The `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
+- Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
 
 ## v0.4.0
 

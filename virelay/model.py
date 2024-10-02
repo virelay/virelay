@@ -652,7 +652,7 @@ class Analysis:
 
     def __init__(
             self,
-            category_name : str,
+            category_name: str,
             human_readable_category_name: str,
             clustering_name: str,
             clustering: NDArray[numpy.int64],
@@ -1092,7 +1092,7 @@ class LabelMap:
         """
 
     @overload
-    def get_labels(self, reference:  list[int] | tuple[int, ...] | NDArray[numpy.int64]) -> list['Label']:
+    def get_labels(self, reference: list[int] | tuple[int, ...] | NDArray[numpy.int64]) -> list['Label']:
         """Retrieves the human-readable names of the labels that match the specified reference. The reference must be a n-hot encoded vector.
 
         Args:
@@ -1275,6 +1275,7 @@ class LabelMap:
         """
 
         return self.get_label_from_word_net_id(word_net_id).name
+
 
 @dataclass
 class Label:

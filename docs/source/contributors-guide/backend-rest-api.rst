@@ -11,7 +11,7 @@ ViRelAy consists of 2 parts: the backend REST API and the frontend website. This
 
 Please refer to the :doc:`../api-reference/index` for detailed information about the modules, their classes, and functions.
 
-When working on the backend REST API, it is recommended that you create a virtual environment, in order not to clutter your base environment. The following dependencies are required: *h5py* for reading HDF5 datasets, attribution databases and analysis databases, *Matplotlib*, *Pillow* and *NumPy* for manipulating images and rendering heatmaps, *Flask* for the REST API, *Flask CORS* for cross-origin resource sharing (which is required so that the frontend can access the REST API), *PyYAML* to read ViRelAy project files, and *Tox* to run tests, run the linters and to build the documentation. All necessary dependencies, except for *Tox*, are installed when you install ViRelAy. There are three sets of extra dependencies that can be installed: ``docs`` for building the documentation, ``tests`` for running the unit tests, and ``linting`` for running the linters. All of these can be run through ``tox``, so you only need to install them if you want to directly use them from the terminal. You clone the repository, create a virtual environment, and install everything necessary by issuing the following commands in your terminal:
+When working on the backend REST API, it is recommended that you create a virtual environment, in order not to clutter your base environment. The following dependencies are required: *H5py* for reading HDF5 datasets, attribution databases and analysis databases, *Matplotlib*, *Pillow* and *NumPy* for manipulating images and rendering heatmaps, *Flask* for the REST API, *Flask CORS* for cross-origin resource sharing (which is required so that the frontend can access the REST API), *PyYAML* to read ViRelAy project files, and *tox* to run tests, run the linters and to build the documentation. All necessary dependencies, except for *tox*, are installed when you install ViRelAy. There are three sets of extra dependencies that can be installed: ``docs`` for building the documentation, ``tests`` for running the unit tests, and ``linting`` for running the linters. All of these can be run through ``tox``, so you only need to install them if you want to directly use them from the terminal. You can clone the repository, create a virtual environment, and install everything necessary by issuing the following commands in your terminal:
 
 .. code-block:: console
 
@@ -74,31 +74,43 @@ Furthermore, if the backend REST API server is not run in debug mode, then the f
 Unit Testing
 ------------
 
-The backend REST API has a unit test suite which strives to always reach 100% code coverage. The tests are not situated in the ViRelAy module, but in a separate tests directory: :repo:`tests`. The ``conftest`` module contains common fixtures that are used by the tests. Each ViRelAy module has an accompanying test module, which contains the tests for it (e.g., the ``image_processing`` ViRelAy module has a ``test_image_processing`` test module). The tests are written using the PyTest framework. The tests for ViRelAy classes are also contained in classes (e.g., the ``Project`` class in the ``model`` ViRelAy module has a matching ``TestProject`` test class), while the tests for functions are also just plain functions. The convention is to name a test function or method with the prefix ``test_`` followed by the name of the function or method being tested, followed by a description of the test. For example, the function that tests whether heatmaps can be rendered with the blue-white-red color map is called ``test_render_heatmap_blue_white_red``. When contributing to the project, you should always ensure that all tests run successfully and that all altered or added functionality is being properly tested.
+The backend REST API has a unit test suite which strives to always reach 100% code coverage. The tests are not situated in the ViRelAy module, but in a separate tests directory: :repo:`tests/unit_tests`. The ``conftest`` module contains common fixtures that are used by the tests. Each ViRelAy module has an accompanying test module, which contains the tests for it (e.g., the ``image_processing`` ViRelAy module has a ``test_image_processing`` test module). The tests are written using the PyTest framework. The tests for ViRelAy classes are also contained in classes (e.g., the ``Project`` class in the ``model`` ViRelAy module has a matching ``TestProject`` test class), while the tests for functions are also just plain functions. The convention is to name a test function or method with the prefix ``test_`` followed by the name of the function or method being tested, followed by a description of the test. For example, the function that tests whether heatmaps can be rendered with the blue-white-red color map is called ``test_render_heatmap_blue_white_red``. When contributing to the project, you should always ensure that all tests run successfully and that all altered or added functionality is being properly tested.
 
-The easiest way to run the unit tests is through Tox. Tox runs the unit tests using all supported Python version (Python 3.10, 3.11, and 3.12), not only using the locally installed version. This can be achieved using the Tox command line interface and by specifying the environments using the ``-e`` parameter.
-
-.. code-block:: console
-
-    tox -e py310,py311,py312
-
-The tests can also be directly executed using the ``pytest`` command line interface, like so:
+The easiest way to run the unit tests is through tox. To run all tox environments, i.e., ``py310``, ``py311`` and ``py312`` for the unit tests using Python 3.10, 3.11 and 3.12, ``coverage`` for computing the test coverage, ``linting`` for running the linters and the static type checker, and ``docs`` for building the documentation, you can just invoke the ``tox`` command in your terminal without any arguments. To run specific environments, you can use the ``-e`` parameter. For example, to run the unit tests for Python 3.10, and the linters and static type checker you can use the following command:
 
 .. code-block:: console
 
-    $ .venv/bin/python -m pytest tests
+    tox -e py310,linting
+
+Using tox, the unit tests can be run with all supported Python versions. For this to work, all supported Python versions, i.e., Python 3.10, 3.11 and 3.12, must be installed on your system. If you cannot or do not want to install all supported Python versions on your system, you can also run tox in Docker. For this to work, you need to have Docker installed on your system, which can be achieved by following the `official installation instructions <https://docs.docker.com/engine/install/>`_. Then you can run tox inside of Docker using our bundled convenience script:
+
+.. code-block:: console
+
+    ./tests/docker-tox/docker-tox
+
+The script will automatically build a Docker image with all necessary dependencies, if it is not already locally available, and then run tox inside of a Docker container using the built image. The convenience script will pass all command line arguments unaltered to tox, which means it can be used as a drop-in replacement for a locally installed tox. Additional arguments can be passed to the script like so:
+
+.. code-block:: console
+
+    ./tests/docker-tox/docker-tox -e py310,linting
+
+The tests can also be manually executed using the ``pytest`` command line interface, like so:
+
+.. code-block:: console
+
+    $ .venv/bin/python -m pytest tests/unit_tests
 
 This will run all tests and report how many tests where successful and how many tests failed. Furthermore, the code coverage needs to be measured in order to make sure that 100% of the code is covered by the unit test suite at all times.
 
 .. code-block:: console
 
-    .venv/bin/python -m pytest --cov virelay --cov-config tox.ini tests
+    .venv/bin/python -m pytest --cov virelay --cov-config tox.ini tests/unit_tests
 
-The ``--cov`` argument specifies the module against which the code coverage is to be measured and the ``--cov-config`` argument specifies, that the Tox configuration file also contains the configuration for the test coverage. This command will then print out test coverage statistics. If you want to have a more elaborate report in the form of an HTML website, then you can add the ``--cov-report html`` argument, like so:
+The ``--cov`` argument specifies the module against which the code coverage is to be measured and the ``--cov-config`` argument specifies, that the tox configuration file also contains the configuration for the test coverage. This command will then print out test coverage statistics. If you want to have a more elaborate report in the form of an HTML website, then you can add the ``--cov-report html`` argument, like so:
 
 .. code-block:: console
 
-    .venv/bin/python -m pytest --cov virelay --cov-config tox.ini --cov-report html tests
+    .venv/bin/python -m pytest --cov virelay --cov-config tox.ini --cov-report html tests/unit_tests
 
 The unit tests are run as part continuous integration (CI) pipeline, which we will run when a pull request is created. Pull requests with a failing CI pipeline are not accepted.
 
@@ -109,17 +121,23 @@ The code style of the backend REST API is checked using `PyLint <https://www.pyl
 
 The configuration for PyLint can be found in the :repo:`.pylintrc` file, the PyCodeStyle configuration can be found in the :repo:`.pycodestyle` file, PyDocLint's configuration can be found in the :repo:`.pydoclint.toml` file, and the configuration for MyPy can be found in the :repo:`.mypy.ini` file.
 
-Again, the easiest way to execute the linting is through Tox:
+Again, the easiest way to execute the linting is through tox:
 
 .. code-block:: console
 
     tox -e linting
 
+Of course, the same can be achieved using tox in Docker:
+
+.. code-block:: console
+
+    ./tests/docker-tox/docker-tox -e linting
+
 However, the linters and the type checker can also be directly run, if you have installed them in your virtual environment (``.venv/bin/pip install --editable .[linting]``):
 
 .. code-block:: console
 
-    pylint --rcfile .pylintrc virelay tests setup.py docs/source/conf.py
-    pycodestyle --config .pycodestyle virelay tests setup.py docs/source/conf.py
-    pydoclint --config .pydoclint.toml virelay tests setup.py docs/source/conf.py
-    mypy --config-file .mypy.ini virelay tests setup.py docs/source/conf.py
+    pylint --rcfile .pylintrc virelay tests/unit_tests setup.py docs/source/conf.py
+    pycodestyle --config .pycodestyle virelay tests/unit_tests setup.py docs/source/conf.py
+    pydoclint --config .pydoclint.toml virelay tests/unit_tests setup.py docs/source/conf.py
+    mypy --config-file .mypy.ini virelay tests/unit_tests setup.py docs/source/conf.py

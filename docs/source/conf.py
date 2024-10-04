@@ -157,7 +157,7 @@ def linkcode_resolve(domain: Literal['py', 'c', 'cpp', 'javascript'], info: dict
 
 # Sets the basic project information
 project = 'ViRelAy'
-project_copyright = '2022, ViRelAy'
+project_copyright = '2024, ViRelAy'
 author = 'ViRelAy Contributors'
 
 # Specifies the Sphinx extensions that are used by this documentation

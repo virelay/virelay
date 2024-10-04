@@ -2,7 +2,7 @@
 # Use the v2 version of the Read the Docs build configuration file format
 version: 2
 
-# Configures the build environnment to use Ubuntu 24.04 and Python 3.12
+# Configures the build environment to use Ubuntu 24.04 and Python 3.12
 build:
   os: ubuntu-24.04
   tools:

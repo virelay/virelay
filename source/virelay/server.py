@@ -107,20 +107,22 @@ class Server:
         # files that are to be served; otherwise specialized functions for each route would have to be created; these methods take a file path and
         # return a view function that returns the specified file; the un-parameterized version creates a view function that serves the specified file
         # directly, while the parameterized version creates a view function that serves a file with a file name that is specified as a parameter in
-        # the URL, which is passed to the view function as an argument by Flask
+        # the URL, which is passed to the view function as an argument by Flask (when ViRelAy is run from the source code, then the frontend is
+        # located in the source directory; if, however, ViRelAy is run from an installed package, then the frontend is included in the package)
+        resources_path = files('virelay') / 'frontend'
+        if not resources_path.is_dir():
+            resources_path = files('frontend') / 'distribution'
         if not self.is_in_debug_mode:
-            frontend_path = 'frontend/distribution'
-
             def create_static_file_view_function(relative_file_path: str) -> RouteCallable:
                 def view_function() -> flask.Response:
-                    file_path = files('virelay') / frontend_path / relative_file_path
+                    file_path = resources_path / relative_file_path
                     file_stream: BinaryIO = cast(BinaryIO, file_path.open('rb'))
                     return flask.send_file(file_stream, download_name=file_path.name)
                 return view_function
 
             def create_static_file_parameterized_view_function(file_path_template: str) -> RouteCallable:
                 def view_function(file_name: str) -> flask.Response:
-                    file_path = files('virelay') / frontend_path / file_path_template.format(file_name)
+                    file_path = resources_path / file_path_template.format(file_name)
                     file_stream: BinaryIO = cast(BinaryIO, file_path.open('rb'))
                     return flask.send_file(file_stream, download_name=file_path.name)
                 return view_function

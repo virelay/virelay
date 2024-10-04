@@ -2,7 +2,7 @@
 Getting Started
 ================
 
-Are you new to ViRelAy? Here you can find instructions on how to get started with ViRelAy, from how to install it on your system, to key concepts, and how to navigate the UI. If you want to get going fast and do not want to create a project first, you can read the :doc:`example-project` article, which guides you through the creation of a randomly generated test project that you can use to familiarize yourself with the ViRelAy user interface.
+Welcome to ViRelAy! In this section, we'll guide you through the process of getting started, covering installation, key concepts, and UI navigation. Read our :doc:`installation` guide for instructions on how to install ViRelAy on your system. Check out our :doc:`basic-usage` guide for an overview of key concepts and UI navigation. If you want a quick start, read our :doc:`example-project` guide, which guides you through the creation of a test project with randomly generated data. You can use the test project to familiarize yourself with the ViRelAy user interface.
 
 .. toctree::
     :maxdepth: 2

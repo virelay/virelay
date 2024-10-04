@@ -9,54 +9,37 @@ import numpy
 from torchvision.datasets import CIFAR10
 
 
-def create_dataset(dataset_file_path: str, samples_shape: tuple, number_of_samples: int) -> h5py.File:
+def create_dataset(dataset_file_path: str, samples_shape: tuple[int, ...], number_of_samples: int) -> h5py.File:
     """Creates a new dataset HDF5 file.
 
-    Parameters
-    ----------
-        dataset_file_path: str
-            The path to the dataset HDF5 file that is to be created.
-        sample_shape: torch.Size
-            The shape of the samples in the dataset.
-        number_of_samples: int
-            The number of samples in the dataset.
+    Args:
+        dataset_file_path (str): The path to the dataset HDF5 file that is to be created.
+        samples_shape (tuple[int, ...]): The shape of the samples in the dataset.
+        number_of_samples (int): The number of samples in the dataset.
 
-    Returns
-    -------
-        h5py.File
-            Returns the file handle to the attributions database.
+    Returns:
+        h5py.File: Returns the file handle to the attributions database.
     """
 
     dataset_file = h5py.File(dataset_file_path, 'w')
-    dataset_file.create_dataset(
-        'data',
-        shape=(number_of_samples,) + tuple(samples_shape),
-        dtype='float32'
-    )
-    dataset_file.create_dataset(
-        'label',
-        shape=(number_of_samples,),
-        dtype='uint16'
-    )
+    dataset_file.create_dataset('data', shape=(number_of_samples,) + samples_shape, dtype='float32')
+    dataset_file.create_dataset('label', shape=(number_of_samples,), dtype='uint16')
     return dataset_file
 
 
 def append_sample(
-        dataset_file: h5py.File,
-        index: int,
-        sample: torch.Tensor,
-        label: int) -> None:
+    dataset_file: h5py.File,
+    index: int,
+    sample: torch.Tensor,
+    label: torch.Tensor
+) -> None:
     """Appends the specified sample to the dataset.
 
     Args:
-        dataset_file: str
-            The file handle to the dataset to which the sample is to be appended.
-        index: int
-            The index of the sample.
-        sample: torch.Tensor
-            The sample that is to be appended.
-        label: torch.Tensor
-            The ground-truth label of the sample.
+        dataset_file (h5py.File): The file handle to the dataset to which the sample is to be appended.
+        index (int): The index of the sample.
+        sample (torch.Tensor): The sample that is to be appended.
+        label (torch.Tensor): The ground-truth label of the sample.
     """
 
     dataset_file['data'][index] = sample
@@ -66,14 +49,10 @@ def append_sample(
 def make_dataset(dataset_path: str, output_file_path: str, label_map_file_path: str) -> None:
     """Converts the CIFAR-10 dataset into the HDF5 format, which can be consumed by ViRelAy.
 
-    Parameters
-    ----------
-        dataset_path: str
-            The path to the CIFAR-10 dataset. If it does not exist, it is automatically downloaded.
-        output_file_path: str
-            The path to the HDF5 file into which the dataset is to be stored.
-        label_map_file_path: str
-            The path to the file into which the label map is to be stored.
+    Args:
+        dataset_path (str): The path to the CIFAR-10 dataset. If it does not exist, it is automatically downloaded.
+        output_file_path (str): The path to the HDF5 file into which the dataset is to be stored.
+        label_map_file_path (str): The path to the file into which the label map is to be stored.
     """
 
     train_dataset = CIFAR10(root=dataset_path, train=True, download=True)

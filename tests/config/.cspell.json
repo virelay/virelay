@@ -11,12 +11,11 @@
     // A list of file types that should be enabled (not all file types are enabled by default)
     "enableFiletypes": [
         "bibtex",
-        "dockercompose",
-        "dockerfile",
         "github-actions-workflow",
         "gitignore",
         "html",
-        "ini"
+        "ini",
+        "toml"
     ],
 
     // A list of paths that are ignored when spell-checking (ignores the .git directory, but excludes the commit message file that is created by Git
@@ -27,9 +26,9 @@
         ".git",
         "**/__pycache__",
         "**/*.svg",
-        "**/virelay/frontend/distribution",
-        "**/virelay/frontend/node_modules",
-        "**/virelay/frontend/package-lock.json"
+        "**/source/frontend/distribution",
+        "**/source/frontend/node_modules",
+        "**/source/frontend/package-lock.json"
     ],
 
     // A list of dictionaries that should be added beyond the American English dictionary
@@ -57,7 +56,6 @@
         "companies",
         "computing-acronyms",
         "data-science",
-        "docker",
         "filetypes",
         "fonts",
         "fullstack",
@@ -89,6 +87,7 @@
         "afmhot",
         "allclose",
         "Anders",
+        "Anson",
         "arange",
         "argmax",
         "argmin",
@@ -106,6 +105,7 @@
         "cleverhans",
         "clusterings",
         "cmap",
+        "codezombiech",
         "colormaps",
         "copybutton",
         "corelay",
@@ -114,7 +114,6 @@
         "deadsnakes",
         "delslice",
         "DNNs",
-        "Dockerized",
         "docstrings",
         "doctree",
         "docz",
@@ -181,10 +180,13 @@
         "pylint",
         "pylintrc",
         "pytest",
+        "pytyped",
         "Raycaster",
         "rcfile",
         "rdiv",
         "regionref",
+        "ritwickdey",
+        "rodolphebarbanneau",
         "Samek",
         "setenv",
         "setslice",
@@ -210,6 +212,7 @@
         "venv",
         "vsicons",
         "Wäldchen",
+        "wayou",
         "webcomponents",
         "Werkzeug",
         "Wojciech",
@@ -218,6 +221,7 @@
         "xaxis",
         "xreadlines",
         "yaxis",
+        "yzhang",
         "Zennit"
     ]
 }

@@ -59,10 +59,10 @@ ViRelAy projects can be generated using [CoRelAy](https://github.com/virelay/cor
 When you have a project ready, you can open it in ViRelAy like so using the following command. Please note that starting ViRelAy using the command line interface, will start a rather slow development server. For improved load times or when running ViRelAy on a server, please run it using the WSGI HTTP server [Gunicorn](https://virelay.readthedocs.io/en/latest/user-guide/using-virelay-with-gunicorn.html).
 
 ```shell
-$ python -m virelay <project-file> [<project-file> ...]
+$ virelay <project-file> [<project-file> ...]
 ```
 
-This will start the server at http://localhost:8080 and automatically open your default browser. Optionally, you can specify an alternative host and port using the `--host` and `--port` command line arguments. For more in-depth instructions, please refer to our [getting started guide](https://virelay.readthedocs.io/en/latest/getting-started/index.html).
+This will start the server at [http://localhost:8080](http://localhost:8080) and automatically open your default browser. Optionally, you can specify an alternative host and port using the `--host` and `--port` command line arguments. For more in-depth instructions, please refer to our [getting started guide](https://virelay.readthedocs.io/en/latest/getting-started/index.html).
 
 ## Contributing
 
@@ -72,4 +72,4 @@ To help speed up the merging of your pull request, please comment and document y
 
 ## License
 
-ViRelAy is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3 OR LATER. For more information see the [copying](COPYING). For licenses of bundled third party software packages please refer to the [3rd party license list](virelay/frontend/distribution/3rdpartylicenses.txt).
+ViRelAy is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3 OR LATER. For more information see the [copying](COPYING). For licenses of bundled third party software packages please refer to the [3rd party license list](/source/frontend/distribution/3rdpartylicenses.txt).

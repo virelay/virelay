@@ -1,5 +1,4 @@
-"""Generates a ViRelAy project file from a database file, an attribution file, an analysis file, and a label map file.
-"""
+"""Generates a ViRelAy project file from a database file, an attribution file, an analysis file, and a label map file."""
 
 import argparse
 from os.path import dirname, relpath
@@ -9,53 +8,39 @@ import yaml
 
 
 def make_project(
-        dataset_file_path: str,
-        attribution_file_path: str,
-        analysis_file_path: str,
-        label_map_file_path: str,
-        project_name: str,
-        dataset_name: str,
-        dataset_down_sampling_method: str,
-        dataset_up_sampling_method: str,
-        model_name: str,
-        attribution_name: str,
-        analysis_name: str,
-        output_file_path: str) -> None:
+    dataset_file_path: str,
+    attribution_file_path: str,
+    analysis_file_path: str,
+    label_map_file_path: str,
+    project_name: str,
+    dataset_name: str,
+    dataset_down_sampling_method: str,
+    dataset_up_sampling_method: str,
+    model_name: str,
+    attribution_name: str,
+    analysis_name: str,
+    output_file_path: str
+) -> None:
     """Generates a ViRelAy project file.
 
-    Parameters
-    ----------
-        dataset_file_path: str
-            The path to the dataset HDF5 file.
-        attribution_file_path: str
-            The path to the attribution HDF5 file.
-        analysis_file_path: str
-            The path to the analysis HDF5 file.
-        label_map_file_path: str
-            The path to the label map YAML file.
-        project_name: str
-            The name of the project.
-        dataset_name: str
-            The name of the dataset that the classifier was trained on.
-        dataset_down_sampling_method: str
-            The method that is to be used to down-sample images from the dataset that are larger than the input to the
+    Args:
+        dataset_file_path (str): The path to the dataset HDF5 file.
+        attribution_file_path (str): The path to the attribution HDF5 file.
+        analysis_file_path (str): The path to the analysis HDF5 file.
+        label_map_file_path (str): The path to the label map YAML file.
+        project_name (str): The name of the project.
+        dataset_name (str): The name of the dataset that the classifier was trained on.
+        dataset_down_sampling_method (str): The method that is to be used to down-sample images from the dataset that are larger than the input to the
             model. Must be one of "none", "center_crop", or "resize".
-        dataset_up_sampling_method: str
-            The method that is to be used to up-sample images from the dataset that are smaller than the input to the
-            model. Must be one of "none", "fill_zeros", "fill_ones", "edge_repeat", "mirror_edge", "wrap_around", or
-            "resize".
-        model_name: str
-            The name of the classifier model on which the project is based.
-        attribution_name: str
-            The name of the method that was used to compute the attributions.
-        analysis_name: str
-            The name of the analysis that was performed on the attributions.
-        output_file_path: str
-            The path to the YAML file into which the project will be saved.
+        dataset_up_sampling_method (str): The method that is to be used to up-sample images from the dataset that are smaller than the input to the
+            model. Must be one of "none", "fill_zeros", "fill_ones", "edge_repeat", "mirror_edge", "wrap_around", or "resize".
+        model_name (str): The name of the classifier model on which the project is based.
+        attribution_name (str): The name of the method that was used to compute the attributions.
+        analysis_name (str): The name of the analysis that was performed on the attributions.
+        output_file_path (str): The path to the YAML file into which the project will be saved.
     """
 
-    # Determines the root path of the project, which is needed to make all paths stored in the project file relative to
-    # the project file
+    # Determines the root path of the project, which is needed to make all paths stored in the project file relative to the project file
     if output_file_path is not None:
         project_root_path = dirname(output_file_path)
     else:
@@ -94,8 +79,8 @@ def make_project(
         }
     }
 
-    # If an output file path was specified, then the project is saved into the specified file, otherwise, the project
-    # information is written to the standard output
+    # If an output file path was specified, then the project is saved into the specified file, otherwise, the project information is written to the
+    # standard output
     if output_file_path is None:
         print(yaml.dump(project, default_flow_style=False))
     else:
@@ -108,9 +93,7 @@ def main() -> None:
 
     argument_parser = argparse.ArgumentParser(
         prog='make_project',
-        description='''Generates a ViRelAy project file from a database file, an attribution file, an analysis file, and
-            a label map file.
-        '''
+        description='Generates a ViRelAy project file from a database file, an attribution file, an analysis file, and a label map file.'
     )
     argument_parser.add_argument(
         'dataset_file_path',
@@ -155,9 +138,7 @@ def main() -> None:
         type=str,
         choices=['none', 'center_crop', 'resize'],
         default='none',
-        help='''The method that is to be used to down-sample images from the dataset that are larger than the input to
-            the model. Defaults to "none".
-        '''
+        help='The method that is to be used to down-sample images from the dataset that are larger than the input to the model. Defaults to "none".'
     )
     argument_parser.add_argument(
         '-S',
@@ -166,9 +147,7 @@ def main() -> None:
         type=str,
         choices=['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize'],
         default='none',
-        help='''The method that is to be used to up-sample images from the dataset that are smaller than the input to
-            the model. Defaults to "none".
-        '''
+        help='The method that is to be used to up-sample images from the dataset that are smaller than the input to the model. Defaults to "none".'
     )
     argument_parser.add_argument(
         '-m',

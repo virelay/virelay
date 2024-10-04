@@ -3,7 +3,7 @@ Database Specification
 ======================
 
 Legend
-------
+======
 
 * ``keys`` or ``files``
 * *shape*
@@ -21,7 +21,7 @@ Legend
     * ``specific-member``: properties for some specific member of group
 
 General Data Specification
---------------------------
+==========================
 
 * all data is stored as HDF5
 * file names with underscores for spaces and dashes as key-separators
@@ -33,7 +33,7 @@ General Data Specification
   * analysis is one per dataset, model, attribution method and analysis topic
 
 Model Input Data
-----------------
+================
 
 * shape for image data is *samples x channel x height x width*
 * since preprocessing depends on the model, we supply a file ``<model>.input.h5`` with all preprocessing steps applied
@@ -55,7 +55,7 @@ Model Input Data
     * otherwise natural sort order of keys is assumed
 
 Attribution of Input Data
--------------------------
+=========================
 
 * ``<attribution-strategy>`` can be:
 
@@ -83,7 +83,7 @@ Attribution of Input Data
     * if **float32**: *samples x classes*
 
 Analysis Output Data
---------------------
+====================
 
 * HDF5 structure
 

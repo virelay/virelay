@@ -2,7 +2,7 @@
 Backend REST API
 ================
 
-ViRelAy consists of 2 parts: the backend REST API and the frontend website. This article describes the architecture of the backend REST API in detail. The backend REST API is implemented in Python using `Flask <https://flask.palletsprojects.com/en/2.1.x/>`_. It consists of four Python modules:
+ViRelAy consists of 2 parts: the backend REST API and the frontend website. This article describes the architecture of the backend REST API in detail. The backend REST API is implemented in Python using `Flask <https://flask.palletsprojects.com/en/3.0.x/>`_. It consists of four Python modules:
 
 - **Application** -- The ``application`` module contains the entrypoint to the backend REST API, the command line interface for starting the built-in development server, as well as the ``create_app`` function, which is used by Gunicorn to start the application.
 - **Image Processing** -- The ``image_processing`` module contains functions for up and down sampling input images and generated heatmaps from attributions.
@@ -11,31 +11,32 @@ ViRelAy consists of 2 parts: the backend REST API and the frontend website. This
 
 Please refer to the :doc:`../api-reference/index` for detailed information about the modules, their classes, and functions.
 
-When working on the backend REST API, it is recommended that you create a virtual environment, in order not to clutter your base environment. The following dependencies are required: *H5py* for reading HDF5 datasets, attribution databases and analysis databases, *Matplotlib*, *Pillow* and *NumPy* for manipulating images and rendering heatmaps, *Flask* for the REST API, *Flask CORS* for cross-origin resource sharing (which is required so that the frontend can access the REST API), *PyYAML* to read ViRelAy project files, and *tox* to run tests, run the linters and to build the documentation. All necessary dependencies, except for *tox*, are installed when you install ViRelAy. There are three sets of extra dependencies that can be installed: ``docs`` for building the documentation, ``tests`` for running the unit tests, and ``linting`` for running the linters. All of these can be run through ``tox``, so you only need to install them if you want to directly use them from the terminal. You can clone the repository, create a virtual environment, and install everything necessary by issuing the following commands in your terminal:
+We manage the backend REST API project using the Python package and project manager `uv <https://github.com/astral-sh/uv>`_. You can find instructions on how to install and use uv in the `official documentation <https://docs.astral.sh/uv/>`_. This tool is used to install supported Python versions, manage virtual environments, manage runtime and development dependencies, build the project, and run ViRelAy. After installing uv, you first have to install the supported Python versions, which are 3.10, 3.11, 3.12, and 3.13. The versions are listed in the :repo:`.python-versions` file and can be installed using the following command:
 
 .. code-block:: console
 
-    $ git clone https://github.com/virelay/virelay.git
-    $ cd virelay
-    $ python -m venv .venv
-    $ .venv/bin/pip install --editable .                     # Install ViRelAy, or
-    $ .venv/bin/pip install --editable .[docs,tests,linting] # install ViRelAy with optional extra dependencies
-    $ .venv/bin/pip install tox
+    $ uv python install
 
-The backend REST API server can then be run using the following command:
+After installing the supported Python versions, the project's dependencies have to be installed: *H5py* for reading HDF5 datasets, attribution databases and analysis databases, *Matplotlib*, *Pillow* and *NumPy* for manipulating images and rendering heatmaps, *Flask* for the REST API, *Flask CORS* for cross-origin resource sharing (which is required so that the frontend can access the REST API), *Gunicorn* as an HTTP server, *PyYAML* to read ViRelAy project files, *Sphinx* to build the documentation, *PyTest* and *Coverage* for unit testing and measuring code coverage, *PyLint*, *PyCodeStyle*, and *PyDocLint* for linting, *MyPy* for static type checking, *tox* to run tests, run the linters, run the type checker and to build the documentation. All necessary dependencies are included in the :repo`pyproject.toml` project file and specific versions are pinned in the :repo`uv.lock` file. They can be installed using the following command:
 
 .. code-block:: console
 
-    $ .venv/bin/python -m virelay '<project-file>' ['<project-file>' ...]
+    $ uv sync
+
+ViRelAy can then be run using the following command:
+
+.. code-block:: console
+
+    $ uv run virelay '<project-file>' ['<project-file>' ...]
 
 Command Line interface
-----------------------
+======================
 
 The ViRelAy command line interface can be used like so:
 
 .. code-block:: console
 
-    $ .venv/bin/python -m virelay [-h] [-H HOST] [-p PORT] [-d] project [project ...]
+    $ uv run virelay [-h] [-H HOST] [-p PORT] [-d] project [project ...]
 
 The following arguments are supported:
 
@@ -48,7 +49,7 @@ The following arguments are supported:
 Especially, the debug mode is an important option for development, because it not only prints out verbose logging messages and allows you to attach a debugger, but it also allows you to run the frontend separately, which enables debugging and hot-reloading of the frontend.
 
 REST API
---------
+========
 
 The ViRelAy backend REST API supports the following endpoints:
 
@@ -72,50 +73,38 @@ Furthermore, if the backend REST API server is not run in debug mode, then the f
 - ``/<path:file_name>`` -- A catch all for all other paths, which also serves the index page of the frontend.
 
 Unit Testing
-------------
+============
 
-The backend REST API has a unit test suite which strives to always reach 100% code coverage. The tests are not situated in the ViRelAy module, but in a separate tests directory: :repo:`tests/unit_tests`. The ``conftest`` module contains common fixtures that are used by the tests. Each ViRelAy module has an accompanying test module, which contains the tests for it (e.g., the ``image_processing`` ViRelAy module has a ``test_image_processing`` test module). The tests are written using the PyTest framework. The tests for ViRelAy classes are also contained in classes (e.g., the ``Project`` class in the ``model`` ViRelAy module has a matching ``TestProject`` test class), while the tests for functions are also just plain functions. The convention is to name a test function or method with the prefix ``test_`` followed by the name of the function or method being tested, followed by a description of the test. For example, the function that tests whether heatmaps can be rendered with the blue-white-red color map is called ``test_render_heatmap_blue_white_red``. When contributing to the project, you should always ensure that all tests run successfully and that all altered or added functionality is being properly tested.
+The backend REST API has a unit test suite which strives to always reach 100% code coverage. The tests are not situated in the ViRelAy module, but in a separate tests directory: :repo:`tests/unit_tests`. The ``conftest`` module contains common fixtures that are used by the tests. Each ViRelAy module has an accompanying test module, which contains the tests for it (e.g., the ``image_processing`` ViRelAy module has a ``test_image_processing`` test module). The tests are written using the `PyTest framework <https://docs.pytest.org/en/stable/>`_. The tests for ViRelAy classes are also contained in classes (e.g., the ``Project`` class in the ``model`` ViRelAy module has a matching ``TestProject`` test class), while the tests for functions are also just plain functions. The convention is to name a test function or method with the prefix ``test_`` followed by the name of the function or method being tested, followed by a description of the test. For example, the function that tests whether heatmaps can be rendered with the blue-white-red color map is called ``test_render_heatmap_blue_white_red``. When contributing to the project, you should always ensure that all tests run successfully and that all altered or added functionality is being properly tested.
 
-The easiest way to run the unit tests is through tox. To run all tox environments, i.e., ``py310``, ``py311`` and ``py312`` for the unit tests using Python 3.10, 3.11 and 3.12, ``coverage`` for combining the test coverage data and producing a report, ``pylint``, ``pycodestyle`` and ``pydoclint`` for running the linters, ``mypy`` for running the static type checker, and ``docs`` for building the documentation, you can just invoke the ``tox`` command in your terminal without any arguments. To run specific environments, you can use the ``-e`` parameter. For example, to run the unit tests for Python 3.10, and the PyLint linter you can use the following command:
-
-.. code-block:: console
-
-    tox -e py310,pylint
-
-Using tox, the unit tests can be run with all supported Python versions. For this to work, all supported Python versions, i.e., Python 3.10, 3.11 and 3.12, must be installed on your system. If you cannot or do not want to install all supported Python versions on your system, you can also run tox in Docker. For this to work, you need to have Docker installed on your system, which can be achieved by following the `official installation instructions <https://docs.docker.com/engine/install/>`_. Then you can run tox inside of Docker using our bundled convenience script:
+The easiest way to run the unit tests is through tox. To run all tox environments, i.e., ``py310``, ``py311``, ``py312``, and  ``py313`` for the unit tests using Python 3.10, 3.11, 3.12, and 3.13, ``coverage`` for combining the test coverage data and producing a report, ``pylint``, ``pycodestyle`` and ``pydoclint`` for running the linters, ``mypy`` for running the static type checker, and ``docs`` for building the documentation, you can just invoke the ``uv run tox --conf tests/config/tox.ini --root .`` command in your terminal without any arguments. To run specific environments, you can use the ``-e`` parameter. For example, to run the unit tests for Python 3.10, and the PyLint linter you can use the following command:
 
 .. code-block:: console
 
-    ./tests/docker-tox/docker-tox
-
-The script will automatically build a Docker image with all necessary dependencies, if it is not already locally available, and then run tox inside of a Docker container using the built image. The convenience script will pass all command line arguments unaltered to tox, which means it can be used as a drop-in replacement for a locally installed tox. Additional arguments can be passed to the script like so:
-
-.. code-block:: console
-
-    ./tests/docker-tox/docker-tox -e py310,pylint
+    $ uv run tox --conf tests/config/tox.ini --root . -e py310,pylint
 
 The tests can also be manually executed using the ``pytest`` command line interface, like so:
 
 .. code-block:: console
 
-    $ .venv/bin/python -m pytest tests/unit_tests
+    $ uv run pytest tests/unit_tests
 
 This will run all tests and report how many tests where successful and how many tests failed. Furthermore, the code coverage needs to be measured in order to make sure that 100% of the code is covered by the unit test suite at all times.
 
 .. code-block:: console
 
-    .venv/bin/python -m pytest --cov virelay --cov-config tox.ini tests/unit_tests
+    $ uv run pytest --cov source/virelay --cov-config tests/config/tox.ini tests/unit_tests
 
 The ``--cov`` argument specifies the module against which the code coverage is to be measured and the ``--cov-config`` argument specifies, that the tox configuration file also contains the configuration for the test coverage. This command will then print out test coverage statistics. If you want to have a more elaborate report in the form of an HTML website, then you can add the ``--cov-report html`` argument, like so:
 
 .. code-block:: console
 
-    .venv/bin/python -m pytest --cov virelay --cov-config tox.ini --cov-report html tests/unit_tests
+    $ uv run pytest --cov source/virelay --cov-config tests/config/tox.ini --cov-report html tests/unit_tests
 
 The unit tests are run as part continuous integration (CI) pipeline, which we will run when a pull request is created. Pull requests with a failing CI pipeline are not accepted.
 
 Linting
--------
+=======
 
 The code style of the backend REST API is checked using `PyLint <https://www.pylint.org/>`_, `PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_, and `PyDocLint <https://jsh9.github.io/pydoclint/>`_`. They are also used to find some forms of runtime bugs. Furthermore, we use the static type checker `MyPy <https://mypy-lang.org/>`_ to ensure that there are no type errors in the code. Please make sure to run them regularly and fix all produced warnings. Especially, before committing or creating a pull request, you should absolutely make sure that they all run without warning. Linting and static type checking runs as part of the CI pipeline, which we will run when a pull request is created. Pull requests with a failing CI pipeline are not accepted.
 
@@ -125,19 +114,91 @@ Again, the easiest way to run all linters and the static type checker is through
 
 .. code-block:: console
 
-    tox -e pylint,pycodestyle,pydoclint,mypy
-
-Of course, the same can be achieved using tox in Docker:
-
-.. code-block:: console
-
-    ./tests/docker-tox/docker-tox -e pylint,pycodestyle,pydoclint,mypy
+    $ uv run tox --conf tests/config/tox.ini --root . -e pylint,pycodestyle,pydoclint,mypy
 
 However, the linters and the type checker can also be directly run, if you have installed them in your virtual environment (``.venv/bin/pip install --editable .[linting]``):
 
 .. code-block:: console
 
-    pylint --rcfile tests/config/.pylintrc virelay tests/unit_tests setup.py docs/source/conf.py
-    pycodestyle --config tests/config/.pycodestyle virelay tests/unit_tests setup.py docs/source/conf.py
-    pydoclint --config tests/config/.pydoclint.toml virelay tests/unit_tests setup.py docs/source/conf.py
-    mypy --config-file tests/config/.mypy.ini virelay tests/unit_tests setup.py docs/source/conf.py
+    $ uv run pylint \
+        --rcfile tests/config/.pylintrc \
+        source/virelay \
+        tests/unit_tests \
+        docs/source/conf.py
+
+    $ uv run pycodestyle \
+        --config tests/config/.pycodestyle \
+        source/virelay \
+        tests/unit_tests \
+        docs/source/conf.py
+
+    $ uv run pydoclint \
+        --config tests/config/.pydoclint.toml \
+        source/virelay \
+        tests/unit_tests \
+        docs/source/conf.py
+
+    $ uv run mypy \
+        --config-file tests/config/.mypy.ini \
+        source/virelay \
+        tests/unit_tests \
+        docs/source/conf.py
+
+The example scripts in the documentation have dependencies that currently do not support Python 3.10 or later. For this reason they cannot be linted using the project's dependencies. They also require some extra dependencies that would have to be installed separately. For this reason, it is easier to run them using ``uv run`` with the ``--no-project`` flag, which will run the script without the project's dependencies. The ``--python`` and ``--with`` arguments specify the Python version and the dependencies that are to be used for the example scripts.
+
+.. code-block:: console
+
+    $ uv run \
+        --no-project \
+        --python 3.9.20 \
+        --with 'pylint==3.3.1' \
+        --with 'zennit==0.5.1' \
+        --with 'corelay==0.2.1' \
+        --with 'h5py==3.12.1' \
+        --with 'pyyaml==6.0.2' \
+        pylint \
+            --rcfile tests/config/.pylintrc \
+            --disable duplicate-code \
+            docs/examples/*.py \
+            docs/examples/**/*.py
+
+    $ uv run \
+        --no-project \
+        --python 3.9.20 \
+        --with 'pycodestyle==2.12.1' \
+        --with 'zennit==0.5.1' \
+        --with 'corelay==0.2.1' \
+        --with 'h5py==3.12.1' \
+        --with 'pyyaml==6.0.2' \
+        pycodestyle \
+            --config tests/config/.pycodestyle \
+            docs/examples/*.py \
+            docs/examples/**/*.py
+
+    $ uv run \
+        --no-project \
+        --python 3.9.20 \
+        --with 'pydoclint==0.5.9' \
+        --with 'zennit==0.5.1' \
+        --with 'corelay==0.2.1' \
+        --with 'h5py==3.12.1' \
+        --with 'pyyaml==6.0.2' \
+        pydoclint \
+            --config tests/config/.pydoclint.toml \
+            docs/examples/*.py \
+            docs/examples/**/*.py
+
+    $ uv run \
+        --no-project \
+        --python 3.9.20 \
+        --with 'mypy==1.12.0' \
+        --with 'zennit==0.5.1' \
+        --with 'corelay==0.2.1' \
+        --with 'h5py==3.12.1' \
+        --with 'pyyaml==6.0.2' \
+        --with 'types-PyYAML==6.0.12.20240917' \
+        mypy \
+            --config-file tests/config/.mypy.ini \
+            --ignore-missing-imports \
+            docs/examples/*.py \
+            docs/examples/**/*.py

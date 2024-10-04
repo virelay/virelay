@@ -9,7 +9,7 @@ First of all, it is recommended that you create a virtual environment, in order 
 .. code-block:: console
 
     $ python -m venv .venv
-    $ .venv/bin/pip install zennit corelay[umap,hdbscan] h5py pyyaml
+    $ .venv/bin/pip install zennit 'corelay[umap,hdbscan]' h5py pyyaml
 
 This guide is accompanied by a set of ready-made scripts with an easy-to-use command line interface. If you have installed ViRelAy from the project's Git repository, then you already have the scripts available under :repo:`docs/examples` and :repo:`docs/examples/vgg16-project`. If you installed ViRelAy from PyPI, then you can download the latest version of the VGG16 project scripts from the repository like so:
 
@@ -86,10 +86,11 @@ Now that we have a trained classifier, the attributions database has to be creat
 .. code-block:: python
 
     def create_attribution_database(
-            attribution_database_file_path,
-            attribution_shape,
-            number_of_classes,
-            number_of_samples):
+        attribution_database_file_path: str,
+        attribution_shape: torch.Size,
+        number_of_classes: int,
+        number_of_samples: int
+    ) -> h5py.File:
 
         attribution_database_file = h5py.File(attribution_database_file_path, 'w')
         attribution_database_file.create_dataset(
@@ -110,11 +111,12 @@ Now that we have a trained classifier, the attributions database has to be creat
         return attribution_database_file
 
     def append_attributions(
-            attribution_database_file,
-            index,
-            attributions,
-            predictions,
-            labels):
+        attribution_database_file: str,
+        index: int,
+        attributions: torch.Tensor,
+        predictions: torch.Tensor,
+        labels: torch.Tensor
+    ) -> None:
 
         attribution_database_file['attribution'][index:attributions.shape[0] + index] = (
             attributions.detach().numpy())
@@ -150,10 +152,11 @@ Now, we can cycle through the entire dataset and compute the attributions using 
     number_of_classes = 10
 
     with create_attribution_database(
-            '<attribution-database-path>',
-            train_dataset[0][0].shape,
-            number_of_classes,
-            number_of_samples) as attribution_database_file:
+        '<attribution-database-path>',
+        train_dataset[0][0].shape,
+        number_of_classes,
+        number_of_samples
+    ) as attribution_database_file:
 
         composite = EpsilonGammaBox(low=-3.0, high=3.0)
         attributor = Gradient(model=model, composite=composite)
@@ -192,7 +195,11 @@ The CIFAR-10 dataset distribution consists of multiple Python pickles, which is 
 
 .. code-block:: python
 
-    def create_dataset(dataset_file_path, samples_shape, number_of_samples):
+    def create_dataset(
+        dataset_file_path: str,
+        samples_shape: torch.Size,
+        number_of_samples: int
+    ) -> h5py.File:
 
         dataset_file = h5py.File(dataset_file_path, 'w')
         dataset_file.create_dataset(
@@ -207,7 +214,12 @@ The CIFAR-10 dataset distribution consists of multiple Python pickles, which is 
         )
         return dataset_file
 
-    def append_sample(dataset_file, index, sample, label):
+    def append_sample(
+        dataset_file: h5py.File,
+        index: int,
+        sample: NDArray[numpy.float64],
+        label: NDArray[numpy.float64]
+    ) -> None:
 
         dataset_file['data'][index] = sample
         dataset_file['label'][index] = label

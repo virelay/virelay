@@ -6,7 +6,7 @@ If you already have a project file that you would like to open, ViRelAy can be s
 
 .. code-block:: console
 
-    $ python -m virelay '<project-file>'
+    $ virelay '<project-file>' ['<project-file>' ...]
 
 This command will start the server at http://localhost:8080 and automatically open your default browser. Optionally, you can specify an alternative host and port using the ``--host`` and ``--port`` command line arguments.
 

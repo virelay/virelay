@@ -428,8 +428,9 @@ class TestAttributionDatabase:
 
     @staticmethod
     def test_attribution_database_with_sample_indices_can_check_whether_attribution_is_available(
-            attribution_file_with_sample_indices_path: str,
-            label_map_file_path: str) -> None:
+        attribution_file_with_sample_indices_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether it can be checked if the attribution database contains a specific attribution.
 
         Args:
@@ -473,8 +474,9 @@ class TestAttributionDatabase:
 
     @staticmethod
     def test_attribution_database_with_sample_indices_can_retrieve_attribution(
-            attribution_file_with_sample_indices_path: str,
-            label_map_file_path: str) -> None:
+        attribution_file_with_sample_indices_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether an attribution can be retrieved from an attribution database that contains sample indices.
 
         Args:
@@ -741,8 +743,9 @@ class TestAnalysisDatabase:
 
     @staticmethod
     def test_analysis_database_can_retrieve_categories_with_missing_labels_in_label_map(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+        spectral_analysis_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether categories can be retrieved from the analysis database, even if the human-readable category names cannot be retrieved from
         the label map.
 
@@ -855,8 +858,9 @@ class TestAnalysisDatabase:
 
     @staticmethod
     def test_analysis_database_can_retrieve_analyses_with_missing_labels_in_label_map(
-            spectral_analysis_file_path: str,
-            label_map_file_path: str) -> None:
+        spectral_analysis_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether analyses can be retrieved from the analysis database, even if the human-readable category names cannot be retrieved from the
         label map.
 
@@ -896,8 +900,9 @@ class TestAnalysisDatabase:
 
     @staticmethod
     def test_analysis_database_can_retrieve_analyses_without_eigenvalues(
-            spectral_analysis_file_without_eigenvalues_path: str,
-            label_map_file_path: str) -> None:
+        spectral_analysis_file_without_eigenvalues_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether analyses can be retrieved from the analysis database that does not contain eigenvalues.
 
         Args:
@@ -1252,8 +1257,9 @@ class TestImageDirectoryDataset:
 
     @staticmethod
     def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
-            image_directory_dataset_with_label_indices_path: str,
-            label_map_file_path: str) -> None:
+        image_directory_dataset_with_label_indices_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the dataset.
 
         Args:
@@ -1282,8 +1288,9 @@ class TestImageDirectoryDataset:
 
     @staticmethod
     def test_dataset_sample_paths_file(
-            image_directory_dataset_with_sample_paths_file_path: str,
-            label_map_file_path: str) -> None:
+        image_directory_dataset_with_sample_paths_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether the image directory dataset can locate samples.
 
         Args:

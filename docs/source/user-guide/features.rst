@@ -5,7 +5,7 @@ Features
 In this article, all features of ViRelAy will be explained in detail. If you are new to ViRelAy, a shorter overview of the user interface can be found in :doc:`../getting-started/basic-usage`.
 
 Projects
---------
+========
 
 When starting ViRelAy, a project file has to be specified. A project file contains all meta information about the project, such as the project name, the model name, the dataset name, etc., as well as the references to the dataset, label map, attribution, and analysis files. An example of a project file can be seen in the following listing. For more information about the project file format, please refer to the :doc:`../contributors-guide/project-file-format` article.
 
@@ -37,7 +37,7 @@ ViRelAy supports the loading of multiple project files at once. This can be help
 
 .. code-block:: console
 
-    $ python -m virelay path/to/project-1.yaml path/to/project-2.yaml
+    $ virelay '<project-file>' ['<project-file>' ...]
 
 When running ViRelAy using Gunicorn, multiple project files can either be passed as arguments to the ``create_app`` function or the project files can be specified as a colon separated list in the ``VIRELAY_PROJECTS`` environment variable. The ``projects`` argument of the ``create_app`` function takes precedent over the environment variable.
 
@@ -71,7 +71,7 @@ For the currently selected project, the project name, the dataset name, and the 
     Figure 2: The project info pane in the ViRelAy UI, which shows some basic information about the currently selected project.
 
 Analyses
---------
+========
 
 Analyses are the result of quantitative analysis pipeline created with CoRelAy, e.g., using approaches such as Spectral Relevance Analysis (SpRAy) :cite:p:`lapuschkin2019cleverhans`, and consist of visual embeddings and clusterings of the attributions, which were generated (e.g., using Zennit) from the samples of the dataset using the project's classifier. Each ViRelAy project can consists of multiple analyses, which can be selected in the toolbox, which is situated at the top of the ViRelAy UI, right beneath the project selection, as can be seen in Figure 3.
 
@@ -82,7 +82,7 @@ Analyses are the result of quantitative analysis pipeline created with CoRelAy, 
     Figure 3: In the toolbox, the current analysis can be selected.
 
 Clusterings & Embeddings
-------------------------
+========================
 
 As stated above, an analysis consists of visual embeddings and clusterings of the attributions of the project. Each analysis can contain multiple embeddings using different embedding methods. Furthermore, for each embedding, multiple clusterings with different clustering methods, as well as different parameters can be contained in an analysis. Embeddings are split up into categories. A category usually corresponds to a class of the dataset, but it can also be used to represent other things such as concepts or multiple classes in multi-label classification scenarios. The category, embedding method, and clustering method can be selected in the toolbox, which is situated at the top of the ViRelAy UI. The embedding viewer at the center of the ViRelAy UI always displays the sample points of the current category using the currently selected embedding method. The sample points are colored according to the currently selected clustering. The category selection, embedding selection, and clustering selection in the toolbox can be seen in Figure 4.
 
@@ -101,7 +101,7 @@ If the selected embedding has more than 2 dimensions, then the first and second 
     Figure 5: When the currently selected embedding contains more than 2 dimensions, then the toolbox contains a selection for the dimensions that are displayed on the X and Y axis of the embedding viewer.
 
 Navigating Embeddings
----------------------
+=====================
 
 In the center of the ViRelAy UI, the embedding viewer is situated. The embedding viewer displays the samples of the currently selected sample category. The samples are displayed as a point cloud using the currently selected embedding method. The colors of the sample points correspond to the cluster they belong to, according to the currently selected clustering. An example of an embedding being visualized in the embedding viewer can be seen in Figure 6.
 
@@ -144,7 +144,7 @@ Below the eigenvalue plot, a list of all clusters of the current clustering are 
     Figure 10: On the right side of the ViRelAy UI the quick selection buttons for the clusters of the currently selected clustering method are displayed.
 
 Inputs, Attributions & Heatmaps
--------------------------------
+===============================
 
 When sample points have been selected, the sample viewer at the bottom of the ViRelAy UI shows the samples corresponding to the selected sample points (to increase performance, only the first 20 samples will be displayed). Beneath each sample, the cluster to which the sample belongs is displayed. Furthermore, when hovering over the image with the mouse pointer, the label predicted by the classifier is shown, which can be used to find samples that were misclassified. An example of samples being displayed in the sample viewer can be seen in Figure 11.
 
@@ -179,7 +179,7 @@ The heatmaps highlight the pixels that contributed positively or negatively to t
     Figure 14: The color map that is used to render the heatmaps can be selected in the toolbox.
 
 Importing, Exporting & Sharing
-------------------------------
+==============================
 
 When something interesting was found, e.g., heatmaps that indicate Clever Hans behavior of the classifier, then it is important to save these findings for documentation. To this end, ViRelAy supports the export and import of the current state of the application. Clicking on the export button in the toolbar will generate a JSON file containing the currently selected project, analysis, category, embedding, clustering, color map, sample viewer display mode, the samples displayed in the sample viewer, as well as the currently selected samples. This file can then be later loaded by clicking the import button, or used on its own for further custom evaluation or plotting. Loading the JSON file will restore the exact same state that ViRelAy was in when the finding was exported. The export, import, and share buttons in the toolbar can be seen in Figure 15.
 

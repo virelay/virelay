@@ -9,25 +9,20 @@ from torchvision.datasets import CIFAR10
 
 
 def train_vgg(
-        dataset_path: str,
-        model_path: str,
-        learning_rate: float,
-        batch_size: int,
-        number_of_epochs: int) -> None:
+    dataset_path: str,
+    model_path: str,
+    learning_rate: float,
+    batch_size: int,
+    number_of_epochs: int
+) -> None:
     """Trains a VGG16 model on CIFAR-10.
 
-    Parameters
-    ----------
-        dataset_path: str
-            The path to the CIFAR-10 dataset. If it does not exist, it is automatically downloaded.
-        model_path: str
-            The path to the file into which the trained model will be stored.
-        learning_rate. float
-            The learning rate that is to be used during training.
-        batch_size: int
-            The batch size that is to be used during training.
-        number_of_epochs: int
-            The number of epochs for which the model is to be trained.
+    Args:
+        dataset_path (str): The path to the CIFAR-10 dataset. If it does not exist, it is automatically downloaded.
+        model_path (str): The path to the file into which the trained model will be stored.
+        learning_rate (float): The learning rate that is to be used during training.
+        batch_size (int): The batch size that is to be used during training.
+        number_of_epochs (int): The number of epochs for which the model is to be trained.
     """
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # pylint: disable=no-member

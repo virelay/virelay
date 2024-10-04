@@ -415,9 +415,10 @@ def get_spectral_analysis_file_path_fixture(tmp_path_factory: TempPathFactory, a
 
 @pytest.fixture(name='spectral_analysis_file_without_eigenvalues_path', scope='session')
 def get_spectral_analysis_file_without_eigenvalues_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        attribution_file_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    attribution_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an analysis file that contains a spectral analysis, but without eigenvalues.
 
     Args:
@@ -578,11 +579,12 @@ def get_project_file_with_hdf5_dataset_path_fixture(
 
 @pytest.fixture(name='project_file_without_eigenvalues_in_analysis_database_path', scope='session')
 def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        hdf5_dataset_file_path: str,
-        attribution_file_path: str,
-        spectral_analysis_file_without_eigenvalues_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    hdf5_dataset_file_path: str,
+    attribution_file_path: str,
+    spectral_analysis_file_without_eigenvalues_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an project file where the analysis database does not contain eigenvalues.
 
     Args:
@@ -634,11 +636,12 @@ def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
 
 @pytest.fixture(name='project_file_with_image_directory_dataset_path', scope='session')
 def get_project_file_with_image_directory_dataset_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        image_directory_dataset_with_label_indices_path: str,
-        attribution_file_path: str,
-        spectral_analysis_file_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    image_directory_dataset_with_label_indices_path: str,
+    attribution_file_path: str,
+    spectral_analysis_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an project file with an image directory dataset.
 
     Args:
@@ -699,11 +702,12 @@ def get_project_file_with_image_directory_dataset_path_fixture(
 
 @pytest.fixture(name='project_file_with_multiple_analysis_databases_path', scope='session')
 def get_project_file_with_multiple_analysis_databases_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        hdf5_dataset_file_path: str,
-        attribution_file_path: str,
-        spectral_analysis_file_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    hdf5_dataset_file_path: str,
+    attribution_file_path: str,
+    spectral_analysis_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an project file with multiple analysis databases.
 
     Args:
@@ -762,9 +766,10 @@ def get_project_file_with_multiple_analysis_databases_path_fixture(
 
 @pytest.fixture(name='project_file_without_attributions_or_analyses_path', scope='session')
 def get_project_file_without_attributions_or_analyses_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        hdf5_dataset_file_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    hdf5_dataset_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an project file without attributions or analyses.
 
     Args:
@@ -800,10 +805,11 @@ def get_project_file_without_attributions_or_analyses_path_fixture(
 
 @pytest.fixture(name='project_file_with_unknown_dataset_type_path', scope='session')
 def get_project_file_with_unknown_dataset_type_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        attribution_file_path: str,
-        spectral_analysis_file_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    attribution_file_path: str,
+    spectral_analysis_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an project file with an unknown dataset type.
 
     Args:
@@ -852,10 +858,11 @@ def get_project_file_with_unknown_dataset_type_path_fixture(
 
 @pytest.fixture(name='project_file_without_dataset_path', scope='session')
 def get_project_file_without_dataset_path_fixture(
-        tmp_path_factory: TempPathFactory,
-        attribution_file_path: str,
-        spectral_analysis_file_path: str,
-        label_map_file_path: str) -> str:
+    tmp_path_factory: TempPathFactory,
+    attribution_file_path: str,
+    spectral_analysis_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an project file without dataset.
 
     Args:

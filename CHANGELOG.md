@@ -41,6 +41,7 @@
   - The version of the `setup-python` action was updated to the latest version v5.
   - The `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
 - Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
+- Removed the `LICENSE` file. Previously, there were two license files: `COPYING`, which contained the AGPL 3.0 license text, and `LICENSE`, which contained a note about where to find the license of the project and any third-party licenses. This was done, because GPL prefers the file name `COPYING`, but back then GitHub did not support that file name. Now, GitHub also supports `COPYING`. As the information about where to find the project license and the third-party licenses is also contained in the read me, the `LICENSE` file was removed.
 
 ## v0.4.0
 

@@ -23,13 +23,13 @@
     // during a commit, and the cSpell configuration file itself)
     "ignorePaths": [
         "!.git/COMMIT_EDITMSG",
-        ".cspell.json",
+        "**/.cspell.json",
         ".git",
         "**/__pycache__",
         "**/*.svg",
-        "virelay/frontend/distribution",
-        "virelay/frontend/node_modules",
-        "virelay/frontend/package-lock.json"
+        "**/virelay/frontend/distribution",
+        "**/virelay/frontend/node_modules",
+        "**/virelay/frontend/package-lock.json"
     ],
 
     // A list of dictionaries that should be added beyond the American English dictionary
@@ -114,6 +114,7 @@
         "deadsnakes",
         "delslice",
         "DNNs",
+        "Dockerized",
         "docstrings",
         "doctree",
         "dtick",

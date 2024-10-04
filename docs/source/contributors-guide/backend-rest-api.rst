@@ -119,7 +119,7 @@ Linting
 
 The code style of the backend REST API is checked using `PyLint <https://www.pylint.org/>`_, `PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_, and `PyDocLint <https://jsh9.github.io/pydoclint/>`_`. They are also used to find some forms of runtime bugs. Furthermore, we use the static type checker `MyPy <https://mypy-lang.org/>`_ to ensure that there are no type errors in the code. Please make sure to run them regularly and fix all produced warnings. Especially, before committing or creating a pull request, you should absolutely make sure that they all run without warning. Linting and static type checking runs as part of the CI pipeline, which we will run when a pull request is created. Pull requests with a failing CI pipeline are not accepted.
 
-The configuration for PyLint can be found in the :repo:`.pylintrc` file, the PyCodeStyle configuration can be found in the :repo:`.pycodestyle` file, PyDocLint's configuration can be found in the :repo:`.pydoclint.toml` file, and the configuration for MyPy can be found in the :repo:`.mypy.ini` file.
+The configuration for PyLint can be found in the :repo:`tests/config/.pylintrc` file, the PyCodeStyle configuration can be found in the :repo:`tests/config/.pycodestyle` file, PyDocLint's configuration can be found in the :repo:`tests/config/.pydoclint.toml` file, and the configuration for MyPy can be found in the :repo:`tests/config/.mypy.ini` file.
 
 Again, the easiest way to execute the linting is through tox:
 
@@ -137,7 +137,7 @@ However, the linters and the type checker can also be directly run, if you have 
 
 .. code-block:: console
 
-    pylint --rcfile .pylintrc virelay tests/unit_tests setup.py docs/source/conf.py
-    pycodestyle --config .pycodestyle virelay tests/unit_tests setup.py docs/source/conf.py
-    pydoclint --config .pydoclint.toml virelay tests/unit_tests setup.py docs/source/conf.py
-    mypy --config-file .mypy.ini virelay tests/unit_tests setup.py docs/source/conf.py
+    pylint --rcfile tests/config/.pylintrc virelay tests/unit_tests setup.py docs/source/conf.py
+    pycodestyle --config tests/config/.pycodestyle virelay tests/unit_tests setup.py docs/source/conf.py
+    pydoclint --config tests/config/.pydoclint.toml virelay tests/unit_tests setup.py docs/source/conf.py
+    mypy --config-file tests/config/.mypy.ini virelay tests/unit_tests setup.py docs/source/conf.py

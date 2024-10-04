@@ -102,7 +102,7 @@ jobs:
       - name: Install CSpell
         run: npm install --global git+https://github.com/streetsidesoftware/cspell-cli
       - name: Run Spell-Check
-        run: npx cspell lint . --config .cspell.json
+        run: npx cspell lint . --config tests/config/.cspell.json
 
   # The fourth job builds the documentation using Sphinx
   build-documentation:

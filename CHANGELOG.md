@@ -11,7 +11,10 @@
     - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. It was replaced by the much simpler `Module.__file__` property.
     - In previous versions, Flask was using `application/javascript` as the MIME type for JavaScript files. This has now been changed to `text/javascript`. Also, in Python 3.12, Flask now uses `image/x-icon` instead of `image/vnd.microsoft.icon`. For this reason, the unit tests were updated.
     - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
-- The Ubuntu and Python versions used by "Read the Docs" to build the documentation were also updated to the latest versions, i.e., Ubuntu 24.04 and Python 3.12.
+- The Sphinx build configuration and the configuration for "Read the Docs" were updated:
+  - The year in the copyright notice of the documentation is now always set to the current year.
+  - The way the GitHub URLs for the source code links are generated has been updated and now also supports type hints, which have to be handled differently from modules, classes, methods, and functions, because they are variables.
+  - The Ubuntu and Python versions used by "Read the Docs" to build the documentation were also updated to the latest versions, i.e., Ubuntu 24.04 and Python 3.12.
 - The versions of Python and the versions of the dependencies were also updated in the `tox.ini` configuration file.
 - Improved the Python Linting
   - The Flake8 linter was replaced by [PyCodeStyle](https://pycodestyle.pycqa.org/en/latest/intro.html) and [PyDocLint](https://jsh9.github.io/pydoclint/), and [MyPy](https://mypy-lang.org/) was added as a static type checker. All four checkers are now included in the `setup.py` as extra dependencies under the name `linting`, so that developers can install them if they want to use them locally, e.g., as a Visual Studio Code integration.
@@ -20,6 +23,7 @@
   - The maximum line length was increased from 120 to 150, which makes it now easier to break some longer lines
   - The Flake8 and PyLint jobs were removed from the GitHub Actions Workflow configuration file, and the new job `lint-and-type-check` was added, which runs the tox test environment "linting" to run the linters and the static type checker.
   - The documentation was updated to reflect the changes in the linting process and to explain how to run the linters and the static type checker locally.
+  - In order to improve MyPy's ability to reason about the types and therefore find bugs, many type hints were added throughout the code. Also, types were introduced to make the dictionaries that are loaded from or written to YAML/JSON files strongly typed.
   - The entire code base was linted and type-checked, and all issues found by the linters and the type checker were fixed. Thanks to the new linters and the new type checker, several obscure bugs were found that would have gone unnoticed otherwise:
     1. The automatic reload of the Flask server was not working correctly, because instead of using the property "debug", the incorrect property "auto_reload" was used.
     2. The ViRelAy modules were imported using the relative import syntax instead of the absolute import syntax, which may cause problems because sometimes it is not clear if an import is relative or not, relative imports can be ambiguous, they are brittle and may break when a module is moved, and since Python 3, implicit relative imports are not allowed anymore.

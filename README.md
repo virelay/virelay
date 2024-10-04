@@ -73,3 +73,8 @@ To help speed up the merging of your pull request, please comment and document y
 ## License
 
 ViRelAy is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3 OR LATER. For more information see the [copying](COPYING). For licenses of bundled third party software packages please refer to the [3rd party license list](virelay/frontend/distribution/3rdpartylicenses.txt).
+
+## TODO:
+
+- [ ] Maybe document the tox configuration, because it is quite confusing for people not familiar with tox
+- [ ] Maybe move the ViRelAy module directory into a source folder and move the Docker tox files either into the source folder or the tests folder

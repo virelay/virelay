@@ -49,7 +49,7 @@ class Application:
         """Initializes a new Application instance."""
 
         # Initializes the command line argument parser
-        self.argument_parser = argparse.ArgumentParser(
+        self.argument_parser: argparse.ArgumentParser = argparse.ArgumentParser(
             prog="virelay",
             description="The visualization tool ViRelAy."
         )
@@ -81,16 +81,15 @@ class Application:
             dest='debug_mode',
             action='store_true',
             help='''
-                Determines whether the application is run in debug mode. When the application is in debug mode, all
-                Flask and Werkzeug logs are printed to stdout, Flask debugging is activated (Flask will print out the
-                debugger PIN for attaching the debugger), and automatic reloading (when files change) is activated.
-                Furthermore, the frontend of the application will not be served by Flask and instead has to be served
-                externally (e.g. via ng serve).
+                Determines whether the application is run in debug mode. When the application is in debug mode, all Flask and Werkzeug logs are
+                printed to stdout, Flask debugging is activated (Flask will print out the debugger PIN for attaching the debugger), and automatic
+                reloading (when files change) is activated. Furthermore, the frontend of the application will not be served by Flask and instead has
+                to be served externally (e.g. via ng serve).
             '''
         )
 
         # Initializes the workspace, which will contain all the loaded projects
-        self.workspace = Workspace()
+        self.workspace: Workspace = Workspace()
 
     def run(self) -> None:
         """Runs the application."""
@@ -102,9 +101,9 @@ class Application:
         for project_path in arguments.project:
             self.workspace.add_project(project_path)
 
-        # Registers the cleanup method, which will be called when the application is quit (the Flask server is long
-        # running and will only exit when the user sends a signal, e.g. via Ctrl+C, to stop the process, atexit
-        # registers a callback, which is executed, when the Python interpreter is shut down)
+        # Registers the cleanup method, which will be called when the application is quit (the Flask server is long running and will only exit when
+        # the user sends a signal, e.g. via Ctrl+C, to stop the process, atexit registers a callback, which is executed, when the Python interpreter
+        # is shut down)
         atexit.register(self.shutdown)
 
         # Creates the Flask server, which serves the frontend website as well as the RESTful API

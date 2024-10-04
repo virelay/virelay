@@ -19,9 +19,9 @@
 - Improved the Python Linting
   - The Flake8 linter was replaced by [PyCodeStyle](https://pycodestyle.pycqa.org/en/latest/intro.html) and [PyDocLint](https://jsh9.github.io/pydoclint/), and [MyPy](https://mypy-lang.org/) was added as a static type checker. All four checkers are now included in the `setup.py` as extra dependencies under the name `linting`, so that developers can install them if they want to use them locally, e.g., as a Visual Studio Code integration.
   - New configurations for PyCodeStyle, PyDocLint, and MyPy were added and the configuration file for PyLint was updated to match the latest version of PyLint.
-  - The PyLint and Flake8 test environments were removed from the `tox.ini` file and the new test environment `linting` was added, which runs all linters and the static type checker.
+  - The `flake8` test environment was removed from the `tox.ini` file and the new test environments `pycodestyle`, `pydoclint` and `mypy` were added, which run the linters and the static type checker.
   - The maximum line length was increased from 120 to 150, which makes it now easier to break some longer lines
-  - The Flake8 and PyLint jobs were removed from the GitHub Actions Workflow configuration file, and the new job `lint-and-type-check` was added, which runs the tox test environment "linting" to run the linters and the static type checker.
+  - The Flake8 job was removed from the GitHub Actions Workflow configuration file, and the new jobs `pycodestyle`, `pydoclint` and `mypy` were added, which run the tox environments for the respective linter and the static type checker.
   - The documentation was updated to reflect the changes in the linting process and to explain how to run the linters and the static type checker locally.
   - In order to improve MyPy's ability to reason about the types and therefore find bugs, many type hints were added throughout the code. Also, types were introduced to make the dictionaries that are loaded from or written to YAML/JSON files strongly typed.
   - The entire code base was linted and type-checked, and all issues found by the linters and the type checker were fixed. Thanks to the new linters and the new type checker, several obscure bugs were found that would have gone unnoticed otherwise:

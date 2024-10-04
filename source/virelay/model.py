@@ -684,15 +684,16 @@ class Analysis:
     """Represents an analysis of multiple attributions."""
 
     def __init__(
-            self,
-            category_name: str,
-            human_readable_category_name: str,
-            clustering_name: str,
-            clustering: NDArray[numpy.int64],
-            embedding_name: str,
-            embedding: NDArray[numpy.float64],
-            attribution_indices: NDArray[numpy.int64],
-            eigenvalues: NDArray[numpy.float64] | None = None) -> None:
+        self,
+        category_name: str,
+        human_readable_category_name: str,
+        clustering_name: str,
+        clustering: NDArray[numpy.int64],
+        embedding_name: str,
+        embedding: NDArray[numpy.float64],
+        attribution_indices: NDArray[numpy.int64],
+        eigenvalues: NDArray[numpy.float64] | None = None
+    ) -> None:
         """Initializes a new Analysis instance.
 
         Args:
@@ -843,16 +844,17 @@ class ImageDirectoryDataset:
     """
 
     def __init__(
-            self,
-            name: str,
-            path: str,
-            label_index_regex: str | None,
-            label_word_net_id_regex: str | None,
-            input_width: int,
-            input_height: int,
-            down_sampling_method: DownSamplingMethod,
-            up_sampling_method: UpSamplingMethod,
-            label_map: 'LabelMap') -> None:
+        self,
+        name: str,
+        path: str,
+        label_index_regex: str | None,
+        label_word_net_id_regex: str | None,
+        input_width: int,
+        input_height: int,
+        down_sampling_method: DownSamplingMethod,
+        up_sampling_method: UpSamplingMethod,
+        label_map: 'LabelMap'
+    ) -> None:
         """Initializes a new ImageDirectoryDataset instance.
 
         Args:

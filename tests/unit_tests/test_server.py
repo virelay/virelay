@@ -65,24 +65,28 @@ class TestServer:
             assert http_response.status_code == 200
             assert http_response.content_type in ['image/x-icon', 'image/vnd.microsoft.icon']
 
-        styles_file_name = os.path.basename(glob.glob(os.path.join(
+        styles_file_names = glob.glob(os.path.join(
             os.getcwd(),
-            'virelay',
+            'source',
             'frontend',
             'distribution',
             'styles.*.css'
-        ))[0])
+        ))
+        assert len(styles_file_names) == 1
+        styles_file_name = os.path.basename(styles_file_names[0])
         with test_client.get(f'/{styles_file_name}') as http_response:
             assert http_response.status_code == 200
             assert http_response.content_type == 'text/css; charset=utf-8'
 
-        main_file_name = os.path.basename(glob.glob(os.path.join(
+        main_file_names = glob.glob(os.path.join(
             os.getcwd(),
-            'virelay',
+            'source',
             'frontend',
             'distribution',
             'main.*.js'
-        ))[0])
+        ))
+        assert len(main_file_names) == 1
+        main_file_name = os.path.basename(main_file_names[0])
         with test_client.get(f'/{main_file_name}') as http_response:
             assert http_response.status_code == 200
             assert http_response.content_type == 'text/javascript; charset=utf-8'

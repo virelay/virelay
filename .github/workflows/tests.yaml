@@ -1,0 +1,203 @@
+
+# This workflow will run the unit tests, the linters, the static type checker, the spell checker, and will build the documentation
+name: ViRelAy Continuous Integration
+
+# This workflow runs when commits are pushed to the master/develop branch or when a pull request for the master/develop branch is opened or pushed to
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+# This workflow contains seven jobs: "unit-tests", which runs the unit tests, "pylint", which runs the PyLint linter, "pycodestyle", which runs the
+# linter PyCodeStyle, "pydoclint", which runs the docstring linter, "mypy", which runs the MyPy static type checker, "spell-check", which runs the
+# spell checker, and "build-documentation", which builds the documentation
+jobs:
+
+  # The first job runs the unit tests on Python 3.10, 3.11, 3.12, and 3.13
+  unit-tests:
+
+    # The job will run on the latest version of Ubuntu using a matrix strategy, where the unit tests are run using Python 3.10, 3.11, 3.12, and 3.13
+    name: Unit Test ViRelAy Backend on Python ${{matrix.python-version}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tox-environment: py310
+            python-version: "3.10.15"
+          - tox-environment: py311
+            python-version: "3.11.10"
+          - tox-environment: py312
+            python-version: "3.12.7"
+          - tox-environment: py313
+            python-version: "3.13.0"
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, and 5) running the tests
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.4.24
+      - name: Install Python
+        run: uv python install ${{ matrix.python-version }}
+      - name: Install ViRelAy and its Dependencies
+        run: uv sync --all-extras --dev
+      - name: Run Unit Tests
+        run: uv run tox --conf tests/config/tox.ini --root . -e ${{ matrix.tox-environment }}
+
+  # The second job runs the PyLint linter
+  pylint:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint ViRelAy Backend Using PyLint
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, and 5) running the PyLint linter
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.4.24
+      - name: Install Python
+        run: uv python install 3.13.0 3.9.20
+      - name: Install ViRelAy and its Dependencies
+        run: uv sync --all-extras --dev
+      - name: Run PyLint Linter
+        run: uv run tox --conf tests/config/tox.ini --root . -e pylint
+
+  # The third job runs the PyCodeStyle linter
+  pycodestyle:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint ViRelAy Backend Using PyCodeStyle
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, and 5) running the PyCodeStyle linter
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.4.24
+      - name: Install Python
+        run: uv python install 3.13.0 3.9.20
+      - name: Install ViRelAy and its Dependencies
+        run: uv sync --all-extras --dev
+      - name: Run PyLint Linter
+        run: uv run tox --conf tests/config/tox.ini --root . -e pycodestyle
+
+  # The fourth job runs the PyDocLint docstring linter
+  pydoclint:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint ViRelAy Backend Docstrings Using PyDocLint
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, and 5) running the PyDocLint docstring linter
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.4.24
+      - name: Install Python
+        run: uv python install 3.13.0 3.9.20
+      - name: Install ViRelAy and its Dependencies
+        run: uv sync --all-extras --dev
+      - name: Run PyLint Linter
+        run: uv run tox --conf tests/config/tox.ini --root . -e pydoclint
+
+  # The fifth job runs the MyPy static type checker
+  mypy:
+
+    # The job will run on the latest version of Ubuntu
+    name: Static Type-Check ViRelAy Backend Using MyPy
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, and 5) running the MyPy static type checker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.4.24
+      - name: Install Python
+        run: uv python install 3.13.0 3.9.20
+      - name: Install ViRelAy and its Dependencies
+        run: uv sync --all-extras --dev
+      - name: Run PyLint Linter
+        run: uv run tox --conf tests/config/tox.ini --root . -e mypy
+
+  # The sixth job runs the spell checker CSpell to spell-check all files in the repository
+  spell-check:
+
+    # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the
+    # the workflow to fail if the spell-check fails
+    name: Spell-Check Repository
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    # The job contains several steps: checking out the repository, installing NodeJS, installing the spell checker, and running the spell checker
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install CSpell
+        run: npm install --global git+https://github.com/streetsidesoftware/cspell-cli
+      - name: Run Spell-Check
+        run: npx cspell lint . --config tests/config/.cspell.json
+
+  # The seventh job builds the documentation using Sphinx
+  build-documentation:
+
+    # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the
+    # the workflow to fail if the documentation build fails
+    name: Build ViRelAy Documentation
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
+    # Python version, 4) installing TeX Live, which is required by Pybtex, a replacement for BibTeX, used by Sphinx to generate the citations in the
+    # documentation, and 5) building the documentation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.4.24
+      - name: Install Python
+        run: uv python install 3.13.0 3.9.20
+      - name: Install TeX Live for Pybtex
+        run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
+      - name: Build Documentation
+        run: uv run tox --conf tests/config/tox.ini --root . --notest -e docs

@@ -281,7 +281,7 @@ def linkcode_resolve(domain: LanguageDomain, info: dict[str, str]) -> str | None
     object_file_path = os.path.relpath(object_file_path, top_module_path)
 
     # Composes the URL to the source code file on GitHub and returns it
-    return f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/{object_file_path}#L{start_line_number}-L{end_line_number}'
+    return f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/source/{object_file_path}#L{start_line_number}-L{end_line_number}'
 
 
 # Sets the basic project information
@@ -331,7 +331,7 @@ bibtex_reference_style = 'author_year'
 LATEST_GIT_TAG = get_latest_git_tag()
 extlinks = {
     'repo': (
-        f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/%s',
+        f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/source/%s',
         '%s'
     )
 }

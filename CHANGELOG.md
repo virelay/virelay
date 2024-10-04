@@ -4,20 +4,19 @@
 
 *Release date to be determined.*
 
-- Updated the Python dependencies in the `setup.py` file to the their respective latest versions
-  - The versions of all other packages were set to be greater than or equal to the currently latest version and are restricted to be below the next major version, so that versions with breaking changes will be installed in the future
-  - Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent. Although Python 3.9 will only reach its end of life in October 2025, it is missing the union operator "|" for type hints. Although this operator is not strictly necessary, it makes the type hinting for MyPy much easier to read. Also, the latest NumPy version does not support Python 3.9 anymore. Since ViRelAy is not a library used by other projects and since most operating systems already support Python 3.10, the minimum Python version was updated to 3.10 to make the development process easier. Python 3.11 and 3.12 were also added to the list of supported Python versions. This means that now Python 3.10, 3.11, and 3.12 are the supported Python versions for the project.
-  - The following changes had to be made to because of the updated Python versions and dependencies:
-    - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. It was replaced by the much simpler `Module.__file__` property.
-    - In previous versions, Flask was using `application/javascript` as the MIME type for JavaScript files. This has now been changed to `text/javascript`. Also, in Python 3.12, Flask now uses `image/x-icon` instead of `image/vnd.microsoft.icon`. For this reason, the unit tests were updated.
-    - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
-- The Sphinx build configuration and the configuration for "Read the Docs" were updated:
-  - The year in the copyright notice of the documentation is now always set to the current year.
-  - The way the GitHub URLs for the source code links are generated has been updated and now also supports type hints, which have to be handled differently from modules, classes, methods, and functions, because they are variables.
-  - The Ubuntu and Python versions used by "Read the Docs" to build the documentation were also updated to the latest versions, i.e., Ubuntu 24.04 and Python 3.12.
-- The versions of Python and the versions of the dependencies were also updated in the `tox.ini` configuration file.
+- Converted the project from `setuptools` and `setup.py` to the Python package and project manager [uv](https://github.com/astral-sh/uv) and `pyproject.toml`.
+  - This was made necessary, because the `virelay` package was moved into a `source` directory and the `frontend` project was also moved from the `virelay` package into the `source` directory, because setuptools does not allow us to include data files that are not contained in the package directory.
+  - However, this also brings many advantages, since the new build system "hatchling" provides many more features and uv is not only blazing fast, it also makes the project management easier.
+  - Also, the old packaging system with setuptools and `setup.py` have become dated and have to be replaced by a `pyproject.toml` anyway.
+- Updated the Python dependencies of the backend REST API project to their respective latest versions.
+  - The versions of all other packages were set to be greater than or equal to the currently latest version and are restricted to be below the next major version, so that versions with breaking changes will not be installed in the future (although, this is prevented by the `uv.lock` file, which locks the currently installed versions of the packages to specific versions).
+- Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent. Although Python 3.9 will only reach its end of life in October 2025, it is missing the union operator "|" for type hints. Although this operator is not strictly necessary, it makes the type hinting for MyPy much easier to read. Also, the latest NumPy version does not support Python 3.9 anymore. Since ViRelAy is not a library that is used by other projects and most operating systems already support Python 3.10, the minimum Python version was updated to 3.10 to make the development process easier. Python 3.11, 3.12, and 3.13 were also added to the list of supported Python versions. This means that now Python 3.10, 3.11, 3.12, 3.13 are the supported Python versions for the project.
+- The following changes had to be made to because of the updated Python versions and dependencies:
+  - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. It was replaced by the much simpler `Module.__file__` property.
+  - In previous versions, Flask was using `application/javascript` as the MIME type for JavaScript files. This has now been changed to `text/javascript`. Also, in Python 3.12, Flask now uses `image/x-icon` instead of `image/vnd.microsoft.icon`. For this reason, the unit tests were updated.
+  - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
 - Improved the Python Linting
-  - The Flake8 linter was replaced by [PyCodeStyle](https://pycodestyle.pycqa.org/en/latest/intro.html) and [PyDocLint](https://jsh9.github.io/pydoclint/), and [MyPy](https://mypy-lang.org/) was added as a static type checker. All four checkers are now included in the `setup.py` as extra dependencies under the name `linting`, so that developers can install them if they want to use them locally, e.g., as a Visual Studio Code integration.
+  - The Flake8 linter was replaced by [PyCodeStyle](https://pycodestyle.pycqa.org/en/latest/intro.html) and [PyDocLint](https://jsh9.github.io/pydoclint/), and [MyPy](https://mypy-lang.org/) was added as a static type checker. All four checkers are included as development dependencies in the `pyproject.toml` project file.
   - New configurations for PyCodeStyle, PyDocLint, and MyPy were added and the configuration file for PyLint was updated to match the latest version of PyLint.
   - The `flake8` test environment was removed from the `tox.ini` file and the new test environments `pycodestyle`, `pydoclint` and `mypy` were added, which run the linters and the static type checker.
   - The maximum line length was increased from 120 to 150, which makes it now easier to break some longer lines
@@ -35,19 +34,26 @@
     8. The `__init__.py` file of the ViRelAy package did not contain a docstring, which was added.
     9. The fixtures for the unit tests are nested, which means they reference each other. Since the parameter names must match the names of the fixtures and since the fixtures were all in the same file, the parameters were shadowing the fixtures. This was fixed by renaming the fixture functions to `get_..._fixture` and adding a name to the fixture attribute.
     10. Some unit tests were incorrectly comparing `Label` objects with strings, which is now fixed.
-- Added a Dockerfile for a Docker image that contains tox and all supported Python versions. This makes it easy to run the unit tests with all supported Python versions, without having to install multiple Python versions on your system. A container can be run using a convenience script that will automatically build the Docker image, if it is not already locally available, an run tox inside of it. The convenience script can be used as a drop-in replacement for tox.
-- The files for the dockerized tox version are now located in sub-directory of the `tests` directory, called `docker_tox`. For this reason, the unit tests for the backend REST API, and the configuration files for the linter and the static type checker were moved into separate sub-directories of the `tests` directory, called `unit_tests` and `config`, respectively.
-- Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected any spelling mistakes.
-  - The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
-  - Removed LaTeX commands for accented characters from the bibliography file, as they we are using Pybtex to handle the bibliography and it has full Unicode support.
-- Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
+- The configuration files for the linters and the static type checker are located in a `config` directory that is a sub-directory of the `tests` directory. For this reason, the unit tests were also moved to a sub-directory called `unit_tests`.
+- The tox configuration file was updated
+  - The configuration file was generally cleaned up and is now completely documented.
+  - `tox-uv` is used so that tox uses uv as package manager.
+  - The new linters and the type checker are now included, and the they also lint and type-check the unit tests, the Sphinx configuration script and the example scripts in the documentation.
 - The GitHub Actions Workflow configuration file was updated
   - The Workflow configuration file was cleaned up and documented.
   - The version of the `checkout` action was updated to the latest version v4.
-  - The version of the `setup-python` action was updated to the latest version v5.
+  - Instead of using the `setup-python` action, we now use the `astral-sh/setup-uv` action to install uv, which is then used to install Python, which means that the exact same Python version that is used locally is also used in the CI/CD pipeline.
   - The `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
-- Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
+- Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected any spelling mistakes.
+  - The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
+- The Sphinx build configuration and the configuration for "Read the Docs" were updated:
+  - The year in the copyright notice of the documentation is now always set to the current year.
+  - The way the GitHub URLs for the source code links are generated has been updated and now also supports type hints, which have to be handled differently from modules, classes, methods, and functions, because they are variables.
+  - The Ubuntu and Python versions used by "Read the Docs" to build the documentation were also updated to the latest versions, i.e., Ubuntu 24.04 and Python 3.12.
 - Removed the `LICENSE` file. Previously, there were two license files: `COPYING`, which contained the AGPL 3.0 license text, and `LICENSE`, which contained a note about where to find the license of the project and any third-party licenses. This was done, because GPL prefers the file name `COPYING`, but back then GitHub did not support that file name. Now, GitHub also supports `COPYING`. As the information about where to find the project license and the third-party licenses is also contained in the read me, the `LICENSE` file was removed.
+- Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
+- Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
+- Removed LaTeX commands for accented characters from the bibliography file, as they we are using Pybtex to handle the bibliography and it has full Unicode support.
 
 ## v0.4.0
 

@@ -2,16 +2,16 @@
 [DESIGN]
 
 # Maximum number of arguments for a function/method
-max-args=10
+max-args=15
 
 # Maximum number of positional arguments for a function/method
-max-positional-arguments=10
+max-positional-arguments=15
 
 # Maximum number of attributes for a class (see R0902)
 max-attributes=15
 
 # Maximum number of locals for a function/method body
-max-locals=30
+max-locals=40
 
 # Maximum number of statements in a function/method body
 max-statements=80

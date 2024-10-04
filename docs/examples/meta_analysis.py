@@ -1,14 +1,11 @@
-"""Performs a meta-analysis on an attribution database and writes them into an analysis database, from which a ViRelAy
-project can be created.
-"""
+"""Performs a meta-analysis on an attribution database and writes them into an analysis database, from which a ViRelAy project can be created."""
 
 import json
 import argparse
-from typing import List
 
 import h5py
 import numpy
-
+from numpy.typing import NDArray
 from corelay.base import Param
 from corelay.processor.base import Processor
 from corelay.processor.affinity import SparseKNN
@@ -22,18 +19,14 @@ from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeC
 class Flatten(Processor):
     """Represents a CoRelAy processor, which flattens its input data."""
 
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
+    def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
         """Applies the flattening to the input data.
 
-        Parameters
-        ----------
-            data: numpy.ndarray
-                The input data that is to be flattened.
+        Args:
+            data (NDArray[numpy.float64]): The input data that is to be flattened.
 
-        Returns
-        -------
-            numpy.ndarray
-                Returns the flattened data.
+        Returns:
+            NDArray[numpy.float64]: Returns the flattened data.
         """
 
         return data.reshape(data.shape[0], numpy.prod(data.shape[1:]))
@@ -42,96 +35,70 @@ class Flatten(Processor):
 class SumChannel(Processor):
     """Represents a CoRelAy processor, which sums its input data across channels, i.e., its second axis."""
 
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
+    def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
         """Applies the summation over the channels to the input data.
 
-        Parameters
-        ----------
-            data: numpy.ndarray
-                The input data that is to be summed over its channels.
+        Args:
+            data (NDArray[numpy.float64]): The input data that is to be summed over its channels.
 
-        Returns
-        -------
-            numpy.ndarray
-                Returns the data that was summed up over its channels.
+        Returns:
+            NDArray[numpy.float64]: Returns the data that was summed up over its channels.
         """
 
-        return data.sum(axis=1)
+        result: NDArray[numpy.float64] = data.sum(axis=1)
+        return result
 
 
 class Absolute(Processor):
     """Represents a CoRelAy processor, which computes the absolute value of its input data."""
 
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
+    def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
         """Computes the absolute value of the specified input data.
 
-        Parameters
-        ----------
-            data: numpy.ndarray
-                The input data for which the absolute value is to be computed.
+        Args:
+            data (NDArray[numpy.float64]): The input data for which the absolute value is to be computed.
 
-        Returns
-        -------
-            numpy.ndarray
-                Returns the absolute value of the input data.
+        Returns:
+            NDArray[numpy.float64]: Returns the absolute value of the input data.
         """
 
         return numpy.absolute(data)
 
 
 class Normalize(Processor):
-    """Represents a CoRelAy processor, which normalizes its input data.
-
-    Attributes
-    ----------
-        axes: Param
-            A parameter of the processor, which determines the axis over which the data is to be normalized. Defaults to
-            the second and third axes.
-    """
+    """Represents a CoRelAy processor, which normalizes its input data."""
 
     axes = Param(tuple, (1, 2))
+    """A parameter of the processor, which determines the axis over which the data is to be normalized. Defaults to the second and third axes."""
 
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
+    def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
         """Normalizes the specified input data.
 
-        Parameters
-        ----------
-            data: numpy.ndarray
-                The input data that is to be normalized.
+        Args:
+            data (NDArray[numpy.float64]): The input data that is to be normalized.
 
-        Returns
-        -------
-            numpy.ndarray
-                Returns the normalized input data.
+        Returns:
+            NDArray[numpy.float64]: Returns the normalized input data.
         """
 
-        return data / data.sum(self.axes, keepdims=True)
+        divisor: NDArray[numpy.float64] = data.sum(self.axes, keepdims=True)
+        return data / divisor
 
 
 class Histogram(Processor):
-    """Represents a CoRelAy processor, which computes a histogram over its input data.
-
-    Attributes
-    ----------
-        bins: Param
-            A parameter of the processor, which determines the number of bins that are used to compute the histogram.
-    """
+    """Represents a CoRelAy processor, which computes a histogram over its input data."""
 
     bins = Param(int, 256)
+    """A parameter of the processor, which determines the number of bins that are used to compute the histogram."""
 
-    def function(self, data: numpy.ndarray) -> numpy.ndarray:
-        """Computes histograms over the specified input data. One histogram is computed for each channel and each sample
-        in a batch of input data.
+    def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
+        """Computes histograms over the specified input data. One histogram is computed for each channel and each sample in a batch of input data.
 
-        Parameters
-        ----------
-            data: numpy.ndarray
-                The input data over which the histograms are to be computed.
+        Args:
+            data (NDArray[numpy.float64]): The input data over which the histograms are to be computed.
 
-        Returns
-        -------
-            numpy.ndarray
-                Returns the histograms that were computed over the input data.
+        Returns:
+            NDArray[numpy.float64]: Returns the histograms that were computed over the input data.
         """
 
         return numpy.stack([
@@ -182,39 +149,30 @@ VARIANTS = {
 
 
 def meta_analysis(
-        attribution_file_path: str,
-        analysis_file_path: str,
-        variant: str,
-        class_indices: List[int],
-        label_map_file_path: str,
-        number_of_eigenvalues: int,
-        number_of_clusters_list: List[int],
-        number_of_neighbors: int) -> None:
+    attribution_file_path: str,
+    analysis_file_path: str,
+    variant: str,
+    class_indices: list[int],
+    label_map_file_path: str,
+    number_of_eigenvalues: int,
+    number_of_clusters_list: list[int],
+    number_of_neighbors: int
+) -> None:
     """Performs a meta-analysis over the specified attribution data and writes the results into an analysis database.
 
-    Parameters
-    ----------
-        attribution_file_path: str
-            The path to the attribution database file, that contains the attributions for which the meta-analysis is to
-            be performed.
-        analysis_file_path: str
-            The path to the analysis database file, into which the results of the meta-analysis are to be written.
-        variant: str
-            The meta-analysis variant that is to be performed. Can be one of "absspectral", "spectral", "fullspectral",
-            or "histogram".
-        class_indices: List[int]
-            The indices of the classes for which the meta-analysis is to be performed. If not specified, then the
-            meta-analysis is performed for all classes.
-        label_map_file_path: str
-            The path to the label map file, which contains a mapping between the class indices and their corresponding
-            names and WordNet IDs.
-        number_of_eigenvalues: int
-            The number of eigenvalues of the eigenvalue decomposition.
-        number_of_clusters_list: List[int]
-            A list that can contain multiple numbers of clusters. For each number of clusters in this list, all
+    Args:
+        attribution_file_path (str): The path to the attribution database file, that contains the attributions for which the meta-analysis is to be
+            performed.
+        analysis_file_path (str): The path to the analysis database file, into which the results of the meta-analysis are to be written.
+        variant (str): The meta-analysis variant that is to be performed. Can be one of "absspectral", "spectral", "fullspectral", or "histogram".
+        class_indices (list[int]): The indices of the classes for which the meta-analysis is to be performed. If not specified, then the meta-analysis
+            is performed for all classes.
+        label_map_file_path (str): The path to the label map file, which contains a mapping between the class indices and their corresponding names
+            and WordNet IDs.
+        number_of_eigenvalues (int): The number of eigenvalues of the eigenvalue decomposition.
+        number_of_clusters_list (list[int]): A list that can contain multiple numbers of clusters. For each number of clusters in this list, all
             clustering methods and the meta-analysis are performed.
-        number_of_neighbors: int
-            The number of neighbors that are to be considered in the k-nearest neighbor clustering algorithm.
+        number_of_neighbors (int): The number of neighbors that are to be considered in the k-nearest neighbor clustering algorithm.
     """
 
     # Determines the pre-processing pipeline and the distance metric that are to be used for the meta-analysis
@@ -252,6 +210,7 @@ def meta_analysis(
         wordnet_id_map = {label['index']: label['word_net_id'] for label in label_map}
         class_name_map = {label['index']: label['name'] for label in label_map}
     else:
+        label_map = []
         wordnet_id_map = {}
         class_name_map = {}
 
@@ -259,8 +218,8 @@ def meta_analysis(
     with h5py.File(attribution_file_path, 'r') as attributions_file:
         labels = attributions_file['label'][:]
 
-    # Gets the indices of the classes for which the meta-analysis is to be performed, if non were specified, the the
-    # meta-analysis is performed for all classes
+    # Gets the indices of the classes for which the meta-analysis is to be performed, if non were specified, the meta-analysis is performed for all
+    # classes
     if class_indices is None:
         class_indices = [int(label['index']) for label in label_map]
 
@@ -363,16 +322,13 @@ def main() -> None:
 
     argument_parser = argparse.ArgumentParser(
         prog='meta_analysis',
-        description='''Performs a meta-analysis on an attribution database and writes them into an analysis database,
-            from which a ViRelAy project can be created.
-        '''
+        description='''Performs a meta-analysis on an attribution database and writes them into an analysis database, from which a ViRelAy project can
+            be created.'''
     )
     argument_parser.add_argument(
         'attribution_file_path',
         type=str,
-        help='''The path to the attribution database file, that contains the attributions for which the meta-analysis is
-            to be performed.
-        '''
+        help='The path to the attribution database file, that contains the attributions for which the meta-analysis is to be performed.'
     )
     argument_parser.add_argument(
         'analysis_file_path',
@@ -394,18 +350,15 @@ def main() -> None:
         dest='class_indices',
         type=int,
         nargs='*',
-        help='''The indices of the classes for which the meta-analysis is to be performed. If not specified, then the
-            meta-analysis is performed for all classes.
-        '''
+        help='''The indices of the classes for which the meta-analysis is to be performed. If not specified, then the meta-analysis is performed for
+            all classes.'''
     )
     argument_parser.add_argument(
         '-l',
         '--label-map-file-path',
         dest='label_map_file_path',
         type=str,
-        help='''The path to the label map file, which contains a mapping between the class indices and their
-            corresponding names and WordNet IDs.
-        '''
+        help='The path to the label map file, which contains a mapping between the class indices and their corresponding names and WordNet IDs.'
     )
     argument_parser.add_argument(
         '-e',
@@ -421,9 +374,7 @@ def main() -> None:
         dest='number_of_neighbors',
         type=int,
         default=32,
-        help='''The number of neighbors that are to be considered in the k-nearest neighbor clustering algorithm.
-            Defaults to 32.
-        '''
+        help='The number of neighbors that are to be considered in the k-nearest neighbor clustering algorithm. Defaults to 32.'
     )
     argument_parser.add_argument(
         '-C',
@@ -432,9 +383,8 @@ def main() -> None:
         type=int,
         nargs='*',
         default=list(range(2, 31)),
-        help='''A list that can contain multiple numbers of clusters. For each number of clusters in this list, all
-            clustering methods and the meta-analysis are performed. Defaults to a list from 2 to 30 clusters.
-        '''
+        help='''A list that can contain multiple numbers of clusters. For each number of clusters in this list, all clustering methods and the
+            meta-analysis are performed. Defaults to a list from 2 to 30 clusters.'''
     )
     arguments = argument_parser.parse_args()
 

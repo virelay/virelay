@@ -15,10 +15,11 @@ BorderMethod: TypeAlias = Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mir
 
 
 def add_border(
-        image: NDArray[numpy.float64],
-        new_width: int,
-        new_height: int,
-        method: BorderMethod) -> NDArray[numpy.float64]:
+    image: NDArray[numpy.float64],
+    new_width: int,
+    new_height: int,
+    method: BorderMethod
+) -> NDArray[numpy.float64]:
     """Up-samples the specified image, by making a border around the image.
 
     Args:
@@ -128,9 +129,10 @@ def render_heatmap(attribution_data: NDArray[numpy.float64], color_map: str) -> 
 
 
 def render_superimposed_heatmap(
-        attribution_data: NDArray[numpy.float64],
-        image_to_superimpose: NDArray[numpy.float64],
-        color_map: str) -> NDArray[numpy.float64]:
+    attribution_data: NDArray[numpy.float64],
+    image_to_superimpose: NDArray[numpy.float64],
+    color_map: str
+) -> NDArray[numpy.float64]:
     """Renders the heatmap an superimposes it onto the specified image.
 
     Args:

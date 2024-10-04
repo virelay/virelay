@@ -2,7 +2,7 @@
 Example Project
 ===============
 
-Creating a project from a classifier and a dataset can be very complex and involved, so if you are just getting started with ViRelAy and only want to get your feet wet, a test project can be randomly generated using a set of scripts available in the ViRelAy GitHub repository under :repo:`docs/examples`.
+Creating a project from a classifier and a dataset can be very complex and involved, so if you are just getting started with ViRelAy and only want to get your feet wet, a test project with random data can be generated using a set of scripts available in the ViRelAy GitHub repository under :repo:`docs/examples`.
 
 If you have installed ViRelAy from the project's Git repository, then you already have the scripts available under :repo:`docs/examples` (contains general scripts to perform a meta analysis and generate project files) and :repo:`docs/examples/test-project` (contains a script for generating a random dataset and random attributions). If you installed ViRelAy from PyPI, then you can download the latest version of the test project scripts from the repository like so:
 
@@ -14,17 +14,18 @@ If you have installed ViRelAy from the project's Git repository, then you alread
     $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/make_project.py'
     $ curl -o 'make_test_data.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/test-project/make_test_data.py'
 
-The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed using your favorite Python package manager, e.g., ``pip``. It is recommended to create a virtual environment with an up-to-date version of ``pip`` for maximal compatibility and in order to not pollute your base environment. The test project scripts support many different clustering and embedding methods. To use the UMAP embedding method and the HDBSCAN clustering method, optional support for them has to be installed as well. This can be done like so:
+The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed using your favorite Python package manager, e.g., ``pip``. If you use ``pip`` it is recommended to create a virtual environment in order to not pollute your base environment. The test project scripts support many different clustering and embedding methods. To use the UMAP embedding method and the HDBSCAN clustering method, optional support for them has to be installed as well. Using ``pip``, this can be done like so:
 
 .. code-block:: console
 
     $ python -m venv .venv
-    $ .venv/bin/pip install -U pip
     $ .venv/bin/pip install virelay 'corelay[umap,hdbscan]'
+
+If the installation of the packages fails, this might be due to an outdated version of ``pip``. This can be solved by updating ``pip`` to the latest version: ``.venv/bin/pip install -U pip``.
 
 .. note::
 
-    Be aware that only Python 3.10, 3.11, and 3.12 are officially supported.
+    Be aware that the example scripts have some dependencies that do not support Python 3.10 or later. If possible, run them using Python 3.9, although they may work with newer versions as well.
 
 A ViRelAy project consists of multiple files. In its most basic configuration
 the required files are:

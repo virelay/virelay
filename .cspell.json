@@ -111,6 +111,7 @@
         "corelay",
         "datatemplates",
         "dbscan",
+        "deadsnakes",
         "delslice",
         "DNNs",
         "docstrings",

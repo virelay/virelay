@@ -6,11 +6,12 @@
 *venv
 .exrc
 
-# Python compilation output
+# Python build output
 .python
 *.egg-info
 __pycache__
 .eggs
+virelay-*.*.*.dev*
 
 # MyPy type information cache
 .mypy_cache

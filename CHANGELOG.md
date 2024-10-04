@@ -31,6 +31,7 @@
     8. The `__init__.py` file of the ViRelAy package did not contain a docstring, which was added.
     9. The fixtures for the unit tests are nested, which means they reference each other. Since the parameter names must match the names of the fixtures and since the fixtures were all in the same file, the parameters were shadowing the fixtures. This was fixed by renaming the fixture functions to `get_..._fixture` and adding a name to the fixture attribute.
     10. Some unit tests were incorrectly comparing `Label` objects with strings, which is now fixed.
+- Added a Dockerfile for a Docker image that contains tox and all supported Python versions. This makes it easy to run the unit tests with all supported Python versions, without having to install multiple Python versions on your system. A container can be run using a convenience script that will automatically build the Docker image, if it is not already locally available, an run tox inside of it. The convenience script can be used as a drop-in replacement for tox.
 - Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected any spelling mistakes.
   - The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
   - Removed LaTeX commands for accented characters from the bibliography file, as they we are using Pybtex to handle the bibliography and it has full Unicode support.

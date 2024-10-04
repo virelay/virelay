@@ -58,9 +58,12 @@ The project YAML file consists of a project name, a model name, a reference to t
 
 - ``project`` → ``dataset`` → ``down_sampling_method``: The down-sampling methods determine how the images are scaled down when they are bigger than the specified input size. Possible values are:
 
-  - ``none``: No up-sampling is performed.
+  - ``none``: No down-sampling is performed.
   - ``center_crop``: A central part of the image with the desired size will be cut out.
   - ``resize``: The image will be scaled to the desired size.
+
+- ``project`` → ``dataset`` → ``label_index_regex``: A regular expression, which is used to parse the path of a sample for the label index. The sample index must be captured in the first group. Can be ``None``, but if the dataset type is ``image_directory``, then either ``label_index_regex`` or ``label_word_net_id_regex`` must be specified.
+- ``project`` → ``dataset`` → ``label_word_net_id_regex``: A regular expression, which is used to parse the path of a sample for the WordNet ID of the label. The WordNet ID must be captured in the first group. Can be ``None``, but if the dataset type is ``image_directory``, then either ``label_index_regex`` or ``label_word_net_id_regex`` must be specified.
 
 - ``project`` → ``attributions``: The attributions that were computed for the entire dataset using the classifier model.
 - ``project`` → ``attributions`` → ``attribution_method``: The name of the method that was used to compute the attributions, e.g., the name of an LRP variant.

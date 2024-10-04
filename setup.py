@@ -26,7 +26,8 @@ setup(
         'matplotlib>=3.9.2,<4.0.0',
         'numpy>=2.1.1,<3.0.0',
         'pillow>=10.4.0,<11.0.0',
-        'pyyaml>=6.0.2,<7.0.0'
+        'pyyaml>=6.0.2,<7.0.0',
+        'typing-extensions>=4.12.2,<5.0.0'
     ],
     setup_requires=[
         'setuptools_scm>=8.1.0,<9.0.0'

@@ -1,7 +1,7 @@
 """Contains some helper functions for processing images."""
 
 import math
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import numpy
 import numpy.typing
@@ -10,21 +10,24 @@ from PIL import Image
 from numpy.typing import NDArray
 
 
+BorderMethod: TypeAlias = Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']
+"""Represents the different methods that can be used to create a border around an image."""
+
+
 def add_border(
         image: NDArray[numpy.float64],
         new_width: int,
         new_height: int,
-        method: Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']) -> NDArray[numpy.float64]:
+        method: BorderMethod) -> NDArray[numpy.float64]:
     """Up-samples the specified image, by making a border around the image.
 
     Args:
         image (NDArray[numpy.float64]): The image that is to be up-sampled.
         new_width (int): The new width to which the image is to be up-sampled.
         new_height (int): The new height to which the image is to be up-sampled.
-        method (Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']): The method that is to be used to create the border.
-            Supported methods are 'fill_zeros' to fill up the border with zeros, 'fill_ones' to fill up the border with ones, 'edge_repeat' to repeat
-            the values at the edge of the image, 'mirror_edge' to mirror the image at the edge, and 'wrap_around' to wrap the image around (e.g. the
-            left edge is filled up with values from the right edge).
+        method (BorderMethod): The method that is to be used to create the border. Supported methods are 'fill_zeros' to fill up the border with
+            zeros, 'fill_ones' to fill up the border with ones, 'edge_repeat' to repeat the values at the edge of the image, 'mirror_edge' to mirror
+            the image at the edge, and 'wrap_around' to wrap the image around (e.g. the left edge is filled up with values from the right edge).
 
     Raises:
         ValueError: If the specified method is not supported, then a ValueError is raised.
@@ -91,8 +94,7 @@ def render_heatmap(attribution_data: NDArray[numpy.float64], color_map: str) -> 
         NDArray[numpy.float64]: Returns the heatmap image.
     """
 
-    # Creates a dictionary, which maps the name of a custom color map to a method that produces the heatmap image
-    # using that color map
+    # Creates a dictionary, which maps the name of a custom color map to a method that produces the heatmap image using that color map
     custom_color_maps = {
         'gray-red': generate_heatmap_image_gray_red,
         'black-green': generate_heatmap_image_black_green,
@@ -112,8 +114,7 @@ def render_heatmap(attribution_data: NDArray[numpy.float64], color_map: str) -> 
     if len(attribution_data.shape) == 3 and attribution_data.shape[-1] > 1:
         attribution_data = numpy.sum(attribution_data, axis=2)
 
-    # Checks the name of the color map and renders the heatmap image accordingly, if the color map is not supported,
-    # then an exception is raised
+    # Checks the name of the color map and renders the heatmap image accordingly, if the color map is not supported, then an exception is raised
     if color_map in custom_color_maps:
         heatmap_image = custom_color_maps[color_map](attribution_data)
     elif color_map in matplotlib_color_maps:
@@ -151,10 +152,9 @@ def render_superimposed_heatmap(
     heatmap_array = render_heatmap(attribution_data, color_map)
     heatmap = Image.fromarray(heatmap_array, 'RGB')
 
-    # Takes the attribution data, and normalizes it to the range [0, 1], this will be used as the alpha channel top
-    # superimpose the heatmap onto the specified image, the positive and negative parts of the attribution data are
-    # considered separately, because otherwise the negative attributions would show up less significantly than the
-    # positive attributions
+    # Takes the attribution data, and normalizes it to the range [0, 1], this will be used as the alpha channel top superimpose the heatmap onto the
+    # specified image, the positive and negative parts of the attribution data are considered separately, because otherwise the negative attributions
+    # would show up less significantly than the positive attributions
     absolute_maximum_attribution_value = numpy.max(numpy.abs(attribution_data))
     positive_attributions_mask_array = numpy.maximum(attribution_data, 0)
     positive_attributions_mask_array = positive_attributions_mask_array / absolute_maximum_attribution_value * 0.9
@@ -214,8 +214,8 @@ def generate_heatmap_image_gray_red(attribution_data: NDArray[numpy.float64]) ->
         NDArray[numpy.float64]: Returns the heatmap.
     """
 
-    # Creates the floating point representation of a the base gray color that is used in the heatmap, and creates a
-    # new heatmap image, with that base gray as the background color
+    # Creates the floating point representation of a the base gray color that is used in the heatmap, and creates a new heatmap image, with that base
+    # gray as the background color
     base_gray = 0.8
     heatmap = numpy.ones([attribution_data.shape[0], attribution_data.shape[1], 3]) * base_gray
 
@@ -286,8 +286,7 @@ def generate_heatmap_image_black_fire_red(attribution_data: NDArray[numpy.float6
     heatmap_green_negative = numpy.clip(-attribution_data - 0.25, 0, 0.25) / 0.25
     heatmap_blue_negative = numpy.clip(-attribution_data - 0.00, 0, 0.25) / 0.25
 
-    # Combines the positive and negative relevances, concatenates the individual color channels back together, and
-    # returns the generated heatmap image
+    # Combines the positive and negative relevances, concatenates the individual color channels back together, and returns the generated heatmap image
     return numpy.concatenate([
         (heatmap_red_positive + heatmap_red_negative)[..., None],
         (heatmap_green_positive + heatmap_green_negative)[..., None],

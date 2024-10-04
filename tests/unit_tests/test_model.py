@@ -7,6 +7,7 @@ import numpy
 import pytest
 
 from virelay.model import (
+    DownSamplingMethod,
     Project,
     AttributionDatabase,
     Attribution,
@@ -18,6 +19,7 @@ from virelay.model import (
     Sample,
     LabelMap,
     Label,
+    UpSamplingMethod,
     Workspace
 )
 
@@ -115,11 +117,8 @@ class TestProject:
             project_file_without_dataset_path (str): The path to the project file that is used for the tests.
         """
 
-        project = Project(project_file_without_dataset_path)
-        assert project.dataset is None
-
         with pytest.raises(ValueError):
-            project.get_sample(0)
+            Project(project_file_without_dataset_path)
 
     @staticmethod
     def test_project_creation_with_broken_project_file(broken_project_file_path: str) -> None:
@@ -1168,7 +1167,7 @@ class TestImageDirectoryDataset:
                 label_word_net_id_regex=None,
                 input_width=64,
                 input_height=64,
-                down_sampling_method='unsupported',
+                down_sampling_method='unsupported',  # type: ignore
                 up_sampling_method='none',
                 label_map=label_map
             )
@@ -1429,7 +1428,9 @@ class TestImageDirectoryDataset:
         assert sample.data.shape[1] == 64
 
         # Checks all down-sampling methods
-        for down_sampling_method in ['center_crop', 'resize']:
+        down_sampling_method: DownSamplingMethod
+        down_sampling_methods: list[DownSamplingMethod] = ['center_crop', 'resize']
+        for down_sampling_method in down_sampling_methods:
             image_directory_dataset = ImageDirectoryDataset(
                 name="Test Dataset",
                 path=image_directory_dataset_with_label_indices_path,
@@ -1474,7 +1475,8 @@ class TestImageDirectoryDataset:
         assert sample.data.shape[1] == 64
 
         # Checks all down-sampling methods
-        up_sampling_methods = ['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize']
+        up_sampling_method: UpSamplingMethod
+        up_sampling_methods: list[UpSamplingMethod] = ['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize']
         for up_sampling_method in up_sampling_methods:
             image_directory_dataset = ImageDirectoryDataset(
                 name="Test Dataset",
@@ -1484,7 +1486,7 @@ class TestImageDirectoryDataset:
                 input_width=128,
                 input_height=128,
                 down_sampling_method='none',
-                up_sampling_method=up_sampling_method,  # type: ignore
+                up_sampling_method=up_sampling_method,
                 label_map=label_map
             )
             sample = image_directory_dataset.get_sample(0)

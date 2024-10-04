@@ -6,7 +6,7 @@ import traceback
 import threading
 import webbrowser
 from importlib.resources import files
-from typing import Any, BinaryIO, TypedDict, cast
+from typing import Any, BinaryIO, cast
 
 import numpy
 import flask
@@ -14,6 +14,7 @@ import flask_cors
 from PIL import Image
 from numpy.typing import NDArray
 from flask.typing import RouteCallable
+from typing_extensions import TypedDict, NotRequired
 
 from virelay.model import Workspace
 from virelay.image_processing import render_heatmap
@@ -36,11 +37,11 @@ class Server:
         """
 
         # Stores the arguments for later reference
-        self.workspace = workspace
-        self.is_in_debug_mode = is_in_debug_mode
+        self.workspace: Workspace = workspace
+        self.is_in_debug_mode: bool = is_in_debug_mode
 
         # Initializes the class members
-        self.color_maps = {
+        self.color_maps: dict[str, str] = {
             'gray-red': 'Gray Red',
             'black-green': 'Black Green',
             'black-fire-red': 'Black Fire-Red',
@@ -52,7 +53,7 @@ class Server:
         }
 
         # Creates the Flask application
-        self.app = flask.Flask('ViRelAy')
+        self.app: flask.Flask = flask.Flask('ViRelAy')
 
         # Registers the routes of the RESTful API with the Flask application
         self.app.add_url_rule(
@@ -163,20 +164,17 @@ class Server:
             port (int): The port at which the application should run. Defaults to 8080.
         """
 
-        # If the application is not run in debug mode, then all Flask and Werkzeug logs are suppressed to make the
-        # console output a lot cleaner
+        # If the application is not run in debug mode, then all Flask and Werkzeug logs are suppressed to make the console output a lot cleaner
         if not self.is_in_debug_mode:
             logging.getLogger('werkzeug').disabled = True
 
-        # When the application is not in debug mode, then the browser is automatically opened upon application startup
-        # (the problem is, that the Flask app run() method is blocking, so we cannot start the browser when the app is
-        # run, so we have to set a timer, which will run on a different thread and start the thread after the server,
-        # hopefully, has started)
+        # When the application is not in debug mode, then the browser is automatically opened upon application startup (the problem is, that the Flask
+        # app run() method is blocking, so we cannot start the browser when the app is run, so we have to set a timer, which will run on a different
+        # thread and start the thread after the server, hopefully, has started)
         if not self.is_in_debug_mode:
             threading.Timer(1, lambda: webbrowser.open_new_tab(f'http://localhost:{port}')).start()
 
-        # When the application is started in debug mode, then the frontend is not served from the same host and port,
-        # therefore CORS must be activated
+        # When the application is started in debug mode, then the frontend is not served from the same host and port, therefore CORS must be activated
         if self.is_in_debug_mode:
             flask_cors.CORS(self.app)
 
@@ -192,18 +190,18 @@ class Server:
                 information.
         """
 
-        projects: list[dict[str, str | int]] = []
+        projects_json: list[ProjectJson] = []
         for project_id, project_name in enumerate(self.workspace.get_project_names()):
 
             project = self.workspace.get_project(project_name)
-            projects.append({
+            projects_json.append({
                 'id': project_id,
                 'name': project_name,
                 'model': project.model,
                 'dataset': project.dataset.name if project.dataset is not None else 'Unknown Dataset'
             })
 
-        return http_ok(projects)
+        return http_ok(projects_json)
 
     def get_project(self, project_id: int) -> flask.Response:
         """Retrieves the project with the specified ID.
@@ -221,7 +219,7 @@ class Server:
 
         project_name = self.workspace.get_project_names()[project_id]
         project = self.workspace.get_project(project_name)
-        project_data = {
+        project_json: ProjectJson = {
             'id': project_id,
             'name': project_name,
             'model': project.model,
@@ -230,20 +228,21 @@ class Server:
         }
 
         for analysis_method_name in project.get_analysis_methods():
-            analysis_method: 'AnalysisMethod' = {
+            analysis_method_json: AnalysisMethodJson = {
                 'name': analysis_method_name.replace('_', '-'),
                 'clusterings': project.get_analysis_clustering_names(analysis_method_name),
                 'categories': [],
                 'embeddings': project.get_analysis_embedding_names(analysis_method_name)
             }
             for category in project.get_analysis_categories(analysis_method_name):
-                analysis_method['categories'].append({
+                analysis_method_json['categories'].append({
                     'name': category.name,
                     'humanReadableName': category.human_readable_name
                 })
-            project_data['analysisMethods'].append(analysis_method)
+            if project_json['analysisMethods'] is not None:
+                project_json['analysisMethods'].append(analysis_method_json)
 
-        return http_ok(project_data)
+        return http_ok(project_json)
 
     def get_sample(self, project_id: int, sample_index: int) -> flask.Response:
         """Retrieves the dataset sample with the specified index from the specified project.
@@ -270,7 +269,7 @@ class Server:
             return http_not_found(error, self.is_in_debug_mode)
 
         # Returns the retrieved dataset sample
-        sample_dictionary = {
+        sample_json: SampleJson = {
             'index': sample.index,
             'labels': [],
             'width': sample.data.shape[0],
@@ -278,12 +277,12 @@ class Server:
             'url': flask.url_for('get_sample_image', project_id=project_id, sample_index=sample_index)
         }
         for label in sample.labels:
-            sample_dictionary['labels'].append({
+            sample_json['labels'].append({
                 'index': label.index,
                 'wordNetId': label.word_net_id,
                 'name': label.name
             })
-        return http_ok(sample_dictionary)
+        return http_ok(sample_json)
 
     def get_sample_image(self, project_id: int, sample_index: int) -> flask.Response:
         """Retrieves the image of the dataset with the specified index from the specified project.
@@ -337,7 +336,7 @@ class Server:
             return http_not_found(error, self.is_in_debug_mode)
 
         # Generates the JSON object that is to be returned to the client
-        attribution_dictionary = {
+        attribution_json: AttributionJson = {
             'index': attribution.index,
             'labels': [],
             'prediction': numpy.array(attribution.prediction).tolist(),
@@ -346,7 +345,7 @@ class Server:
             'urls': {}
         }
         for label in attribution.labels:
-            attribution_dictionary['labels'].append({
+            attribution_json['labels'].append({
                 'index': label.index,
                 'wordNetId': label.word_net_id,
                 'name': label.name
@@ -360,16 +359,16 @@ class Server:
                     attribution_index=attribution_index
                 )
                 superimpose = image_mode == 'overlay'
-                attribution_dictionary['urls'][color_map] = f'{url}?colorMap={color_map}&superimpose={superimpose}'
+                attribution_json['urls'][color_map] = f'{url}?colorMap={color_map}&superimpose={superimpose}'
             else:
-                attribution_dictionary['urls'][color_map] = flask.url_for(
+                attribution_json['urls'][color_map] = flask.url_for(
                     'get_sample_image',
                     project_id=project_id,
                     sample_index=attribution_index
                 )
 
         # Returns the retrieved attribution
-        return http_ok(attribution_dictionary)
+        return http_ok(attribution_json)
 
     def get_attribution_heatmap(self, project_id: int, attribution_index: int) -> flask.Response:
         """Renders a heatmap from the attribution with the specified index from the specified project.
@@ -394,8 +393,8 @@ class Server:
         except LookupError as error:
             return http_not_found(error, self.is_in_debug_mode)
 
-        # Gets the color map that is to be used to convert the raw attribution to a heatmap from the URL parameters, if
-        # none was specified, then it defaults to Black Fire-Red
+        # Gets the color map that is to be used to convert the raw attribution to a heatmap from the URL parameters, if none was specified, then it
+        # defaults to Black Fire-Red
         color_map_name = flask.request.args.get('colorMap', 'black-fire-red')
 
         # Renders the heatmap and returns it
@@ -463,7 +462,7 @@ class Server:
             })
 
         # Creates the JSON object that is returned to the client
-        analysis_dictionary = {
+        analysis_json: AnalysisJson = {
             'categoryName': analysis.category_name,
             'humanReadableCategoryName': analysis.human_readable_category_name,
             'clusteringName': analysis.clustering_name,
@@ -471,10 +470,10 @@ class Server:
             'embedding': zipped_embedding
         }
         if analysis.eigenvalues is not None:
-            analysis_dictionary['eigenvalues'] = numpy.array(analysis.eigenvalues).tolist()
+            analysis_json['eigenvalues'] = numpy.array(analysis.eigenvalues).tolist()
 
         # Returns the retrieved analysis
-        return http_ok(analysis_dictionary)
+        return http_ok(analysis_json)
 
     def get_color_maps(self) -> flask.Response:
         """Retrieves the names of all the color maps that are supported.
@@ -517,7 +516,50 @@ class Server:
         return send_image_file(heatmap)
 
 
-class AnalysisMethod(TypedDict):
+class ProjectJson(TypedDict):
+    """Represents a project in the JSON response of the RESTful API."""
+
+    id: int
+    """The ID of the project."""
+
+    name: str
+    """The name of the project."""
+
+    model: str
+    """The name of the model that is used in the project."""
+
+    dataset: str
+    """The name of the dataset that is used in the project."""
+
+    analysisMethods: NotRequired[list['AnalysisMethodJson']]
+    """The optional analysis methods that are available for the project."""
+
+
+class AnalysisJson(TypedDict):
+    """Represents an analysis in the JSON response of the RESTful API."""
+
+    categoryName: str
+    """The name of the category."""
+
+    humanReadableCategoryName: str
+    """The human-readable name of the category."""
+
+    clusteringName: str
+    """The name of the clustering."""
+
+    embeddingName: str
+    """The name of the embedding."""
+
+    embedding: list[dict[str, Any]]
+    """The embeddings of the analysis, where each embedding is represented as a dictionary that contains the cluster of the embedding, the index of
+    the attribution to which the embedding belongs, and the value of the embedding.
+    """
+
+    eigenvalues: NotRequired[list[float]]
+    """The optional eigenvalues of the analysis, if available."""
+
+
+class AnalysisMethodJson(TypedDict):
     """Represents an analysis method in the JSON response of the RESTful API."""
 
     name: str
@@ -526,11 +568,77 @@ class AnalysisMethod(TypedDict):
     clusterings: list[str]
     """The names of the clusterings that are available for the analysis method."""
 
-    categories: list[dict[str, str]]
+    categories: list['CategoryJson']
     """The categories that are available for the analysis method."""
 
     embeddings: list[str]
     """The names of the embeddings that are available for the analysis method."""
+
+
+class CategoryJson(TypedDict):
+    """Represents a category in the JSON response of the RESTful API."""
+
+    name: str
+    """The name of the category."""
+
+    humanReadableName: str
+    """The human-readable name of the category."""
+
+
+class LabelJson(TypedDict):
+    """Represents a label in the JSON response of the RESTful API."""
+
+    index: int
+    """The index of the label."""
+
+    wordNetId: str
+    """The WordNet ID of the label."""
+
+    name: str
+    """The name of the label."""
+
+
+class SampleJson(TypedDict):
+    """Represents a sample in the JSON response of the RESTful API."""
+
+    index: int
+    """The index of the sample."""
+
+    labels: list[LabelJson]
+    """The labels of the sample."""
+
+    width: int
+    """The width of the sample."""
+
+    height: int
+    """The height of the sample."""
+
+    url: str
+    """The URL of the image of the sample."""
+
+
+class AttributionJson(TypedDict):
+    """Represents an attribution in the JSON response of the RESTful API."""
+
+    index: int
+    """The index of the attribution."""
+
+    labels: list[LabelJson]
+    """The labels of the attribution."""
+
+    prediction: list[float]
+    """The prediction of the attribution."""
+
+    width: int
+    """The width of the attribution."""
+
+    height: int
+    """The height of the attribution."""
+
+    urls: dict[str, str]
+    """The URLs of the heatmaps of the attribution, where the key is the name of the color map and the value is the URL to the heatmap rendered in
+    that color map.
+    """
 
 
 def http_ok(content: Any) -> flask.Response:

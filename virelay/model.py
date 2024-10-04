@@ -1,11 +1,11 @@
 """Contains the data model abstraction."""
 
-from dataclasses import dataclass
 import os
 import re
 import json
 import glob
-from typing import Literal, overload
+from dataclasses import dataclass
+from typing import Literal, TypeAlias, overload, TypedDict
 
 import yaml
 import h5py
@@ -14,6 +14,22 @@ from PIL import Image
 from numpy.typing import NDArray
 
 from virelay.image_processing import add_border, center_crop, render_heatmap, render_superimposed_heatmap
+
+
+DownSamplingMethod: TypeAlias = Literal['none', 'center_crop', 'resize']
+"""Represents the different methods that can be used to down-sample an image."""
+
+
+UpSamplingMethod: TypeAlias = Literal['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize']
+"""Represents the different methods that can be used to up-sample an image."""
+
+
+AttributionStrategy: TypeAlias = Literal['true_label', 'predicted_label']
+"""The different possible attribution strategies."""
+
+
+DatasetType: TypeAlias = Literal['hdf5', 'image_directory']
+"""The different possible dataset types."""
 
 
 class Project:
@@ -31,51 +47,61 @@ class Project:
         """
 
         # Initializes some class members
-        self.is_closed: bool = False
-        self.dataset: Hdf5Dataset | ImageDirectoryDataset | None = None
+        self.name: str
+        self.model: str
+        self.path: str = path
+        self.is_closed: bool
+        self.label_map: LabelMap
+        self.dataset: Hdf5Dataset | ImageDirectoryDataset
+        self.attribution_method: str
+        self.attribution_strategy: AttributionStrategy
         self.attributions: list[AttributionDatabase] = []
         self.analyses: dict[str, list[AnalysisDatabase]] = {}
 
-        # Stores the path for later reference
-        self.path = path
-
-        # Loads the project from the YAML file
+        # Loads the project from the YAML file; the project is initialized as being closed and the is_closed flag is only set to False after the file
+        # has been successfully loaded; this is done to prevent an exception from occurring in the destructor if in an exception is raised during the
+        # loading of the file (the destructor would check if the file is closed and try to close it, but since the exception occurs before the
+        # dataset, attributions, and analyses properties are assigned, an AttributeError would be raised; if we were to initialize the dataset,
+        # attributions, and analyses properties with None, we would have to check for None everywhere to satisfy the type checker, which is not very
+        # elegant)
+        self.is_closed = True
         working_directory = os.path.dirname(self.path)
-        with open(self.path, 'r', encoding='utf-8') as project_file:
+        with open(self.path, 'r', encoding='utf-8') as project_yaml_file:
             try:
 
                 # Loads the project and extracts some general information
-                project = yaml.safe_load(project_file)['project']
+                project_file: ProjectFileYaml = yaml.safe_load(project_yaml_file)
+                project: ProjectYaml = project_file['project']
                 self.name = project['name']
                 self.model = project['model']
 
-                # Loads the label map, which is used to get the human-readable names of the labels referenced in the
-                # dataset as well as in the attributions and analyses databases
+                # Loads the label map, which is used to get the human-readable names of the labels referenced in the dataset as well as in the
+                # attributions and analyses databases
                 self.label_map = LabelMap(os.path.join(working_directory, project['label_map']))
 
                 # Loads the dataset of the project
-                if 'dataset' in project:
-                    dataset_type = project['dataset']['type']
-                    if dataset_type == 'hdf5':
-                        self.dataset = Hdf5Dataset(
-                            project['dataset']['name'],
-                            os.path.join(working_directory, project['dataset']['path']),
-                            self.label_map
-                        )
-                    elif dataset_type == 'image_directory':
-                        self.dataset = ImageDirectoryDataset(
-                            project['dataset']['name'],
-                            os.path.join(working_directory, project['dataset']['path']),
-                            project['dataset']['label_index_regex'],
-                            project['dataset']['label_word_net_id_regex'],
-                            project['dataset']['input_width'],
-                            project['dataset']['input_height'],
-                            project['dataset']['down_sampling_method'],
-                            project['dataset']['up_sampling_method'],
-                            self.label_map
-                        )
-                    else:
-                        raise ValueError(f'The specified dataset type "{dataset_type}" is unknown.')
+                if 'dataset' not in project:
+                    raise ValueError('The project file does not contain a dataset.')
+                if project['dataset']['type'] == 'hdf5':
+                    self.dataset = Hdf5Dataset(
+                        project['dataset']['name'],
+                        os.path.join(working_directory, project['dataset']['path']),
+                        self.label_map
+                    )
+                elif project['dataset']['type'] == 'image_directory':
+                    self.dataset = ImageDirectoryDataset(
+                        project['dataset']['name'],
+                        os.path.join(working_directory, project['dataset']['path']),
+                        project['dataset']['label_index_regex'],
+                        project['dataset']['label_word_net_id_regex'],
+                        project['dataset']['input_width'],
+                        project['dataset']['input_height'],
+                        project['dataset']['down_sampling_method'],
+                        project['dataset']['up_sampling_method'],
+                        self.label_map
+                    )
+                else:
+                    raise ValueError('The specified dataset type is unknown.')
 
                 # Loads the attributions of the project
                 if 'attributions' in project:
@@ -98,6 +124,10 @@ class Project:
                                 os.path.join(working_directory, analysis_database),
                                 self.label_map
                             ))
+
+                # After the project file was loaded successfully, the project is not closed anymore
+                self.is_closed = False
+
             except yaml.YAMLError as yaml_error:
                 raise ValueError('An error occurred while loading the project file.') from yaml_error
 
@@ -117,9 +147,6 @@ class Project:
 
         if self.is_closed:
             raise ValueError('The project has already been closed.')
-
-        if self.dataset is None:
-            raise ValueError('The project does not contain a dataset.')
 
         return self.dataset.get_sample(index)
 
@@ -276,7 +303,6 @@ class Project:
         if not self.is_closed:
             if self.dataset is not None:
                 self.dataset.close()
-            self.dataset = None
             for attribution in self.attributions:
                 attribution.close()
             self.attributions = []
@@ -303,21 +329,27 @@ class AttributionDatabase:
             label_map (LabelMap): The label map, which contains a mapping between the index of the labels and their human-readable names.
         """
 
-        # Initializes some class members
+        # Stores the arguments for later reference
+        self.attribution_path: str = attribution_path
+        self.label_map: LabelMap = label_map
+
+        # Loads the attribution files; the attribution database is initialized as being closed and the is_closed flag is only set to False after the
+        # file has been successfully loaded; this is done to prevent an exception from occurring in the destructor if in an exception is raised during
+        # the loading of the file (the destructor would check if the file is closed and try to close it, but since the exception occurs before the
+        # attribution_file property is assigned, an AttributeError would be raised; if we were to initialize the attribution_file property with None,
+        # we would have to check for None everywhere to satisfy the type checker, which is not very elegant)
+        self.is_closed: bool = True
+        self.attribution_file: h5py.File = h5py.File(self.attribution_path, 'r')
         self.is_closed = False
 
-        # Stores the arguments for later reference
-        self.attribution_path = attribution_path
-        self.label_map = label_map
-
-        # Loads the attribution files
-        self.attribution_file = h5py.File(self.attribution_path, 'r')
-
-        # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then
-        # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
-        # whether the sample has the label, when the dataset is single-label, then the label is just a scalar value
-        # containing the index of the label)
-        self.is_multi_label = self.attribution_file['label'][0].dtype == bool
+        # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then the labels are stored as a
+        # boolean NumPy array where the index is the label index and the value determines whether the sample has the label, when the dataset is
+        # single-label, then the label is just a scalar value containing the index of the label)self.is_multi_label: bool = False
+        labels: h5py.Group | h5py.Dataset = self.attribution_file['label']
+        if isinstance(labels, h5py.Dataset):
+            self.is_multi_label = labels.dtype == bool
+        if isinstance(labels, h5py.Group):
+            self.is_multi_label = labels[next(labels.keys())].dtype == bool
 
     def has_attribution(self, index: int) -> bool:
         """Determines whether the attribution database contains the attribution with the specified index.
@@ -410,16 +442,16 @@ class Attribution:
         """
 
         # Stores the parameters for later use
-        self.index = index
-        self.data = data
+        self.index: int = index
+        self.data: NDArray[numpy.float64] = data
         if not isinstance(labels, list):
             labels = [labels]
-        self.labels = labels
-        self.prediction = prediction
+        self.labels: list[Label] = labels
+        self.prediction: NDArray[numpy.float64] = prediction
 
-        # Heatmaps (the attribution data) may come from different sources, e.g. in PyTorch the ordering of the axes is
-        # Channels x Width x Height, while in other sources, the ordering is Width x Height x Channel, this code tries
-        # to guess which axis represents the RGB channels, and puts them in the order Width x Height x Channel
+        # Heatmaps (the attribution data) may come from different sources, e.g. in PyTorch the ordering of the axes is Channels x Width x Height,
+        # while in other sources, the ordering is Width x Height x Channel, this code tries to guess which axis represents the RGB channels, and puts
+        # them in the order Width x Height x Channel
         if numpy.argmin(self.data.shape) == 0:
             self.data = numpy.moveaxis(self.data, [0, 1, 2], [2, 0, 1])
 
@@ -450,15 +482,18 @@ class AnalysisDatabase:
             label_map (LabelMap): The label map, which contains a mapping between the index of the labels and their human-readable names.
         """
 
-        # Initializes some class members
-        self.is_closed = False
-
         # Stores the arguments for later reference
-        self.analysis_path = analysis_path
-        self.label_map = label_map
+        self.analysis_path: str = analysis_path
+        self.label_map: LabelMap = label_map
 
-        # Loads the analysis file
-        self.analysis_file = h5py.File(self.analysis_path, 'r')
+        # Loads the analysis file; the analysis database is initialized as being closed and the is_closed flag is only set to False after the file
+        # has been successfully loaded; this is done to prevent an exception from occurring in the destructor if in an exception is raised during the
+        # loading of the file (the destructor would check if the file is closed and try to close it, but since the exception occurs before the
+        # analysis_file property is assigned, an AttributeError would be raised; if we were to initialize the analysis_file property with None, we
+        # would have to check for None everywhere to satisfy the type checker, which is not very elegant)
+        self.is_closed: bool = True
+        self.analysis_file: h5py.File = h5py.File(self.analysis_path, 'r')
+        self.is_closed = False
 
     def get_categories(self) -> list['AnalysisCategory']:
         """Retrieves the names of all the categories that are contained in this analysis database. The category names are umbrella terms for the
@@ -500,10 +535,9 @@ class AnalysisDatabase:
         if self.is_closed or self.analysis_file is None:
             raise ValueError('The analysis database has already been closed.')
 
-        # Since every analysis contained in this analysis database has its own set of clusterings, the number and the
-        # names of the clusterings may vary between analyses, as it is not enforced that they all must have the same
-        # clusterings, nevertheless, this assumes that each analysis in a single analysis database has the same
-        # clusterings and therefore the names are only retrieved from the first one
+        # Since every analysis contained in this analysis database has its own set of clusterings, the number and the names of the clusterings may
+        # vary between analyses, as it is not enforced that they all must have the same clusterings, nevertheless, this assumes that each analysis in
+        # a single analysis database has the same clusterings and therefore the names are only retrieved from the first one
         first_category_name = self.get_categories()[0].name
         return list(self.analysis_file[first_category_name]['cluster'])
 
@@ -522,10 +556,9 @@ class AnalysisDatabase:
         if self.is_closed or self.analysis_file is None:
             raise ValueError('The analysis database has already been closed.')
 
-        # Since every analysis contained in this analysis database has its own set of embeddings, the number and the
-        # names of the embeddings may vary between analyses, as it is not enforced that they all must have the same
-        # embeddings, nevertheless, this assumes that each analysis in a single analysis database has the same
-        # embeddings and therefore the names are only retrieved from the first one
+        # Since every analysis contained in this analysis database has its own set of embeddings, the number and the names of the embeddings may vary
+        # between analyses, as it is not enforced that they all must have the same embeddings, nevertheless, this assumes that each analysis in a
+        # single analysis database has the same embeddings and therefore the names are only retrieved from the first one
         first_category_name = self.get_categories()[0].name
         return list(self.analysis_file[first_category_name]['embedding'])
 
@@ -643,8 +676,8 @@ class AnalysisCategory:
             human_readable_name (str): A human-readable version of the category name, e.g. the label name.
         """
 
-        self.name = name
-        self.human_readable_name = human_readable_name
+        self.name: str = name
+        self.human_readable_name: str = human_readable_name
 
 
 class Analysis:
@@ -684,14 +717,14 @@ class Analysis:
                 Defaults to None.
         """
 
-        self.category_name = category_name
-        self.human_readable_category_name = human_readable_category_name
-        self.clustering_name = clustering_name
-        self.clustering = clustering
-        self.embedding_name = embedding_name
-        self.embedding = embedding
-        self.attribution_indices = attribution_indices
-        self.eigenvalues = eigenvalues
+        self.category_name: str = category_name
+        self.human_readable_category_name: str = human_readable_category_name
+        self.clustering_name: str = clustering_name
+        self.clustering: NDArray[numpy.int64] = clustering
+        self.embedding_name: str = embedding_name
+        self.embedding: NDArray[numpy.float64] = embedding
+        self.attribution_indices: NDArray[numpy.int64] = attribution_indices
+        self.eigenvalues: NDArray[numpy.float64] | None = eigenvalues
 
 
 class Hdf5Dataset:
@@ -706,23 +739,29 @@ class Hdf5Dataset:
             label_map (LabelMap): The label map, which contains a mapping between the index of the labels and their human-readable names.
         """
 
-        # Initializes some class members
-        self.is_closed = False
-        self.dataset_file = None
-
         # Stores the arguments for later reference
-        self.name = name
-        self.path = path
-        self.label_map = label_map
+        self.name: str = name
+        self.path: str = path
+        self.label_map: LabelMap = label_map
 
-        # Loads the dataset itself
-        self.dataset_file = h5py.File(self.path, 'r')
+        # Loads the dataset file; the HDF5 dataset is initialized as being closed and the is_closed flag is only set to False after the file has been
+        # successfully loaded; this is done to prevent an exception from occurring in the destructor if in an exception is raised during the loading
+        # of the file (the destructor would check if the file is closed and try to close it, but since the exception occurs before the dataset_file
+        # property is assigned, an AttributeError would be raised; if we were to initialize the dataset_file property with None, we would have to
+        # check for None everywhere to satisfy the type checker, which is not very elegant)
+        self.is_closed: bool = True
+        self.dataset_file: h5py.File = h5py.File(self.path, 'r')
+        self.is_closed = False
 
-        # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then
-        # the labels are stored as a boolean NumPy array where the index is the label index and the value determines
-        # whether the sample has the label, when the dataset is single-label, then the label is just a scalar value
-        # containing the index of the label)
-        self.is_multi_label = self.dataset_file['label'][0].dtype == bool
+        # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then the labels are stored as a
+        # boolean NumPy array where the index is the label index and the value determines whether the sample has the label, when the dataset is
+        # single-label, then the label is just a scalar value containing the index of the label)
+        self.is_multi_label: bool = False
+        labels: h5py.Group | h5py.Dataset = self.dataset_file['label']
+        if isinstance(labels, h5py.Dataset):
+            self.is_multi_label = labels.dtype == bool
+        if isinstance(labels, h5py.Group):
+            self.is_multi_label = labels[next(labels.keys())].dtype == bool
 
     def get_sample(self, index: int) -> 'Sample':
         """Gets the sample at the specified index.
@@ -739,7 +778,7 @@ class Hdf5Dataset:
         """
 
         # Checks if the dataset is already closed
-        if self.is_closed or self.dataset_file is None:
+        if self.is_closed:
             raise ValueError('The dataset has already been closed.')
 
         # Extracts the information about the sample from the dataset
@@ -767,8 +806,7 @@ class Hdf5Dataset:
         if isinstance(key, slice):
             key = range(*key.indices(len(self)))
 
-        # Checks if the key contains multiple indices, in that case all samples for the specified list of indices are
-        # retrieved
+        # Checks if the key contains multiple indices, in that case all samples for the specified list of indices are retrieved
         if isinstance(key, (range, list, tuple, numpy.ndarray)):
             return [self.get_sample(index) for index in key]
 
@@ -789,9 +827,8 @@ class Hdf5Dataset:
     def close(self) -> None:
         """Closes the dataset."""
 
-        if not self.is_closed and self.dataset_file is not None:
+        if not self.is_closed:
             self.dataset_file.close()
-            self.dataset_file = None
             self.is_closed = True
 
     def __del__(self) -> None:
@@ -813,8 +850,8 @@ class ImageDirectoryDataset:
             label_word_net_id_regex: str | None,
             input_width: int,
             input_height: int,
-            down_sampling_method: str,
-            up_sampling_method: Literal['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize'],
+            down_sampling_method: DownSamplingMethod,
+            up_sampling_method: UpSamplingMethod,
             label_map: 'LabelMap') -> None:
         """Initializes a new ImageDirectoryDataset instance.
 
@@ -830,10 +867,10 @@ class ImageDirectoryDataset:
                 its inputs to be.
             input_height (int): The height of the input to the model. This is used to resize the dataset samples to the same size as the model expects
                 its inputs to be.
-            down_sampling_method (str): The method that is to be used to down-sample images from the dataset that are larger than the input to the
-                model.
-            up_sampling_method (Literal['none', 'fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around', 'resize']): The method that is
-                to be used to up-sample images from the dataset that are smaller than the input to the model.
+            down_sampling_method (DownSamplingMethod): The method that is to be used to down-sample images from the dataset that are larger than the
+                input to the model.
+            up_sampling_method (UpSamplingMethod): The method that is to be used to up-sample images from the dataset that are smaller than the input
+                to the model.
             label_map (LabelMap): The label map, which contains a mapping between the index of the labels and their human-readable names.
 
         Raises:
@@ -843,7 +880,7 @@ class ImageDirectoryDataset:
         """
 
         # Initializes some class members
-        self.is_closed = False
+        self.is_closed: bool = False
 
         # Validates the arguments
         if label_index_regex is None and label_word_net_id_regex is None:
@@ -863,20 +900,12 @@ class ImageDirectoryDataset:
         self.label_word_net_id_regex: str | None = label_word_net_id_regex
         self.input_width: int = input_width
         self.input_height: int = input_height
-        self.down_sampling_method: str = down_sampling_method
-        self.up_sampling_method: Literal[
-            'none',
-            'fill_zeros',
-            'fill_ones',
-            'edge_repeat',
-            'mirror_edge',
-            'wrap_around',
-            'resize'
-        ] = up_sampling_method
+        self.down_sampling_method: DownSamplingMethod = down_sampling_method
+        self.up_sampling_method: UpSamplingMethod = up_sampling_method
         self.label_map: LabelMap = label_map
 
-        # Loads a list of all the paths to all samples in the dataset (they are sorted, because the index of the sorted
-        # paths corresponds to the sample index that has to be specified in the get_sample method)
+        # Loads a list of all the paths to all samples in the dataset (they are sorted, because the index of the sorted paths corresponds to the
+        # sample index that has to be specified in the get_sample method)
         self.sample_paths: list[str]
         if os.path.exists(self.path + '_paths.txt'):
             with open(self.path + '_paths.txt', encoding='utf-8') as f:
@@ -928,8 +957,8 @@ class ImageDirectoryDataset:
         image = Image.open(sample_path).convert('RGB')
         image_array = numpy.array(image)
 
-        # Performs the re-sampling of the image (depending on whether it is smaller or larger than the target input
-        # size, different methods are used, which are specified in the project file)
+        # Performs the re-sampling of the image (depending on whether it is smaller or larger than the target input size, different methods are used,
+        # which are specified in the project file)
         image_array = self.re_sample_image(image_array)
 
         # Returns the sample
@@ -945,10 +974,9 @@ class ImageDirectoryDataset:
             NDArray[numpy.float64]: Returns the re-sampled image.
         """
 
-        # If at least one of the image dimensions is smaller than the target size, then the image is first up-sampled
-        # (if for example the width is smaller than the target width but the height is larger, then the image is first
-        # up-sampled so that the width matched the target width, in the next step, the image will be down-sampled, so
-        # that the height also matches the target width)
+        # If at least one of the image dimensions is smaller than the target size, then the image is first up-sampled (if for example the width is
+        # smaller than the target width but the height is larger, then the image is first up-sampled so that the width matched the target width, in
+        # the next step, the image will be down-sampled, so that the height also matches the target width)
         width = image.shape[0]
         height = image.shape[1]
         if width < self.input_width or height < self.input_height:
@@ -989,8 +1017,7 @@ class ImageDirectoryDataset:
         if isinstance(key, slice):
             key = range(*key.indices(len(self)))
 
-        # Checks if the key contains multiple indices, in that case all samples for the specified list of indices are
-        # retrieved
+        # Checks if the key contains multiple indices, in that case all samples for the specified list of indices are retrieved
         if isinstance(key, (range, list, tuple, numpy.ndarray)):
             return [self.get_sample(index) for index in key]
 
@@ -1030,23 +1057,22 @@ class Sample:
         """
 
         # Stores the arguments for later use
-        self.index = index
-        self.data = data
+        self.index: int = index
+        self.data: NDArray[numpy.float64] = data
         if not isinstance(labels, list):
             labels = [labels]
-        self.labels = labels
+        self.labels: list[Label] = labels
 
-        # Images may come from different sources, e.g. in PyTorch the ordering of the axes is Channels x Width x Height,
-        # while in other sources, the ordering is Width x Height x Channel, this code tries to guess which axis
-        # represents the RGB channels, and puts them in the order Width x Height x Channel
+        # Images may come from different sources, e.g. in PyTorch the ordering of the axes is Channels x Width x Height, while in other sources, the
+        # ordering is Width x Height x Channel, this code tries to guess which axis represents the RGB channels, and puts them in the order Width x
+        # Height x Channel
         if numpy.argmin(self.data.shape) == 0:
             self.data = numpy.moveaxis(self.data, [0, 1, 2], [2, 0, 1])
 
-        # The pixel values of the image may be in three different value ranges: [-1.0, 1.0], [0.0, 1.0], and [0, 255],
-        # this code tries to find out which it is and de-normalizes it to the value range of [0, 255], unfortunately, it
-        # is not guaranteed that the actual value range of the images has exactly these bounds, because not all images
-        # contain pure black or pure white pixels, therefore, a heuristic is used, where the L1 distance between the
-        # actual pixel value range and the three value ranges is computed
+        # The pixel values of the image may be in three different value ranges: [-1.0, 1.0], [0.0, 1.0], and [0, 255], this code tries to find out
+        # which it is and de-normalizes it to the value range of [0, 255], unfortunately, it is not guaranteed that the actual value range of the
+        # images has exactly these bounds, because not all images contain pure black or pure white pixels, therefore, a heuristic is used, where the
+        # L1 distance between the actual pixel value range and the three value ranges is computed
         if self.data.dtype != numpy.uint8:
             actual_pixel_value_range = numpy.array([numpy.min(self.data), numpy.max(self.data)])
             distances = numpy.array([[-1.0, 1.0], [0.0, 1.0], [0.0, 255.0]]) - actual_pixel_value_range
@@ -1071,12 +1097,13 @@ class LabelMap:
         """
 
         # Stores the path to the label map JSON file for later reference
-        self.path = path
+        self.path: str = path
 
         # Loads the label map from the specified JSON file
         self.labels: list[Label] = []
         with open(self.path, 'r', encoding='utf-8') as label_map_file:
-            for label in json.load(label_map_file):
+            labels: list[LabelJson] = json.load(label_map_file)
+            for label in labels:
                 self.labels.append(Label(label['index'], label['word_net_id'], label['name']))
 
     @overload
@@ -1297,7 +1324,7 @@ class Workspace:
     def __init__(self) -> None:
         """Initializes a new Workspace instance."""
 
-        self.is_closed = False
+        self.is_closed: bool = False
         self.projects: list[Project] = []
 
     def add_project(self, path: str) -> None:
@@ -1372,3 +1399,109 @@ class Workspace:
         """Destructs the workspace."""
 
         self.close()
+
+
+class ProjectFileYaml(TypedDict):
+    """Represents the project YAML file, which contains the definition of the project."""
+
+    project: 'ProjectYaml'
+    """The project definition that is contained in the project YAML file."""
+
+
+class ProjectYaml(TypedDict):
+    """Represents a project definition, which is contained in project YAML file."""
+
+    name: str
+    """The name of the project."""
+
+    model: str
+    """The name of the model that is used in the project and which was used to produce the attributions."""
+
+    label_map: str
+    """The path to the file that contains the label map."""
+
+    dataset: 'DatasetYaml'
+    """The dataset that was used to produce the attributions."""
+
+    attributions: 'AttributionYaml'
+    """The attribution definitions that contain the attributions for the samples of the datasets."""
+
+    analyses: list['AnalysisYaml']
+    """A list of analysis definitions that contain the analyses of the attributions."""
+
+
+class DatasetYaml(TypedDict):
+    """Represents a dataset definition, which is contained in the project definition of the project YAML file."""
+
+    name: str
+    """The name of the dataset."""
+
+    type: DatasetType
+    """The type of the dataset, which can be either HDF5 or image directory."""
+
+    path: str
+    """The path to the dataset file or directory."""
+
+    input_width: int
+    """The width of the inputs to the model. The images in the dataset are sampled up or down to this size using the specified up and down sampling
+    methods.
+    """
+
+    input_height: int
+    """The height of the inputs to the model. The images in the dataset are sampled up or down to this size using the specified up and down sampling
+    methods.
+    """
+
+    up_sampling_method: UpSamplingMethod
+    """The method that is used to up-sample images from the dataset that are smaller than the input to the model."""
+
+    down_sampling_method: DownSamplingMethod
+    """The method that is used to down-sample images from the dataset that are larger than the input to the model."""
+
+    label_index_regex: str | None
+    """A regular expression, which is used to parse the path of a sample for the label index. The sample index must be captured in the first group.
+    Can be None, but if the dataset type is "image_directory", then either "label_index_regex" or "label_word_net_id_regex" must be specified.
+    """
+
+    label_word_net_id_regex: str | None
+    """A regular expression, which is used to parse the path of a sample for the WordNet ID. The sample index must be captured in the first group. Can
+    be None, but if the dataset type is "image_directory", then either "label_index_regex" or "label_word_net_id_regex" must be specified.
+    """
+
+
+class AttributionYaml(TypedDict):
+    """Represents an attribution definition, which is contained in the project definition of the project YAML file."""
+
+    attribution_method: str
+    """The name of the method that was used to compute the attributions, e.g., the name of the LRP variant."""
+
+    attribution_strategy: AttributionStrategy
+    """The strategy that was used to compute the attributions, which can be either the "true_label", which means that the relevance of the true label
+    are propagated back to get an attribution that shows the evidence for and against the true label, or the predicted label, which means that the
+    relevance of the predicted label are propagated back to get an attribution that shows the evidence for and against the predicted label."""
+
+    sources: list[str]
+    """A list of paths to attribution database files."""
+
+
+class AnalysisYaml(TypedDict):
+    """Represents an analysis definition, which is contained in the project definition of the project YAML file."""
+
+    analysis_method: str
+    """The name of the method that was used to compute the analysis, e.g., "Spectral"."""
+
+    sources: list[str]
+    """A list of paths to analysis database files."""
+
+
+class LabelJson(TypedDict):
+    """Represents a label in the label map JSON file."""
+
+    index: int
+    """The index of the label."""
+
+    word_net_id: str
+    """The WordNet ID of the label."""
+
+    name: str
+    """The human-readable name of the label."""

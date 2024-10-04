@@ -72,4 +72,4 @@ To help speed up the merging of your pull request, please comment and document y
 
 ## License
 
-ViRelAy is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3 OR LATER. For more information see the [copying](COPYING) and the [license](LICENSE) files. For licenses of bundled third party software packages please refer to the [3rd party license list](virelay/frontend/distribution/3rdpartylicenses.txt).
+ViRelAy is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3 OR LATER. For more information see the [copying](COPYING). For licenses of bundled third party software packages please refer to the [3rd party license list](virelay/frontend/distribution/3rdpartylicenses.txt).

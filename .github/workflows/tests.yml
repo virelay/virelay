@@ -13,8 +13,9 @@ on:
       - master
       - develop
 
-# This workflow contains four jobs: test, which runs the unit tests, lint, which runs the linters and the static type checker, spell-check, which runs
-# the spell checker, and docs, which builds the documentation
+# This workflow contains seven jobs: "unit-tests", which runs the unit tests, "pylint", which runs the PyLint linter, "pycodestyle", which runs the
+# linter PyCodeStyle, "pydoclint", which runs the docstring linter, "mypy", which runs the MyPy static type checker, "spell-check", which runs the
+# spell checker, and "build-documentation", which builds the documentation
 jobs:
 
   # The first job runs the unit tests on Python 3.10, 3.11, and 3.12
@@ -56,15 +57,15 @@ jobs:
       - name: Run Unit Tests
         run: tox --skip-pkg-install -e ${{ matrix.tox-environment }}
 
-  # The second job runs the linters (PyLint, PyCodeStyle, and PyDocLint) and the static type checker (MyPy)
-  lint-and-type-check:
+  # The second job runs the PyLint linter
+  pylint:
 
     # The job will run on the latest version of Ubuntu
-    name: Lint & Type-Check ViRelAy Backend
+    name: Lint ViRelAy Backend Using PyLint
     runs-on: ubuntu-latest
 
     # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
-    # run tox itself, 3) installing tox, 4) setting up the linting and type-checking environment, and 5) running the linters and the type-checker
+    # run tox itself, 3) installing tox, 4) setting up the PyLint environment, and 5) running the PyLint linter
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,12 +76,84 @@ jobs:
           python-version: "3.12"
       - name: Install tox
         run: python -m pip install tox
-      - name: Setup Linting & Type-Checking Environment
-        run: tox -vv --notest -e linting
-      - name: Run Linters & Type-Checker
-        run: tox --skip-pkg-install -e linting
+      - name: Setup PyLint Environment
+        run: tox -vv --notest -e pylint
+      - name: Run PyLint Linter
+        run: tox --skip-pkg-install -e pylint
 
-  # The third job runs the spell checker CSpell to spell-check all files in the repository
+  # The third job runs the PyCodeStyle linter
+  pycodestyle:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint ViRelAy Backend Using PyCodeStyle
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
+    # run tox itself, 3) installing tox, 4) setting up the PyCodeStyle environment, and 5) running the PyCodeStyle linter
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Base Python for tox
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Setup PyCodeStyle Environment
+        run: tox -vv --notest -e pycodestyle
+      - name: Run PyCodeStyle Linter
+        run: tox --skip-pkg-install -e pycodestyle
+
+  # The fourth job runs the PyDocLint docstring linter
+  pydoclint:
+
+    # The job will run on the latest version of Ubuntu
+    name: Lint ViRelAy Backend Docstrings Using PyDocLint
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
+    # run tox itself, 3) installing tox, 4) setting up the PyDocLint environment, and 5) running the PyDocLint docstring linter
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Base Python for tox
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Setup PyDocLint Environment
+        run: tox -vv --notest -e pydoclint
+      - name: Run PyDocLint Linter
+        run: tox --skip-pkg-install -e pydoclint
+
+  # The fifth job runs the MyPy static type checker
+  mypy:
+
+    # The job will run on the latest version of Ubuntu
+    name: Static Type-Check ViRelAy Backend Using MyPy
+    runs-on: ubuntu-latest
+
+    # The job contains several steps: 1) checking out the repository, 2) installing the base Python version, which is the version of Python used to
+    # run tox itself, 3) installing tox, 4) setting up the MyPy environment, and 5) running the MyPy static type checker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Base Python for tox
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Setup MyPy Environment
+        run: tox -vv --notest -e mypy
+      - name: Run MyPy Linter
+        run: tox --skip-pkg-install -e mypy
+
+  # The sixth job runs the spell checker CSpell to spell-check all files in the repository
   spell-check:
 
     # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the
@@ -104,7 +177,7 @@ jobs:
       - name: Run Spell-Check
         run: npx cspell lint . --config tests/config/.cspell.json
 
-  # The fourth job builds the documentation using Sphinx
+  # The seventh job builds the documentation using Sphinx
   build-documentation:
 
     # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the

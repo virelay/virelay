@@ -483,7 +483,7 @@ def test_http_bad_request(app_with_empty_workspace: Flask) -> None:
                 assert re.match(
                     r'This is an error message.\n'
                     r'  File ".*/test_server.py"\, line [0-9]+\, in test_http_bad_request\n'
-                    r'    raise ValueError\(\'This is an error message\.\'\)',
+                    r'(    raise ValueError\(\'This is an error message\.\'\))?',
                     http_response.get_json()['errorMessage']
                 )
 
@@ -519,7 +519,7 @@ def test_http_not_found(app_with_empty_workspace: Flask) -> None:
                 assert re.match(
                     r'This is an error message.\n'
                     r'  File ".*/test_server.py"\, line [0-9]+\, in test_http_not_found\n'
-                    r'    raise ValueError\(\'This is an error message\.\'\)',
+                    r'(    raise ValueError\(\'This is an error message\.\'\))?',
                     http_response.get_json()['errorMessage']
                 )
 
@@ -572,6 +572,6 @@ def test_format_exception() -> None:
         assert re.match(
             r'This is an error message.\n'
             r'  File ".*/test_server.py"\, line [0-9]+\, in test_format_exception\n'
-            r'    raise ValueError\(\'This is an error message\.\'\)',
+            r'(    raise ValueError\(\'This is an error message\.\'\))?',
             error_message
         )

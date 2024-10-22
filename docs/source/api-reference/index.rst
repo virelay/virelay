@@ -2,7 +2,7 @@
 API Reference
 =============
 
-The API reference contains detailed descriptions of the modules, classes, methods, and functions included in the ViRelAy backend API. The API reference describes how the methods and functions work, and document their parameters. This reference is mainly aimed towards developers who want to contribute to the project and can be used as a reference while studying the internals of ViRelAy.
+The following section provides an exhaustive documentation of the ViRelAy backend API's constituent modules, classes, methods, and functions. It offers in-depth descriptions of their respective functionalities, parameter details, and usage guidelines, making it an invaluable resource for developers looking to contribute to the project or gain a deeper understanding of its underlying architecture.
 
 .. autosummary::
     :toctree:

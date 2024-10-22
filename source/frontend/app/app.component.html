@@ -1,0 +1,36 @@
+
+<clr-main-container>
+    <clr-header>
+        <div class="branding">
+            <a href="/" class="nav-link">
+                <img src="/assets/images/virelay-logo.png" alt="ViRelAy Logo">
+                <span class="title">ViRelAy</span>
+            </a>
+        </div>
+
+        <div *ngIf="projects" class="header-nav">
+            <a
+                *ngFor="let project of projects"
+                routerLink="/projects/{{ project.id }}"
+                routerLinkActive="active"
+                class="nav-link">
+
+                <span class="nav-text">{{ project.name }}</span>
+            </a>
+        </div>
+    </clr-header>
+
+    <main class="content-container">
+        <div class="content-area">
+            <router-outlet>
+                <span *ngIf="projectsLoadingState === ResourceState.Loading" class="spinner"></span>
+            </router-outlet>
+
+            <virelay-error-message
+                *ngIf="projectsLoadingState === ResourceState.Failed"
+                heading="Loading the Projects Failed"
+                [content]="projectsLoadingErrorMessage">
+            </virelay-error-message>
+        </div>
+    </main>
+</clr-main-container>

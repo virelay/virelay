@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <base href="/">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>ViRelAy</title>
+
+        <link rel="icon" type="image/png" href="/assets/favicon/favicon-48x48.png" sizes="48x48">
+        <link rel="icon" type="image/svg+xml" href="/assets/favicon/favicon.svg">
+        <link rel="shortcut icon" href="/assets/favicon/favicon.ico">
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+        <meta name="apple-mobile-web-app-title" content="ViRelAy">
+        <link rel="manifest" href="/assets/favicon/site.webmanifest">
+    </head>
+
+    <body cds-theme="light">
+        <virelay-app>
+            <div id="app-component-bootstrapping-load-spinner-container">
+                <span class="spinner">Loading...</span>
+            </div>
+
+            <div id="app-component-bootstrapping-failed-alert-container" class="hidden">
+                <div class="alert alert-danger" role="alert">
+                    <div class="alert-items">
+                        <div class="alert-item static">
+                            <div class="alert-icon-wrapper">
+                                <cds-icon class="alert-icon" shape="error-standard"></cds-icon>
+                            </div>
+                            <span class="alert-text">
+                                <span class="alert-heading"></span>
+                                <br>
+                                <span class="alert-message"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </virelay-app>
+    </body>
+</html>

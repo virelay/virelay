@@ -1,0 +1,16 @@
+
+<div class="error-message-container">
+    <clr-alert [clrAlertType]="'danger'" [clrAlertClosable]="false" [clrAlertAppLevel]="!isInline">
+        <clr-alert-item>
+            <span class="alert-text">
+                <span class="error-message-heading">
+                    {{ heading }}
+                </span>
+                <br>
+                <span class="error-message-content">
+                    {{ content }}
+                </span>
+            </span>
+        </clr-alert-item>
+    </clr-alert>
+</div>

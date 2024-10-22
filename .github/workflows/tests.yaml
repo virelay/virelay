@@ -38,7 +38,9 @@ jobs:
             python-version: "3.13.0"
 
     # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
-    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, and 5) running the tests
+    # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, 5) installing Node.js for building the frontend,
+    # which is required by the unit tests for testing whether the frontend files are correctly served via the backend, 6) installing the dependencies
+    # of the frontend, 7) building the frontend, and finally 8) running the unit tests
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -51,9 +53,17 @@ jobs:
       - name: Install Python
         run: uv python install ${{ matrix.python-version }}
       - name: Install ViRelAy and its Dependencies
-        run: uv sync --all-extras --dev
+        run: uv --directory source/backend sync --all-extras --dev
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Frontend Dependencies
+        run: npm --prefix source/frontend install
+      - name: Build Frontend
+        run: npm --prefix source/frontend run build
       - name: Run Unit Tests
-        run: uv run tox --conf tests/config/tox.ini --root . -e ${{ matrix.tox-environment }}
+        run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e ${{ matrix.tox-environment }}
 
   # The second job runs the PyLint linter
   pylint:
@@ -75,9 +85,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.0 3.9.20
       - name: Install ViRelAy and its Dependencies
-        run: uv sync --all-extras --dev
+        run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
-        run: uv run tox --conf tests/config/tox.ini --root . -e pylint
+        run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e pylint
 
   # The third job runs the PyCodeStyle linter
   pycodestyle:
@@ -99,9 +109,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.0 3.9.20
       - name: Install ViRelAy and its Dependencies
-        run: uv sync --all-extras --dev
+        run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
-        run: uv run tox --conf tests/config/tox.ini --root . -e pycodestyle
+        run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e pycodestyle
 
   # The fourth job runs the PyDocLint docstring linter
   pydoclint:
@@ -123,9 +133,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.0 3.9.20
       - name: Install ViRelAy and its Dependencies
-        run: uv sync --all-extras --dev
+        run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
-        run: uv run tox --conf tests/config/tox.ini --root . -e pydoclint
+        run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e pydoclint
 
   # The fifth job runs the MyPy static type checker
   mypy:
@@ -147,9 +157,9 @@ jobs:
       - name: Install Python
         run: uv python install 3.13.0 3.9.20
       - name: Install ViRelAy and its Dependencies
-        run: uv sync --all-extras --dev
+        run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
-        run: uv run tox --conf tests/config/tox.ini --root . -e mypy
+        run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e mypy
 
   # The sixth job runs the spell checker CSpell to spell-check all files in the repository
   spell-check:
@@ -200,4 +210,4 @@ jobs:
       - name: Install TeX Live for Pybtex
         run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
       - name: Build Documentation
-        run: uv run tox --conf tests/config/tox.ini --root . --notest -e docs
+        run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run --notest -e docs

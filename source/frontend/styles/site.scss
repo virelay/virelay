@@ -1,0 +1,30 @@
+
+// Center-aligns the load spinner and the failure alert for the website bootstrapping process both horizontally and vertically
+#app-component-bootstrapping-load-spinner-container, #app-component-bootstrapping-failed-alert-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1em;
+}
+
+// Hides elements by removing them from the DOM
+.hidden {
+    display: none !important;
+}
+
+// Adds a focused style to buttons, because Clarity doesn't provide one; the :focus-visible pseudo-class is used so that the outline is only shown for
+// input modalities that require a focus outline, such as keyboard navigation, but not for mouse navigation; since not all browsers support
+// :focus-visible, the :focus pseudo-class is used as a fallback; the :focus:not(:focus-visible) rule removes the regular focus styles for browsers
+// that support :focus-visible
+:is(a, button, input, textarea, summary):focus, .btn:focus, .btn.radio:has(:focus) {
+    outline: max(2px, 0.08em) solid var(--clr-forms-focused-color);
+    outline-offset: max(2px, 0.08em);
+}
+:is(a, button, input, textarea, summary):focus-visible, .btn:focus-visible, .btn.radio:has(:focus-visible) {
+    outline: max(2px, 0.08em) solid var(--clr-forms-focused-color);
+    outline-offset: max(2px, 0.08em);
+}
+:is(a, button, input, textarea, summary):focus:not(:focus-visible), .btn:focus:not(:focus-visible), .btn.radio:has(:focus:not(:focus-visible)) {
+    outline: none;
+}

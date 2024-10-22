@@ -4,17 +4,33 @@
 
 *Release date to be determined.*
 
+### General
+
+- Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected all spelling mistakes.
+- Removed the `LICENSE` file. Previously, there were two license files: `COPYING`, which contained the AGPL 3.0 license text, and `LICENSE`, which contained a note about where to find the license of the project and any third-party licenses. This was done, because GPL prefers the file name `COPYING`, but back then GitHub did not support that file name. Now, GitHub also supports `COPYING`. As the information about where to find the project license and the third-party licenses is also contained in the read me, the `LICENSE` file was removed.
+- Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
+- Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
+
+### Backend REST API
+
 - Converted the project from `setuptools` and `setup.py` to the Python package and project manager [uv](https://github.com/astral-sh/uv) and `pyproject.toml`.
-  - This was made necessary, because the `virelay` package was moved into a `source` directory and the `frontend` project was also moved from the `virelay` package into the `source` directory, because setuptools does not allow us to include data files that are not contained in the package directory.
+  - This was made necessary, because the `virelay` package was moved into a `source/backend` directory and the `frontend` project was also moved from the `virelay` package into the `source/frontend` directory, and setuptools does not allow us to include data files that are not contained in the package directory.
   - However, this also brings many advantages, since the new build system "hatchling" provides many more features and uv is not only blazing fast, it also makes the project management easier.
   - Also, the old packaging system with setuptools and `setup.py` have become dated and have to be replaced by a `pyproject.toml` anyway.
 - Updated the Python dependencies of the backend REST API project to their respective latest versions.
   - The versions of all other packages were set to be greater than or equal to the currently latest version and are restricted to be below the next major version, so that versions with breaking changes will not be installed in the future (although, this is prevented by the `uv.lock` file, which locks the currently installed versions of the packages to specific versions).
-- Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent. Although Python 3.9 will only reach its end of life in October 2025, it is missing the union operator "|" for type hints. Although this operator is not strictly necessary, it makes the type hinting for MyPy much easier to read. Also, the latest NumPy version does not support Python 3.9 anymore. Since ViRelAy is not a library that is used by other projects and most operating systems already support Python 3.10, the minimum Python version was updated to 3.10 to make the development process easier. Python 3.11, 3.12, and 3.13 were also added to the list of supported Python versions. This means that now Python 3.10, 3.11, 3.12, 3.13 are the supported Python versions for the project.
-- The following changes had to be made to because of the updated Python versions and dependencies:
-  - The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. It was replaced by the much simpler `Module.__file__` property.
-  - In previous versions, Flask was using `application/javascript` as the MIME type for JavaScript files. This has now been changed to `text/javascript`. Also, in Python 3.12, Flask now uses `image/x-icon` instead of `image/vnd.microsoft.icon`. For this reason, the unit tests were updated.
-  - The server previously also used the `pkg_resources` module to serve the static frontend files from the package directory. Since the module is now deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
+- Performed some minor updates on the backend REST API project:
+  - Instead of having an application class in the backend REST API, which basically only had a running method, the application now has a run function for the CLI and a run function for the UWSGI server. Starting the UWSGI server already was a function, because GUnicorn does not support the use of methods when starting the server. This makes the code more consistent.
+  - To facilitate the loading of multiple dataset samples simultaneously, a new endpoint was added, which allows users to provide a list of sample IDs.
+  - Instead of having an `Application` class in the backend REST API, which basically only had a `run` method, the application now has a `run_cli_app` function for the CLI and a `run_wsgi_app` function for the UWSGI server. Starting the UWSGI server already was a function, because GUnicorn does not support the use of methods when starting the server. This makes the code more consistent.
+  - The endpoints of the REST API were available using any HTTP verb. Now, only the GET method is allowed.
+  - The default port of the backed REST API was changed to 8000, because 8080 is more commonly used and might conflict with other services. The documentation was updated accordingly.
+  - Version, author, license, and copyright information of the backend REST API was added to the `__init__.py` file. The version is automatically updated from the current Git tag during build.
+- The list of supported Python versions was updated
+  - Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent. Although Python 3.9 will only reach its end of life in October 2025, it is missing the union operator `|` for type hints. Although this operator is not strictly necessary, it makes the type hinting for MyPy much easier to read. Also, the latest NumPy version does not support Python 3.9 anymore. Since ViRelAy is not a library that is used by other projects and most operating systems already support Python 3.10, the minimum Python version was updated to 3.10 to make the development process easier. Python 3.11, 3.12, and 3.13 were also added to the list of supported Python versions. This means that now Python 3.10, 3.11, 3.12, 3.13 are the supported Python versions for the project.
+  - The following changes had to be made to because of the updated Python versions and dependencies:
+    - In previous versions, Flask was using `application/javascript` as the MIME type for JavaScript files. This has now been changed to `text/javascript`. Also, in Python 3.12, Flask now uses `image/x-icon` instead of `image/vnd.microsoft.icon`. For this reason, the unit tests were updated.
+    - The server previously used the `pkg_resources` module to serve the static frontend files from the package directory. The module has been deprecated and was removed in Python 3.12, it was replaced with the `importlib.resources` module.
 - Improved the Python Linting
   - The Flake8 linter was replaced by [PyCodeStyle](https://pycodestyle.pycqa.org/en/latest/intro.html) and [PyDocLint](https://jsh9.github.io/pydoclint/), and [MyPy](https://mypy-lang.org/) was added as a static type checker. All four checkers are included as development dependencies in the `pyproject.toml` project file.
   - New configurations for PyCodeStyle, PyDocLint, and MyPy were added and the configuration file for PyLint was updated to match the latest version of PyLint.
@@ -23,8 +39,9 @@
   - The Flake8 job was removed from the GitHub Actions Workflow configuration file, and the new jobs `pycodestyle`, `pydoclint` and `mypy` were added, which run the tox environments for the respective linter and the static type checker.
   - The documentation was updated to reflect the changes in the linting process and to explain how to run the linters and the static type checker locally.
   - In order to improve MyPy's ability to reason about the types and therefore find bugs, many type hints were added throughout the code. Also, types were introduced to make the dictionaries that are loaded from or written to YAML/JSON files strongly typed.
+  - The configuration files for the linters and the static type checker are located in a `config` directory that is a sub-directory of the `tests` directory. For this reason, the unit tests were also moved to a sub-directory called `unit_tests`.
   - The entire code base was linted and type-checked, and all issues found by the linters and the type checker were fixed. Thanks to the new linters and the new type checker, several obscure bugs were found that would have gone unnoticed otherwise:
-    1. The automatic reload of the Flask server was not working correctly, because instead of using the property "debug", the incorrect property "auto_reload" was used.
+    1. The automatic reload of the Flask server was not working correctly, because instead of using the property `debug`, the incorrect property `auto_reload` was used.
     2. The ViRelAy modules were imported using the relative import syntax instead of the absolute import syntax, which may cause problems because sometimes it is not clear if an import is relative or not, relative imports can be ambiguous, they are brittle and may break when a module is moved, and since Python 3, implicit relative imports are not allowed anymore.
     3. The `get_label...` methods of the LabelMap class returned the human-readable names of the labels instead of the labels themselves, which was not obvious from the method names. In some parts of the code, the list of human-readable names was used instead of a list of labels, which was incorrect. Now, the LabelMap has a new set of methods for retrieving the labels, and the old methods were renamed to make their purpose clearer. All instances where the methods are used were checked and corrected if necessary.
     4. In multiple instances, variables were reused, for example, variables that were used to store a NumPy array of an image were reused when creating a Pillow Image from them. This lead to some errors, where a NumPy array was expected, but a Pillow Image was passed instead, and vice versa.
@@ -34,26 +51,69 @@
     8. The `__init__.py` file of the ViRelAy package did not contain a docstring, which was added.
     9. The fixtures for the unit tests are nested, which means they reference each other. Since the parameter names must match the names of the fixtures and since the fixtures were all in the same file, the parameters were shadowing the fixtures. This was fixed by renaming the fixture functions to `get_..._fixture` and adding a name to the fixture attribute.
     10. Some unit tests were incorrectly comparing `Label` objects with strings, which is now fixed.
-- The configuration files for the linters and the static type checker are located in a `config` directory that is a sub-directory of the `tests` directory. For this reason, the unit tests were also moved to a sub-directory called `unit_tests`.
 - The tox configuration file was updated
   - The configuration file was generally cleaned up and is now completely documented.
   - `tox-uv` is used so that tox uses uv as package manager.
   - The new linters and the type checker are now included, and the they also lint and type-check the unit tests, the Sphinx configuration script and the example scripts in the documentation.
+
+### Frontend
+
+- Migrated the frontend project from Angular 13 and Clarity 13 to Angular 18 and Clarity 17.
+- Updated the dependencies and the development dependencies of the frontend project to their respective latest versions.
+- Cleaned up the frontend project:
+  - The directory hierarchy of the project was overhauled:
+    - The project was previously nested in another `src` directory, which is weird, because the project is not at the top-level of the repository, but in a source directory itself. For this reason, the files were moved out of the `src` directory, one level up, and are now in the same directory as the `angular.json`, `package.json`, and `tsconfig.json` files.
+    - The `main.ts` and `index.html` files were moved into the `app` directory.
+    - The `components` and `modules` directories were moved out of the `app` directory into the top-level directory of the project and `modules` was renamed to `pages`, because it only contains components that are pages. The new structure dictates that components that represent pages are in the `pages` directory and components that represent user controls and are used in other components are in the `components` directory.
+    - The Sass stylesheets were moved into a top-level `styles` directory.
+    - The favicon was moved into the `assets` directory.
+  - The Angular and TypeScript configurations were completely overhauled and commented.
+  - A favicon with support for all browsers, iOS, and Android with support for light and dark themes was created.
+  - The module paths are now remapped to `@app`, `@components`, `@pages`, and `@services`, which makes it nicer to import them, because no relative paths are needed anymore.
+- Performed some minor updates on the frontend:
+  - The components are now standalone, which means that they are no longer included in any modules and can be loaded individually.
+  - Proper error handling for the bootstrap process was integrated.
+  - Also, the error handling on the project page was improved. To make it easier to display error messages, a new error message component was created.
+  - In addition to the light theme, a dark theme was added. The theme is automatically selected based on the user's system preferences. The screenshots in the documentation were updated accordingly.
+  - The toolbox and the sample viewer can now be scrolled horizontally using the mouse wheel, which makes them easier to navigate.
+  - When hovering over an embedding vector, the corresponding sample is now loaded after a short delay, which prevents the constant loading of samples when the user only moves the mouse over the samples.
+  - The samples and attributions in the sample viewer are now loaded all at once instead of loading the one by one.
+  - Many data structures that were previously inline types or a mixture of built-in types now have proper types. This includes:
+    - A type for embedding vectors,
+    - a type for the hover event in the embedding visualizer,
+    - a type for the coordinates of the selection box in the embedding visualizer,
+    - an interface for the configuration of the application,
+    - a type for clusters of embedding vectors,
+    - a type for the attributions of embedding vectors,
+    - an interface for HTML input events, and
+    - an enumeration for the attribution image modes.
+  - The state management is now done using an enumeration for the different states that a resource can be in, instead of using booleans.
+  - A custom exception type for errors that occur in a service was added.
+  - A URL builder was created, which makes it easier to build URLs for the backend REST API in the services.
+- The build output of the frontend was removed from the repository, as it will now be build as needed. The CI/CD pipeline, as well as the documentation were adapted accordingly.
+
+### CI/CD
+
 - The GitHub Actions Workflow configuration file was updated
   - The Workflow configuration file was cleaned up and documented.
   - The version of the `checkout` action was updated to the latest version v4.
   - Instead of using the `setup-python` action, we now use the `astral-sh/setup-uv` action to install uv, which is then used to install Python, which means that the exact same Python version that is used locally is also used in the CI/CD pipeline.
   - The `jobs.docs.strategy.fail-fast` option was previously used to prevent the workflow from stopping if the documentation build failed. However, this option is only supported for matrix strategies. Since the `docs` job does not use a matrix strategy, the `jobs.docs.strategy.fail-fast` option was replaced with the `jobs.docs.continue-on-error` option.
-- Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected any spelling mistakes.
-  - The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
+- The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
+
+### Documentation
+
 - The Sphinx build configuration and the configuration for "Read the Docs" were updated:
   - The year in the copyright notice of the documentation is now always set to the current year.
   - The way the GitHub URLs for the source code links are generated has been updated and now also supports type hints, which have to be handled differently from modules, classes, methods, and functions, because they are variables.
   - The Ubuntu and Python versions used by "Read the Docs" to build the documentation were also updated to the latest versions, i.e., Ubuntu 24.04 and Python 3.12.
-- Removed the `LICENSE` file. Previously, there were two license files: `COPYING`, which contained the AGPL 3.0 license text, and `LICENSE`, which contained a note about where to find the license of the project and any third-party licenses. This was done, because GPL prefers the file name `COPYING`, but back then GitHub did not support that file name. Now, GitHub also supports `COPYING`. As the information about where to find the project license and the third-party licenses is also contained in the read me, the `LICENSE` file was removed.
-- Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
-- Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
+- The configuration Python file for building the documentation `docs/source/conf.py` was using the `pkg_resources` module, which has been deprecated and was removed in Python 3.12. It was replaced by the much simpler `Module.__file__` property.
 - Removed LaTeX commands for accented characters from the bibliography file, as they we are using Pybtex to handle the bibliography and it has full Unicode support.
+- All articles in the documentation were completely rewritten to sound more professional and many small mistakes were corrected.
+- A bug was fixed, which caused some of the links to the repository to be broken. Links to the repository are specified as relative paths in the reStructuredText source files of the documentation articles. During the build step, they are prepended with the actual repository URL. This URL already contained the path to the `source` directory, which meant that all links to top-level files were incorrect.
+- Some of the screenshots of the UI were updated to showcase the new dark-mode UI.
+- A plugin was added, which causes all external links to be opened in a new tab.
+- The paragraphs in the documentation are now justified.
 
 ## v0.4.0
 

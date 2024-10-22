@@ -1,54 +1,52 @@
-========
-Frontend
-========
+================
+Frontend Web App
+================
 
-ViRelAy consists of 2 parts: the backend REST API and the frontend website. This article describes the architecture of the frontend in detail. The frontend is implemented in `TypeScript <https://www.typescriptlang.org/>`_ using `Angular <https://angular.io/>`_ and `Clarity <https://clarity.design/>`_. Angular applications are built with components, which define areas of responsibility in the UI. Components can then be re-used in other components just like regular HTML tags. Clarity is a design system, which provides ready-made Angular components for its UI components.
+The ViRelAy application is built around two core components: a backend REST API and a frontend web app. This section delves into the detailed architecture of the frontend web app.
 
-The source code of the frontend can be found in the :repo:`source/frontend/src` directory. This directory contains the following files and directories, which are important for development:
+The frontend is developed using `TypeScript <https://www.typescriptlang.org/>`_, `Angular <https://angular.io/>`_ and `Clarity <https://clarity.design/>`_, a renowned design system that offers pre-built UI components tailored for Angular applications.
 
-- ``main.ts`` -- The entrypoint to the Angular application.
-- ``polyfills.ts`` -- Some polyfills that are needed to make certain required modern functionality work in older browsers.
-- ``style.scss`` -- The main CSS styles that are available to the entire Angular application. The ViRelAy frontend writes its styles in SCSS, which is a CSS like language frontend for `SASS <https://sass-lang.com/>`_.
-- ``index.html`` -- The index page, which contains the skeleton of the HTML view of the Angular application.
-- ``services`` -- Services are a category of Angular building blocks, which usually serve a specific well-defined purpose. In the case of ViRelAy, each service represents the communication abstraction for a single backend REST API endpoint (projects, datasets, attributions, color maps, and analyses).
-- ``environments`` -- Contains the configuration of the frontend application for different environments.
-- ``assets`` -- Contains assets such as images.
-- ``app`` -- The ``app`` directory contains the actual application code, which is subdivided into the following parts:
+The source code of the frontend can be found in the :repo:`source/frontend` directory. This directory contains the following files and directories:
 
-  - ``modules`` -- Angular components are grouped into modules, which can be imported into other modules to make components available across modules. The modules directory contains all major modules and their components, including the pages.
-  - ``components`` -- This directory contains all components that are not page-specific and can thus be used across multiple pages. Currently, this only contains the embedding viewer component.
-  - ``app.module.ts`` -- The app module is the root module of all modules in the application.
-  - ``app.component.*`` -- The app component is the root component of all components, which gets bootstrapped by ``main.ts`` and loaded into the ``index.html`` page.
+* ``app`` -- Contains ``main.ts``, the primary entrypoint to the Angular application, as well as the app component, the HTML index file, and the route definitions.
+* ``assets`` -- Contains images and the favicon.
+* ``components`` -- Contains reusable Angular components such as the embedding viewer.
+* ``config`` -- Contains the configuration of the web app for different environments (develop and production).
+* ``pages`` -- Contains Angular components that represent the pages of the web app, such as the project page, which displays a single loaded project.
+* ``services`` -- Contains services that interact with the backend REST API. There are separate services for each endpoint of the backend: projects, datasets, attributions, color maps, and analyses.
+* ``styles`` -- Contains the main stylesheets of the web app, which are available to the entire Angular application. The ViRelAy frontend utilizes SCSS, which is a CSS like language frontend for `SASS <https://sass-lang.com/>`_, for its stylesheets.
+* ``angular.json`` -- Configures the Angular CLI and compiler.
+* ``package.json`` -- Contains the project dependencies and other metadata.
+* ``tsconfig.json`` -- Configures the TypeScript compiler.
 
-Development
-===========
+Development Environment Setup
+=============================
 
-Before starting to work on the frontend, you need to install `Node.js <https://nodejs.org>`_, which is required for Angular. It is recommended to install an `active LTS or maintenance LTS release <https://nodejs.org/en/about/releases/>`_ of Node.js. After that, you can navigate to the frontend directory and install its dependencies like so:
-
-.. code-block:: console
-
-    $ cd source/frontend
-    $ npm install
-
-During development, the frontend can be started using the following command. This starts a development server, which re-compiles and reloads the application automatically when any source files are changed. Furthermore, this creates source maps for the compiled JavaScript files, which makes debugging much easier, as the TypeScript files can be used for debugging.
+To start frontend development, it is essential to install `Node.js <https://nodejs.org>`_, a prerequisite for Angular. We recommend installing an `active LTS or maintenance LTS release <https://nodejs.org/en/about/releases/>`_ of Node.js, which can be easily accomplished through the `Node Version Manager (nvm) <https://github.com/nvm-sh/nvm>`_. Once Node.js is installed, the following command can be used to install the dependencies:
 
 .. code-block:: console
 
-    $ npx ng serve
+    $ npm --prefix source/frontend install
 
-For the frontend to properly work, the backend REST API must be started as well. The command line interface of the backend REST API offers a debug mode, which not only prints out helpful log messages to the console, but also puts the backend server into a mode where the frontend is not served through the backend. This is important for development, as the frontend is being served directly by the Angular CLI. The backend REST API can be started in debug mode using the following command:
-
-.. code-block:: console
-
-    $ uv run virelay '<project-file>' --debug-mode
-
-Deployment
-==========
-
-Since the frontend is being served directly by the backend server when ViRelAy is started, a production version of the frontend is checked into the repository. Therefore, every time changes are made to the frontend, a production build has to be created using the following command:
+Subsequently, the frontend can be started using the following command. This will start a development server and establish a local development environment that automatically re-compiles and reloads the application upon any changes to source files, while also generating source maps for the compiled JavaScript code for enhanced debugging capabilities.
 
 .. code-block:: console
 
-    $ npx ng build --configuration production
+    $ npm --prefix source/frontend run start
 
-The ``--configuration production`` argument introduces optimizations for production the production build and also adds the hash of the build output to the file names, thus preventing the server from using older cached versions of the frontend. The frontend's static build output files are stored in :repo:`source/frontend/distribution` from where they are served by the backend server.
+To ensure that the frontend properly works, the backend REST API must be started in debug mode using the following command. Debug mode enables log messages to be printed to the console and prevents the frontend from being served through the backend server. This is important for development, as the frontend is being served directly by the Angular CLI.
+
+.. code-block:: console
+
+    $ uv --directory source/backend run virelay '<project-file>' --debug-mode
+
+Building the Frontend
+=====================
+
+The frontend application is automatically compiled when the backend REST API project is built. However, for manual compilation, use the following command:
+
+.. code-block:: console
+
+    $ npm --prefix source/frontend run build
+
+This command compiles the frontend code in production mode, incorporating optimizations and appending a hash to the file names to prevent cached versions from being served by the server. The compiled frontend output can be found in :repo:`source/frontend/distribution/browser`.  If the backend REST API is run without the ``--debug-mode`` flag, this is the location from where the frontend is served. Therefore, the frontend must be build before running the backend REST API locally without the ``--debug-mode`` flag.

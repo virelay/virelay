@@ -1,27 +1,147 @@
-
 {
+    // Specifies that TypeScript should compile the main file of the Angular application
+    "files": [
+        "app/main.ts"
+    ],
+
+    // Includes all TypeScript type definition files
+    "include": [
+        "**/*.d.ts"
+    ],
+
+    // Since we are always compiling through the Angular CLI, there is no need to compile individual TypeScript files when saving them
     "compileOnSave": false,
+
+    // The options that specify how the TypeScript compiler should behave
     "compilerOptions": {
+
+        // Sets a base directory from which to resolve non-relative module names when importing modules in TypeScript
         "baseUrl": "./",
+
+        // A series of paths, which re-map imports to lookup locations relative to the baseUrl; the "paths" option defines how TypeScript should
+        // resolve imports; this makes it much easier, as no relative paths are required, also, it just looks nicer, for example, AppComponent can now
+        // be imported from '@app/app.component' instead of './app/app.component'
+        "paths": {
+            "@app/*": ["app/*"],
+            "@components/*": ["components/*"],
+            "@config/*": ["config/*"],
+            "@pages/*": ["pages/*"],
+            "@services/*": ["services/*"]
+        },
+
+        // The TypeScript compiler will emit JavaScript, TypeScript type definitions, and JavaScript source maps to this directory
         "outDir": "./dist/out-tsc",
+
+        // The strict flag enables a wide range of type checking behavior that results in stronger guarantees of program correctness, turning this on
+        // is equivalent to enabling all of the strict mode family options
+        "strict": true,
+
+        // In some cases where no type annotations are present, TypeScript will fall back to a type of any for a variable when it cannot infer the
+        // type, this can cause some errors to be missed, turning on noImplicitAny, however, TypeScript will issue an error whenever it would have
+        // inferred any
+        "noImplicitAny": true,
+
+        // TypeScript follows the case sensitivity rules of the file system it's running on, this can be problematic if some developers are working in
+        // a case-sensitive file system and others aren't, when this option is set, TypeScript will issue an error if a program tries to include a
+        // file by a casing different from the casing on disk
+        "forceConsistentCasingInFileNames": true,
+
+        // When working with classes which use inheritance, it's possible for a sub-class to get "out of sync" with the functions it overloads when
+        // they are renamed in the base class, using noImplicitOverride you can ensure that the sub-classes never go out of sync, by ensuring that
+        // functions which override include the keyword override
+        "noImplicitOverride": true,
+
+        // This setting ensures consistency between accessing a field via the "dot" (object.key) syntax, and "indexed" (object["key"]) and the way
+        // which the property is declared in the type, without this flag, TypeScript will allow you to use the dot syntax to access fields which are
+        // not defined
+        "noPropertyAccessFromIndexSignature": true,
+
+        // When enabled, TypeScript will check all code paths in a function to ensure they return a value
+        "noImplicitReturns": true,
+
+        // Ensures that any non-empty case inside a switch statement includes either break, return, or throw, this means you won't accidentally ship a
+        // case fallthrough bug
+        "noFallthroughCasesInSwitch": true,
+
+        // Tells the TypeScript compiler that it may skip the type checking of declaration files; this can save time during compilation at the expense
+        // of type-system accuracy
+        "skipLibCheck": true,
+
+        // Besides TypeScript, there are other transpilers, such as Babel, to produce JavaScript code from TypeScript; other transpilers, however,
+        // only operate on a single file at a time, which means they can’t apply code transforms that depend on understanding the full type system;
+        // this restriction also applies to TypeScript’s ts.transpileModule API which is used by some build tools; these limitations can cause runtime
+        // problems with some TypeScript features, e.g., some identifiers only represent TypeScript types and exporting them in a module will cause a
+        // runtime error, as the type does not exist at runtime; setting this flag tells TypeScript to issue a warning if such features are used; It
+        // does not change the behavior of TypeScript’s checking and emitting process, nor does it change the behavior of the code
+        "isolatedModules": true,
+
+        // Usually, TypeScript will handle CommonJS/AMD/UMD modules like ES6 modules, which causes problems with some types of imports; turning on
+        // this flag will fix these problems by changing the compiler's behavior and adding shims to ensure compatibility
+        "esModuleInterop": true,
+
+        // Enables the generation of sourcemap files, these files allow debuggers and other tools to display the original TypeScript source code when
+        // actually working with the emitted JavaScript files
         "sourceMap": true,
+
+        // Generate .d.ts files for every TypeScript or JavaScript file inside your project, these .d.ts files are type definition files which
+        // describe the external API of your module, with .d.ts files, tools like TypeScript can provide intellisense and accurate types for un-typed
+        // code
         "declaration": false,
-        "downlevelIteration": true,
+
+        // Enables experimental support for decorators, which is a version of decorators that predates the TC39 standardization process, decorators
+        // are a language feature which hasn't yet been fully ratified into the JavaScript specification, this means that the implementation version
+        // in TypeScript may differ from the implementation in JavaScript when it it decided by TC39, decorators are required by Angular
         "experimentalDecorators": true,
-        "module": "es2020",
-        "moduleResolution": "node",
+
+        // Specifies the module resolution strategy, this setting controls how TypeScript will look up a file from an import statement, the bundler
+        // option is used when the TypeScript code is being bundled by a module bundler like Webpack and esbuild; Angular uses esbuild
+        "moduleResolution": "bundler",
+
+        // For certain down-leveling operations, TypeScript uses some helper code for operations like extending class, spreading arrays or objects,
+        // and async operations, by default, these helpers are inserted into files which use them, this can result in code duplication if the same
+        // helper is used in many different modules, if the importHelpers flag is on, these helper functions are instead imported from the tslib
+        // module, you will need to ensure that the tslib module is able to be imported at runtime
         "importHelpers": true,
-        "target": "es5",
+
+        // The ECMAScript version that the TypeScript will target, most modern browsers support all ES2022 (ES13) features, so ECMAScript 2022 is a
+        // good choice; since this application will most likely be run by developers, it's safe to assume that they will have a modern browser
+        "target": "ES2022",
+
+        // Sets the module system for the program; this is important because it determines what kind of import or export statements are allowed
+        "module": "ES2022",
+
+        // A list of paths to directories that contain TypeScript type definition files, these type definition files provide type information about
+        // the JavaScript libraries that are used in the application and which do not, yet, have TypeScript type definitions
         "typeRoots": [
             "node_modules/@types"
         ],
+
+        // TypeScript can include a default set of type definitions for built-in JavaScript APIs, as well as type definitions for things found in
+        // browser environments
         "lib": [
-            "es2018",
-           "dom"
+
+            // All JavaScript APIs available in ECMAScript 2022 and below
+            "ES2022",
+
+            // The DOM API of browsers, i.e., window, document, etc.
+            "dom"
         ]
     },
+
+    // The options that are specific to the Angular compiler
     "angularCompilerOptions": {
-        "fullTemplateTypeCheck": true,
-        "strictInjectionParameters": true
+
+        // Instructs the Angular template compiler to not create legacy IDs for messages that are tagged in templates by the i18n attribute, setting
+        // this to true is only required for legacy applications
+        "enableI18nLegacyMessageIdFormat": false,
+
+        // Reports an error for a supplied parameter whose injection type cannot be determined
+        "strictInjectionParameters": true,
+
+        // Instructs the Angular compiler to honor access modifiers such as private/protected/readonly when assigning binding expressions to @Input()
+        "strictInputAccessModifiers": true,
+
+        // Enables strict type checking for Angular templates
+        "strictTemplates": true
     }
 }

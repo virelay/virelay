@@ -2,7 +2,7 @@
 # The PyDocLint configuration
 [tool.pydoclint]
 
-# The Python code of the AIVA Platform project uses the Google style docstrings
+# The ViRelAy backend REST API project uses the Google style docstrings
 style = 'google'
 
 # Normally, the class docstring would contain the documentation for the __init__ function, but we prefer to have a separate docstring for the __init__

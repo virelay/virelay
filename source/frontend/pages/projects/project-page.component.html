@@ -1,0 +1,305 @@
+<span
+    *ngIf="projectLoadingState === ResourceState.Loading || importLoadingState === ResourceState.Loading"
+    class="spinner spinner-centered">
+</span>
+
+<virelay-error-message
+    *ngIf="colorMapsLoadingState === ResourceState.Failed"
+    heading="Loading the Color Maps Failed"
+    [content]="colorMapsLoadingErrorMessage">
+</virelay-error-message>
+
+<virelay-error-message
+    *ngIf="projectLoadingState === ResourceState.Failed"
+    heading="Loading the Project Failed"
+    [content]="projectLoadingErrorMessage">
+</virelay-error-message>
+
+<virelay-error-message
+    *ngIf="importLoadingState === ResourceState.Failed"
+    heading="Importing the File Failed"
+    [content]="importLoadingErrorMessage">
+</virelay-error-message>
+
+<virelay-error-message
+    *ngIf="analysisLoadingState === ResourceState.Failed"
+    heading="Loading the Analysis Failed"
+    [content]="analysisLoadingErrorMessage">
+</virelay-error-message>
+
+<div
+    *ngIf="(projectLoadingState === ResourceState.Finished || importLoadingState === ResourceState.Finished) && projectLoadingState !== ResourceState.Failed && importLoadingState !== ResourceState.Failed && colorMapsLoadingState !== ResourceState.Failed && analysisLoadingState !== ResourceState.Failed && project"
+    id="panels-container">
+
+    <aside id="options-pane" (wheel)="onMouseWheelRotation($event)" aria-label="Options Pane">
+        <clr-select-container>
+            <label>Analysis method</label>
+            <select clrSelect name="analysis-method" [(ngModel)]="selectedAnalysisMethod">
+                <option *ngIf="!selectedAnalysisMethod" [ngValue]="null">
+                    Select an analysis method...
+                </option>
+                <option *ngFor="let analysisMethod of project.analysisMethods" [ngValue]="analysisMethod">
+                    {{ analysisMethod.name }}
+                </option>
+            </select>
+        </clr-select-container>
+
+        <clr-select-container *ngIf="selectedAnalysisMethod">
+            <label>Category</label>
+            <select clrSelect name="category" [(ngModel)]="selectedAnalysisCategory">
+                <option *ngIf="!selectedAnalysisCategory" [ngValue]="null">
+                    Select a category...
+                </option>
+                <option *ngFor="let category of selectedAnalysisMethod.categories" [ngValue]="category">
+                    {{ category.humanReadableName }} ({{ category.name }})
+                </option>
+            </select>
+        </clr-select-container>
+
+        <clr-select-container *ngIf="selectedAnalysisMethod">
+            <label>Clustering</label>
+            <select clrSelect class="full-width" name="clustering" [(ngModel)]="selectedClustering">
+                <option *ngIf="!selectedClustering" [ngValue]="null">
+                    Select a clustering...
+                </option>
+                <option *ngFor="let clustering of selectedAnalysisMethod.clusterings" [value]="clustering">
+                    {{ clustering }}
+                </option>
+            </select>
+        </clr-select-container>
+
+        <clr-select-container *ngIf="selectedAnalysisMethod">
+            <label>Embedding</label>
+            <select clrSelect name="embedding" [(ngModel)]="selectedEmbedding">
+                <option *ngIf="!selectedEmbedding" [ngValue]="null">
+                    Select a embedding...
+                </option>
+                <option *ngFor="let embedding of selectedAnalysisMethod.embeddings" [value]="embedding">
+                    {{ embedding }}
+                </option>
+            </select>
+        </clr-select-container>
+
+        <clr-select-container *ngIf="embeddingDimensions && embeddingDimensions.length > 2">
+            <label>X-Axis</label>
+            <select clrSelect name="horizontal-axis-dimension-index" [(ngModel)]="firstEmbeddingDimensionIndex">
+                <option *ngFor="let index of embeddingDimensions" [value]="index">
+                    {{ index }}
+                </option>
+            </select>
+        </clr-select-container>
+
+        <clr-select-container *ngIf="embeddingDimensions && embeddingDimensions.length > 2">
+            <label>Y-Axis</label>
+            <select clrSelect name="vertical-axis-dimension-index" [(ngModel)]="secondEmbeddingDimensionIndex">
+                <option *ngFor="let index of embeddingDimensions" [value]="index">
+                    {{ index }}
+                </option>
+            </select>
+        </clr-select-container>
+
+        <clr-select-container *ngIf="colorMaps">
+            <label>Color map</label>
+            <select clrSelect name="color-map" [(ngModel)]="selectedColorMap">
+                <option *ngIf="!selectedColorMap" [ngValue]="null">
+                    Select a color map...
+                </option>
+                <option *ngFor="let colorMap of colorMaps" [ngValue]="colorMap">
+                    {{ colorMap.humanReadableName }}
+                </option>
+            </select>
+        </clr-select-container>
+        <img *ngIf="selectedColorMap" [src]="selectedColorMap.url" [alt]="selectedColorMap.humanReadableName">
+
+        <div class="btn-group" *ngIf="selectedAnalysisMethod">
+            <div class="radio btn">
+                <input
+                    type="radio"
+                    id="img-radio-input"
+                    name="img-radio"
+                    value="input"
+                    [(ngModel)]="attributionImageMode">
+                <label for="img-radio-input">
+                    <cds-icon shape="image"></cds-icon>
+                    Input
+                </label>
+            </div>
+
+            <div class="radio btn">
+                <input
+                    type="radio"
+                    id="img-radio-overlay"
+                    name="img-radio"
+                    value="overlay"
+                    [(ngModel)]="attributionImageMode">
+                <label for="img-radio-overlay" tabindex="0">
+                    <cds-icon shape="layers"></cds-icon>
+                    Overlay
+                </label>
+            </div>
+
+            <div class="radio btn">
+                <input
+                    type="radio"
+                    id="img-radio-attribution"
+                    name="img-radio"
+                    value="attribution"
+                    [(ngModel)]="attributionImageMode">
+                <label for="img-radio-attribution" tabindex="0">
+                    <cds-icon shape="bubble-chart"></cds-icon>
+                    Attribution
+                </label>
+            </div>
+        </div>
+
+        <input *ngIf="selectedAnalysisMethod" type="file" id="file-import" (change)="importAsync($event)">
+        <label *ngIf="selectedAnalysisMethod" id="import-label" for="file-import" class="btn btn-success-outline" tabindex="0">
+            <cds-icon *ngIf="importLoadingState !== ResourceState.Loading" shape="import"></cds-icon>
+            <span *ngIf="importLoadingState === ResourceState.Loading" class="spinner spinner-sm">Saving...</span>
+
+            <span>Import</span>
+        </label>
+        <button type="button" *ngIf="selectedAnalysisMethod" id="button-export" class="btn btn-danger-outline" (click)="export()">
+            <cds-icon *ngIf="exportSavingState !== ResourceState.Saving && exportSavingState !== ResourceState.Failed" shape="export"></cds-icon>
+            <cds-icon *ngIf="exportSavingState === ResourceState.Failed" shape="error-standard"></cds-icon>
+            <span *ngIf="exportSavingState === ResourceState.Saving" class="spinner spinner-sm">Exporting...</span>
+
+            <span>Export</span>
+        </button>
+        <button type="button" *ngIf="selectedAnalysisMethod" id="share-button" class="btn btn-outline" (click)="createShareableLink()">
+            <cds-icon *ngIf="shareableLinkUrlCreationState !== ResourceState.Loading && shareableLinkUrlCreationState !== ResourceState.Failed" shape="share"></cds-icon>
+            <cds-icon *ngIf="shareableLinkUrlCreationState === ResourceState.Failed" shape="error-standard"></cds-icon>
+            <span *ngIf="shareableLinkUrlCreationState === ResourceState.Loading" class="spinner spinner-sm">Creating...</span>
+
+            <span>Share</span>
+        </button>
+    </aside>
+
+    <section id="embedding-plot">
+        <virelay-embedding-visualizer
+            *ngIf="analysis"
+            [(ngModel)]="selectedEmbeddingVectors"
+            [embedding]="analysis.embedding"
+            [firstEmbeddingDimensionIndex]="firstEmbeddingDimensionIndex"
+            [secondEmbeddingDimensionIndex]="secondEmbeddingDimensionIndex"
+            [canSelect]="selectedEmbeddingVectorAttributionsLoadingState !== ResourceState.Loading"
+            (hover)="onHoverAsync($event)"
+            (unhover)="onUnhover()">
+        </virelay-embedding-visualizer>
+
+        <img
+            id="attribution-hover-preview"
+            *ngIf="hoveredEmbeddingVectorDatasetSamplePreview && isHoveringOverEmbeddingVector"
+            [src]="hoveredEmbeddingVectorDatasetSamplePreview.url"
+            alt="Preview of the Attribution of the Hovered Embedding Vector">
+    </section>
+
+    <aside id="selected-attributions-pane" aria-label="Selected Attributions" (wheel)="onMouseWheelRotation($event)">
+        <span
+            *ngIf="selectedEmbeddingVectorAttributionsLoadingState === ResourceState.Loading"
+            class="spinner spinner-locally-centered">
+        </span>
+
+        <virelay-error-message
+            *ngIf="selectedEmbeddingVectorAttributionsLoadingState === ResourceState.Failed"
+            heading="Loading the Selected Attributions Failed"
+            [content]="selectedEmbeddingVectorAttributionsLoadingErrorMessage">
+        </virelay-error-message>
+
+        <div
+            *ngIf="!selectedEmbeddingVectors || selectedEmbeddingVectors.length === 0"
+            id="selection-hint">
+
+            <p>Select embedding vectors to display attributions...</p>
+        </div>
+
+        <div
+            *ngIf="selectedEmbeddingVectorAttributionsLoadingState === ResourceState.Finished && selectedEmbeddingVectorAttributions && selectedEmbeddingVectorAttributions.length > 0 && selectedColorMap"
+            id="selected-attribution-list">
+
+            <div
+                *ngFor="let selectedEmbeddingVectorAttribution of selectedEmbeddingVectorAttributions"
+                class="selected-attribution"
+                [title]="selectedEmbeddingVectorAttribution.attribution.labelDisplay">
+
+                <img
+                    [src]="selectedEmbeddingVectorAttribution.attribution.urls[selectedColorMap.name]"
+                    [alt]="selectedEmbeddingVectorAttribution.attribution.labelDisplay">
+
+                <p>
+                    <span [style.color]="selectedEmbeddingVectorAttribution.color">&#11044;</span>
+                    Cluster {{ selectedEmbeddingVectorAttribution.clusterIndex + 1 }}
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    <aside id="cluster-pane" aria-label="Clustering Pane">
+        <ng-container *ngIf="eigenvaluesGraphData && eigenvaluesGraphData.length !== 0">
+            <h4>Eigenvalues</h4>
+            <plotly-plot
+                *ngIf="eigenvaluesGraphData"
+                [data]="eigenvaluesGraphData"
+                [layout]="eigenvaluesGraphLayout"
+                [config]="{ displayModeBar: false }">
+            </plotly-plot>
+        </ng-container>
+
+        <ng-container *ngIf="availableClusters && availableClusters.length !== 0">
+            <h4>Clusters</h4>
+            <button type="button" *ngFor="let cluster of availableClusters" class="btn btn-outline"
+                (click)="selectCluster(cluster.index)">
+                <span [style.color]="cluster.color">&#11044;</span> Cluster {{ cluster.index + 1 }} ({{ cluster.size }})
+            </button>
+        </ng-container>
+    </aside>
+
+    <footer id="status-bar">
+        <cds-icon shape="library"></cds-icon>
+        <strong>Project:</strong>
+        {{ project.name }}
+
+        <cds-icon shape="storage"></cds-icon>
+        <strong>Dataset:</strong>
+        {{ project.dataset }}
+
+        <cds-icon shape="organization"></cds-icon>
+        <strong>Model:</strong>
+        {{ project.model }}
+    </footer>
+
+    <clr-modal
+        id="share-dialog"
+        [(clrModalOpen)]="isShareDialogOpen"
+        [clrModalClosable]="false"
+        [clrModalStaticBackdrop]="true">
+
+        <h3 class="modal-title">Share Link</h3>
+
+        <div class="modal-body">
+            <textarea readonly name="share-link" class="clr-textarea" [(ngModel)]="shareableLinkUrl"></textarea>
+        </div>
+
+        <div class="modal-footer">
+            <button
+                type="button"
+                class="btn btn-outline"
+                (click)="closeShareDialog()">
+
+                Close
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                [class.btn-success]="shareableLinkUrlCopyingState === ResourceState.Finished"
+                [class.btn-danger]="shareableLinkUrlCopyingState === ResourceState.Failed"
+                (click)="copyShareableLink()">
+
+                <cds-icon *ngIf="shareableLinkUrlCopyingState === ResourceState.Finished" shape="check"></cds-icon>
+                <cds-icon *ngIf="shareableLinkUrlCopyingState === ResourceState.Failed" shape="times"></cds-icon>
+                Copy
+            </button>
+        </div>
+    </clr-modal>
+</div>

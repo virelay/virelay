@@ -1,0 +1,42 @@
+
+// The colors that are common to both themes
+body {
+
+    // Navigation bar colors
+    --virelay-navbar-background-color: var(--clr-color-secondary-action-1000);
+    --virelay-navbar-link-active-background-color: color-mix(in hsl, var(--clr-color-secondary-action-1000), white 15%);
+
+    // Pane colors
+    --virelay-options-pane-color-map-border-color: var(--cds-alias-status-info);
+    --virelay-cluster-pane-eigenvalue-plot-font-color: var(--cds-alias-typography-color-400);
+    --virelay-cluster-pane-eigenvalue-plot-axis-line-color: var(--cds-alias-typography-color-400);
+    --virelay-cluster-pane-eigenvalue-plot-axis-tick-color: var(--cds-alias-typography-color-400);
+
+    // Status bar colors
+    --virelay-status-bar-background-color: var(--clr-color-secondary-action-1000);
+    --virelay-status-bar-font-color: var(--cds-global-color-construction-100);
+}
+
+// The colors for the light theme
+[cds-theme~='light'] {
+
+    // Pane colors
+    --virelay-pane-background-color: var(--cds-global-color-construction-100);
+    --virelay-selected-attributions-pane-selection-hint-border-color: var(--cds-global-color-construction-500);
+
+    // Scrollbar colors
+    --virelay-scrollbar-thumb-color: var(--cds-global-color-construction-300);
+    --virelay-scrollbar-track-color: var(--cds-global-color-construction-200);
+}
+
+// The colors for the dark theme
+[cds-theme~='dark'] {
+
+    // Pane colors
+    --virelay-pane-background-color: var(--cds-global-color-construction-900);
+    --virelay-selected-attributions-pane-selection-hint-border-color: var(--cds-global-color-construction-300);
+
+    // Scrollbar colors
+    --virelay-scrollbar-thumb-color: var(--cds-global-color-construction-500);
+    --virelay-scrollbar-track-color: var(--cds-global-color-construction-700);
+}

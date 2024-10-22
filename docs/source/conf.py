@@ -281,7 +281,7 @@ def linkcode_resolve(domain: LanguageDomain, info: dict[str, str]) -> str | None
     object_file_path = os.path.relpath(object_file_path, top_module_path)
 
     # Composes the URL to the source code file on GitHub and returns it
-    return f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/source/{object_file_path}#L{start_line_number}-L{end_line_number}'
+    return f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/source/backend/{object_file_path}#L{start_line_number}-L{end_line_number}'
 
 
 # Sets the basic project information
@@ -291,29 +291,35 @@ author = 'ViRelAy Contributors'
 
 # Specifies the Sphinx extensions that are used by this documentation
 extensions = [
+    'sphinx_copybutton',
+    'sphinx_rtd_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.linkcode',
-    'sphinx.ext.imgmath',
     'sphinx.ext.extlinks',
-    'sphinx_rtd_theme',
-    'sphinx_copybutton',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.napoleon',
+    'sphinxcontrib.bibtex',
     'sphinxcontrib.datatemplates',
-    'sphinxcontrib.bibtex'
+    "sphinx_new_tab_link"
 ]
 
-# Specifies the path that contains extra templates
+# Specifies the paths for the directories that contain extra templates and static files
 templates_path = ['_templates']
+html_static_path = ['_static']
 
 # Specifies a list of patterns, relative to source directory, that match files and directories to ignore when looking
 # for source files, in this case, nothing needs to be excluded
 exclude_patterns: Sequence[str] = []
 
-# Configures the theme that is used for the HTML pages
+# Configures the theme, custom CSS rules, and the favicon that are used for the HTML pages
 html_theme = 'sphinx_rtd_theme'
+html_css_files = ['custom.css']
 html_favicon = '_static/favicon.ico'
-html_static_path = ['_static']
+
+# Configures the Sphinx plugin, which causes external links to open in a new tab, to show an icon next to external links, indicating to the user that
+# they will be taken to an external website
+new_tab_link_show_external_link_icon = True
 
 # Configures the Sphinx plugin, which adds a copy button to code blocks
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
@@ -331,7 +337,7 @@ bibtex_reference_style = 'author_year'
 LATEST_GIT_TAG = get_latest_git_tag()
 extlinks = {
     'repo': (
-        f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/source/%s',
+        f'https://github.com/virelay/virelay/blob/{LATEST_GIT_TAG}/%s',
         '%s'
     )
 }

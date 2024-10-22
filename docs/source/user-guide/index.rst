@@ -2,9 +2,14 @@
 User Guide
 ==========
 
-If you've just started exploring ViRelAy and want a deeper understanding of its features, this user guide is for you. The following sections provide in-depth guides on using ViRelAy to analyze classifiers and datasets. The **Features** section explores all the features that make ViRelAy powerful. To learn how to run ViRelAy using the WSGI HTTP server Gunicorn you can read the **Using ViRelAy with Gunicorn** guide. **Creating a Project** helps you discover how to create projects for custom classifiers and datasets. Finally, **Analyzing Classifiers and Datasets** provides a step-by-step guide on finding anomalous classification behavior and outlier dataset samples.
+Welcome to the ViRelAy User Guide. This comprehensive resource provides in-depth information on using ViRelAy to analyze classifiers and datasets. The following sections offer detailed guides to help you unlock the full potential of ViRelAy:
 
-Get started with these guides to unlock the full potential of ViRelAy!
+* :doc:`features`: A comprehensive guide to ViRelAy's features and functionality.
+* :doc:`using-virelay-with-gunicorn`: Instructions on how to run ViRelAy using the WSGI HTTP server Gunicorn.
+* :doc:`how-to-create-a-project`: A step-by-step guide to creating projects for custom classifiers and datasets.
+* :doc:`how-to-analyze-classifiers-and-datasets`: A detailed walkthrough of the process for finding anomalous classification behavior and outlier dataset samples.
+
+Get started with these guides to master ViRelAy's capabilities and take your data analysis to the next level!
 
 .. toctree::
     :maxdepth: 2

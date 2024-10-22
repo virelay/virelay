@@ -1,103 +1,136 @@
-=================
-How to Contribute
-=================
+=======================
+Contributing to ViRelAy
+=======================
 
-ViRelAy is an open source project that depends on its community, and we're excited you're interested in joining us! We are always eager to receive contributions and appreciate your enthusiasm. If you would like to contribute, there are many ways you can help out. You can file bugs or feature request, update the documentation, or even contribute code to the project.
+ViRelAy is an open-source project that relies on the contributions of its community, and we are excited to have you join us. Your enthusiasm and support are essential to our success, and we encourage you to participate in various ways.
 
-To get started with contributing, we recommend reading our :doc:`../user-guide/index` to familiarize yourself with the project. It contains a compilation of helpful tips to get you started, and it will give you a solid understanding of how our system works and what aspects of it need improvement. It also contains in-depth articles on the internals of ViRelAy such as the :doc:`database-specification` and the :doc:`project-file-format`. ViRelAy consists of 2 parts: the backend REST API written in Python and `Flask <https://flask.palletsprojects.com/en/2.1.x/>`_, and the frontend, which is was created using `Angular <https://angular.io/>`_ and `Clarity <https://clarity.design/>`_. Please read the articles :doc:`backend-rest-api` and :doc:`frontend` for more information.
+There are numerous opportunities to contribute to ViRelAy, including:
 
-Filing Bugs & Feature Requests
-==============================
+* Filing bug reports or feature requests
+* Updating documentation
+* Contributing code to the project
 
-If you've encountered a bug or have a feature request, please let us know by opening an issue on the project's `GitHub page <https://github.com/virelay/virelay/issues>`_. Before doing so, we recommend checking the existing issues to avoid duplication of work and ensure that your report adds value. If so, then please add any information to the existing issue that might help us resolve it fast. Only open a new issue if there are no other issues concerning the same problem.
+To begin contributing, we recommend starting with a thorough understanding of the project. We suggest reviewing our user guide :doc:`../user-guide/index` for a surface-level introduction to the application and its features. The :doc:`index` contains comprehensive resources to provide you with valuable insights into how ViRelAy works internally, such as the :doc:`database-specification` and the :doc:`project-file-format`.
 
-When opening an issue, please provide as much information as possible. This will greatly help us identify and resolve the issue efficiently. Some examples of useful system information include:
+ViRelAy consists of two primary components:
 
-* Your operating system and version (Windows 11, macOS 15, Ubuntu 24.04, etc.)
-* The version of ViRelAy you're running
-* Any relevant configuration settings or dependencies
+* **Backend REST API** -- Written in Python using `Flask <https://flask.palletsprojects.com/en/stable/>`_, this part provides the foundation for our system's functionality.
+* **Frontend** -- Developed using `Angular <https://angular.io/>`_ and `Clarity <https://clarity.design/>`_, the frontend delivers a user-friendly interface.
 
-When filing a bug report, please provide a detailed step-by-step guide on how to reproduce the issue. This will enable us to diagnose and fix the problem more quickly.
+
+To delve deeper into each component, we recommend reviewing the in-depth articles on the :doc:`backend-rest-api` and the :doc:`frontend`.
+
+Reporting Issues & Feature Requests
+===================================
+
+If you encounter a bug or have a feature request, we encourage you to submit an issue on our `GitHub page <https://github.com/virelay/virelay/issues>`_. Before creating a new issue, please review existing issues to avoid duplicate efforts and ensure that your report adds value. If you find an open issue related to the same problem, feel free to contribute additional information or context to help us resolve it more efficiently.
+
+When submitting a new issue, provide as much relevant information as possible to facilitate prompt identification and resolution of the problem. This includes:
+
+* Operating system details (e.g., Windows 11, macOS 15, Ubuntu 24.04)
+* ViRelAy version you are using
+* Any pertinent configuration settings or dependencies
+
+Also, please provide a clear, step-by-step guide on how to reproduce the issue. This will enable us to diagnose and fix the problem more quickly. If possible, including a minimal example that reproduces the issue (i.e., a project file, dataset, label map, attributions, and analysis results) is highly appreciated.
 
 Contributing Code or Documentation
 ==================================
 
-Before starting to contribute code, please check if there is already an existing issue that aligns with your ideas. This will help us avoid duplication of effort and ensure that your contributions are integrated smoothly into the project. If there is no issue concerning your contribution ideas, we would still appreciate if you would open an issue first, where you explain what you want to do. This helps to align your ideas with the rest of the team and may prevent you from doing work, that the team is already planning on doing. To get started, follow these steps:
+Before contributing code or documentation, please ensure that there is no existing issue that aligns with your ideas. This helps avoid duplication of effort and ensures a seamless integration of your contributions into the project. If you have an idea for a contribution but can't find a related issue, we encourage you to open an issue before starting you work, where you outline your proposal. This facilitates alignment with the rest of the team and may prevent unnecessary work.
+
+To contribute code or documentation, follow these steps:
 
 1. Fork the Repository
 ----------------------
 
-Fork the project's repository on GitHub to create a copy of it under you own account. After cloning your fork, please create a new feature branch with a descriptive name. We use kebab case for branch names, i.e., lower-case words separated by hyphens, for example, ``my-new-feature``.
+To begin contributing to this project, you will first need to fork the repository on GitHub. This creates a copy of the original repository under your own account. Once you have cloned your fork, please create a new branch specifically for your feature or bug fix. When naming your branch, we recommend using kebab-case (lowercase words separated by hyphens) to clearly describe its purpose, e.g., ``my-new-feature``.
 
 2. Make your Changes
 --------------------
 
-Make the necessary changes to the codebase. Please comment and document your code extensively. We `Google-style Docstrings <https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings>`_ for the backend REST API and the `JSDoc <https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html>`_ format for the frontend. We encourage you to follow our established coding conventions and avoid making unnecessary changes to the code style. We know that it is tempting to change the code style of a project to your liking, but this will produce unnecessary effort and will only lead to constant style changes. To help you with this, we use various tools to enforce the code style, detect code smells, prevent many forms of bugs, and statically type-check the backend REST API:
+To contribute to this project, please make the necessary changes to the codebase while adhering to our established coding standards and guidelines. We recommend extensively documenting your code with comments. For the backend API we follow the `Google-style Docstring <https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings>`_ convention and the `JSDoc <https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html>`_ convention for frontend.
 
-* **`PyLint <https://www.pylint.org/>`_** -- Enforces the code style and detects potential issues and bugs.
-* **`PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_** -- Checks the code style consistency.
-* **`PyDocLint <https://jsh9.github.io/pydoclint/>`_** -- Ensures proper documentation and that the style of the Docstrings is correct.
-* **`MyPy <https://mypy-lang.org/>`_** -- Statically type-checks the backend REST API.
+When modifying existing code, please refrain from altering the project's coding style unless absolutely necessary. Changes to the code style can lead to unnecessary effort and frequent updates to accommodate varying preferences. To ensure consistency and maintainability, we utilize various tools to enforce our coding conventions, detect potential issues, prevent bugs, and statically type-check the backend REST API:
 
-Please make sure that neither of them produces warnings before committing. Never adapt the configuration of PyLint, PyCodeStyle, PyDocLint, or MyPy unless you have a really good reason to do so (please tell us about your reasoning in the accompanying issue or the pull request).
+* `PyLint <https://www.pylint.org/>`_ -- Enforces coding style and detects potential issues and bugs.
+* `PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_ -- Verifies code style consistency.
+* `PyDocLint <https://jsh9.github.io/pydoclint/>`_ -- Ensures proper documentation and adherence to Docstring style guidelines.
+* `MyPy <https://mypy-lang.org/>`_ -- Statically type-checks the backend REST API.
 
-3. Build the Frontend
----------------------
+Before committing your changes, please verify that none of these tools produce warnings. Additionally, we advise against modifying the configuration of these tools unless a compelling reason exists (please provide details on your reasoning in the accompanying issue or pull request).
 
-If you have made changes to the frontend, then please build it using the ``production`` configuration and put the build artifacts into the :repo:`source/frontend/distribution` directory. This is necessary, because the built frontend is included in the ViRelAy Python wheel package.
+3. Write Unit Tests
+-------------------
 
-4. Write Tests
---------------
+To ensure the reliability and stability of our codebase, please write comprehensive unit tests for the features you have added. Our goal is to achieve 100% test coverage for the backend REST API. Although we do not currently maintain a test suite for the frontend, we encourage you to follow best practices and write tests where feasible.
 
-Write unit tests for the features you have added. We aim to have a test coverage of 100% for the backend REST API (the frontend does not have a test suite, yet). Make sure all tests pass before committing.
+Before committing your changes, please ensure that all unit tests pass without errors or failures. This ensures that our codebase remains robust and maintains its expected functionality.
 
-5. Update the tox Configuration & GitHub Actions Workflow
+4. Update the tox Configuration & GitHub Actions Workflow
 ---------------------------------------------------------
 
-The unit tests, the linters, the static type checker, and the build of the documentation is run using tox. They are also run as part of our CI/CD pipeline on GitHub Actions. If you have made any changes that require changes to the tox configuration or the GitHub Actions workflow, please ensure that the relevant sections are updated. The configuration files can be found in the :repo:`tests/config/tox.ini` and :repo:`.github/workflows/tests.yaml` files. The tox tool is installed as part of the development dependencies, so you can run the tests locally using the following command:
+Our continuous integration and deployment (CI/CD) pipeline, built using GitHub Actions Workflows, relies on tox to run unit tests, linters, static type checkers, and documentation builds. If you've made changes that require updates to the tox configuration or GitHub Actions workflow, please ensure that the relevant sections are revised accordingly.
+
+The configuration files for these tools can be found in:
+
+* **tox Configuration**: :repo:`tests/config/tox.ini`
+* **GitHub Actions workflow**: :repo:`.github/workflows/tests.yaml`
+
+To run tests locally using tox, execute the following command from the project root:
 
 .. code-block:: console
 
-    $ uv run tox --conf tests/config/tox.ini --root .
+    $ uv --directory source/backend run tox --conf ../../tests/config/tox.ini run
 
-The GitHub Actions workflow can also be tested locally using the `act tool <https://nektosact.com/>`_, which can be installed by following the `official installation instructions <https://nektosact.com/installation/index.html>`_. After installing the act tool, you can run the GitHub Actions workflow locally using the following commands:
+Alternatively, you can use the `act tool <https://nektosact.com/>`_ to test the GitHub Actions workflow locally. Install the act tool according to the `official installation instructions <https://nektosact.com/installation/index.html>`_. After the installation, the GitHub Actions workflow can be run locally using the following commands:
 
 .. code-block:: console
 
-    $ act             # To run all workflows
-    $ act -j <job-id> # To run a single job with the specified job ID (e.g., unit-tests, build-documentation, pylint, etc.)
+    $ act                # Runs all workflows
+    $ act --job <job-id> # Runs a single job with the specified ID (e.g., unit-tests, build-documentation, pylint, etc.)
 
-When first running act, it may ask you which Docker image to use. We recommend using the "full" image, although "medium" or even "micro" may also work. We have not tested this, however.
+When prompted to select a Docker image, we recommend using the "full" image.
 
-Our CI/CD pipeline will be run on your pull request. To ensure a successful review, please make sure that:
+To ensure a successful review of your pull request, please verify that:
 
-* All linters and static type checkers pass
-* Unit tests pass for all supported Python versions (3.10-3.13)
-* The documentation builds successfully
+* All linters and static type checkers pass without errors.
+* Unit tests succeed for all supported Python versions (3.10 - 3.13).
+* The documentation builds successfully.
 
-If any of these checks fail, we won't be able to accept the pull request.
+If any of these checks fail, we will not be able to accept the pull request.
 
 5. Update the Documentation
 ---------------------------
 
-If you have made any changes that affect the way the project is used, please ensure that the relevant sections of the documentation are updated. We use `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to generate our documentation. The source files for the documentation can be found in the :repo:`docs/source` directory.
+If your changes have impacted how the project is used or you made changes to its functionality, please ensure that the relevant sections of our documentation are updated accordingly. We use `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to generate our documentation, which can be found in the :repo:`docs/source` directory.
 
 6. Update the Changelog
 -----------------------
 
-Don't forget to update the changelog with the changes you have made (:repo:`CHANGELOG.md`).
+As part of your contribution, please ensure that the project's changelog is updated to reflect the modifications you've made. This can be done by editing the :repo:`CHANGELOG.md` file.
+
+By recording your changes in our changelog, we can maintain a clear and accurate history of updates, making it easier for users and developers to track progress and understand the impact of each release.
 
 7. Add Yourself to the Contributors List
 ----------------------------------------
 
-Please add yourself to the contributors list (:repo:`CONTRIBUTORS.md`). This is of course optional and you may choose to add yourself under a pseudonym.
+As a final step before committing your changes and making a pull request, please consider adding your name to our contributors list in :repo:`CONTRIBUTORS.md`. This allows us to formally recognize and appreciate your contribution to the project.
+
+You may choose to add yourself under a pseudonym or use your actual name; we respect your preference and encourage you to acknowledge your hard work in making this project better.
 
 8. Commit Your Changes
 ----------------------
 
-Try to make few meaningful coherent commits with expressive commit messages. We follow the widely accepted 50/72 rule with a short subject line that is capped at 50 characters followed by a detailed description with lines capped at 72 characters, separated from the subject line by a blank line. After each commit, please ensure the repository remains in a working state. If the main branch has progressed since you branched it off, please use a rebase instead of a merge to avoid unnecessary merge commits.
+To ensure that your contributions are easily reviewable and maintainable, please strive for a few meaningful, coherent commits with descriptive commit messages. We follow the conventional 50/72 rule:
 
-9. Make a Pull Request
-----------------------
+* A brief subject line (not exceeding 50 characters) that summarizes the changes.
+* A detailed description (with lines capped at 72 characters), separated from the subject line by a blank line.
 
-Push your changes to your fork and create a pull request against the main repository. Please provide a detailed description of your changes and reference the issue you are addressing. We will review your changes as soon as possible.
+Additionally, after each commit, please ensure that the repository remains in a healthy state. If the main branch has progressed since you branched it off, use a Git rebase instead of a merge to avoid unnecessary merge commits. This helps keep the commit history clean and makes it easier for others to review your changes.
+
+9. Submit Your Contribution for Review
+--------------------------------------
+
+Once you've completed your development work, push your changes to your forked repository and create a pull request against the main repository. When creating the pull request, please provide a clear and detailed description of your changes, including how they address the specific issue or feature being implemented.
+
+Be sure to reference the relevant issues in your description so that our review team can easily identify the context for your contribution. We'll strive to review your submission as soon as possible, providing feedback and guidance to ensure a smooth integration process.

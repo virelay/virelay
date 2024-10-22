@@ -1,99 +1,287 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "frontend": {
-      "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        }
-      },
-      "root": "",
-      "sourceRoot": "src",
-      "prefix": "app",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:browser",
-          "options": {
-            "outputPath": "distribution",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.app.json",
-            "aot": false,
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "node_modules/@clr/icons/clr-icons.min.css",
-              "node_modules/@clr/ui/clr-ui.min.css",
-              "src/styles.scss"
-            ],
-            "scripts": [
-              "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-              "node_modules/@clr/icons/clr-icons.min.js"
-            ],
-            "vendorChunk": true,
-            "extractLicenses": false,
-            "buildOptimizer": false,
-            "sourceMap": true,
-            "optimization": false,
-            "namedChunks": true
-          },
-          "configurations": {
-            "production": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.production.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "10mb",
-                  "maximumError": "15mb"
+    // The schema that is used to validate that the Angular configuration file is well-formed
+    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+
+    // The version of the Angular configuration file that is being used
+    "version": 1,
+
+    // A set of options that customize the Angular CLI
+    "cli": {
+        // We do not want to share anonymous usage data with the Angular team
+        "analytics": false,
+
+        // We are using the NPM package manager (there are alternatives that can be used like CNPM which is a Chinese-maintained registry of Node.js
+        // modules, PNPM which is an alternative package manager for Node.js that stores packages globally only linking them into each project thus
+        // decreasing both storage consumption and accelerating installation by not having to download packages that are already used by other local
+        // projects, and Yarn which is also an alternative package manager for Node.js that aims to be faster, more secure, and more reliable than
+        // NPM)
+        "packageManager": "npm"
+    },
+
+    // Project-specific settings (in our case, there is only the ViRelAy frontend project, since we do not require multiple projects)
+    "projects": {
+
+        // The settings for the ViRelAy frontend project
+        "frontend": {
+
+            // Specifies that the ViRelAy frontend project is a web application; besides web applications, Angular also supports library projects
+            "projectType": "application",
+
+            // The root directory for this project's files, relative to the workspace directory, since the ViRelAy frontend project is the only
+            // Angular project in this workspace, the root directory is identical with the workspace directory, therefore, it is left empty
+            "root": "",
+
+            // The root directory for this project's source files, normally, Angular will create a "src" directory for the project, but since this
+            // repository contains multiple projects, we do not want to have another source directory inside the source directory, therefore, we put
+            // all source files directly into the project's root directory, which means that the source directory is identical to the project's root
+            // directory (and also the workspace directory), the source root directory must not be blank, therefore, it is set to ".", which is the
+            // current directory
+            "sourceRoot": ".",
+
+            // A string that Angular prepends to CSS selectors created for components, the CSS selector of an component is the name that can be used
+            // in HTML as a tag name and in Sass (and CSS) to select the component, a prefix can be specified for all components, which makes it
+            // easier to distinguish them from "real" HTML tags and from CSS selectors of components from other projects, in fact, custom HTML tags
+            // must start with a prefix followed by a dash that separates it from the tag name
+            "prefix": "virelay",
+
+            // A set of schematics that customize the "ng generate" sub-command option defaults for this project, for this project, defaults are
+            // specified that disable the creation of tests using the skipTests argument and that set the language used for stylesheets to SCSS using
+            // the style argument (SCSS is a dialect of SASS that resembles the syntax of CSS)
+            "schematics": {
+                "@schematics/angular:component": {
+                    "style": "scss",
+                    "skipTests": true
                 },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                "@schematics/angular:service": {
+                    "skipTests": true
                 }
-              ]
+            },
+
+            // Configuration defaults for "Architect" (an internal tool that runs CLI builders) builder targets for this project; Angular defines
+            // default builders for use with specific commands, or with the general "ng run" command
+            "architect": {
+
+                // Configures defaults for options of the "ng build" command
+                "build": {
+
+                    // The NPM package for the build tool used to create this target, the application builder is used for building Angular
+                    // applications that target a browser environment and that may use server-side-rendering, it uses esbuild to bundle the files and
+                    // is based on @angular-devkit/build-angular:browser-esbuild
+                    "builder": "@angular-devkit/build-angular:application",
+
+                    // This section contains default build target options, these can be extended and overridden by named alternative configurations
+                    // specified in the "configurations" section
+                    "options": {
+
+                        // The path to which the built output is emitted, relative to the current workspace
+                        "outputPath": "distribution",
+
+                        // The index HTML file of the application
+                        "index": "app/index.html",
+
+                        // The full path for the main entrypoint of the application, which is the script that is run when the browser first loads the
+                        // application; the path is relative to the current workspace
+                        "browser": "app/main.ts",
+
+                        // A list of polyfills to include in the build, polyfills are pieces of code used to provide modern functionality on older
+                        // browsers that do not natively support it
+                        "polyfills": [
+
+                            // Zone.js provides zones, which are execution contexts that persists across async operations, data can be attached to a
+                            // zone, which travels with the zone as it propagates across async invocations, to achieve this, zone.js patches most
+                            // standard web APIs (such as DOM events and XMLHttpRequest) and even some non-standard APIs (such as MediaQuery and
+                            // Notification), it is because of this monkey-patching that zone.js is considered a polyfill, Angular uses zone.js to
+                            // find out when all application work that may change the state of the application has completed, this marks the point at
+                            // which Angular can trigger change detection, which is the process of checking whether the state of the application has
+                            // changed and if the DOM needs to be updated
+                            "zone.js"
+                        ],
+
+                        // The full path to the configuration file for the TypeScript compiler
+                        "tsConfig": "tsconfig.json",
+
+                        // The stylesheet language that should be used for inline styles in components of the application, so that the Angular
+                        // compiler knows how to preprocess inline styles; although inline styles are not used in this project, this is, nonetheless,
+                        // set to SCSS (which is a dialect of SASS that resembles the syntax of CSS), as SCSS is also the language used for regular
+                        // external styles
+                        "inlineStyleLanguage": "scss",
+
+                        // Paths to static assets to add to the global context of the project; the "input" property specifies the directory where the
+                        // assets are located, the "glob" property specifies a pattern that is used to match the files in the directory, and the
+                        // "output" property specifies the directory in the build output where the files should be copied to
+                        "assets": [
+                            {
+                                "input": "assets",
+                                "glob": "**/*",
+                                "output": "assets"
+                            }
+                        ],
+
+                        // Style files to add to the global context of the project
+                        "styles": [
+                            "node_modules/@cds/core/global.min.css",
+                            "node_modules/@cds/core/styles/theme.dark.min.css",
+                            "node_modules/@clr/ui/clr-ui.min.css",
+                            "styles/site.scss",
+                            "styles/colors.scss"
+                        ],
+
+                        // Script files to add to the global context of the project
+                        "scripts": [],
+
+                        // Options that should be passed to the SASS style preprocessors
+                        "stylePreprocessorOptions": {
+
+                            // Specifies the path from where global styles can be imported, this is helpful, because component styles do not need to
+                            // specify relative paths to the styles
+                            "includePaths": [
+                                "styles"
+                            ]
+                        },
+
+                        // Angular recommends that CommonJS modules be avoided because they can negatively affect the build size. As such it warns
+                        // when CommonJS dependencies are found in the build; here CommonJS modules that are required for the application can be
+                        // whitelisted to suppress the warnings
+                        "allowedCommonJsDependencies": [
+                            "file-saver",
+                            "plotly.js-basic-dist-min"
+                        ]
+                    },
+
+                    // This section defines and names alternative configurations for different environments, which are specified in separate sections
+                    // for each environment, the alternative configurations extend the default options from the "options" section of the "build"
+                    // target, the ViRelAy frontend project has two different environments: "development" for local debugging and "production" for
+                    // deployment
+                    "configurations": {
+
+                        // The configuration for the "development" environment, which is used local debugging
+                        "development": {
+
+                            // For development, optimizations such as file bundling, tree shaking to eliminate unused code, and code minification are
+                            // disabled to reduce build time
+                            "optimization": false,
+
+                            // Many open source projects require that anyone who uses the software must replicate the original license of the project,
+                            // this setting can be used to extract the licenses of all referenced NPM packages and put them into a single file in the
+                            // build output, this makes it trivial to comply to open source licensing, but in since the "development" environment is
+                            // only used for local debugging, this step is not required
+                            "extractLicenses": false,
+
+                            // Source maps are files that map parts of a JavaScript/CSS file to the corresponding parts in the source TypeScript/SCSS
+                            // file, since the "development" environment is used for debugging, source maps must be generated
+                            "sourceMap": true,
+
+                            // Determines whether the file names should be used for lazy loading chunks
+                            "namedChunks": true
+                        },
+
+                        // The configuration for the "production" environment, which is used for deployment
+                        "production": {
+
+                            // For production, optimizations such as file bundling, tree shaking to eliminate unused code, and code minification are
+                            // enabled, which reduces the amount of data the user has to load on the initial page load and thus speeds up the loading
+                            // of the fronted; inlining critical CSS is disabled (this moves critical CSS styles from CSS files directly into HTML and
+                            // lazy-loads the rest), because the tool used for it, Critters, seems to have numerous bugs regarding the parsing of HTML
+                            // and/or CSS, which leads to errors and warning during build time; the version of Critters used by the Angular build
+                            // system is also no longer maintained
+                            "optimization": {
+                                "scripts": true,
+                                "fonts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": false
+                                }
+                            },
+
+                            // Replaces the development configuration file with the production-specific configuration file
+                            "fileReplacements": [
+                                {
+                                    "replace": "config/configuration.ts",
+                                    "with": "config/configuration.production.ts"
+                                }
+                            ],
+
+                            // Default size-budgets for all or parts of the application; when the thresholds of the budgets are reached or exceeded,
+                            // the builder will issue a warning or an error
+                            "budgets": [
+
+                                // The size of JavaScript needed for bootstrapping the application, i.e., the amount of data that the browser needs to
+                                // initially load when opening the ViRelAy frontend; it is important that this data is as small as possible, as it
+                                // affects initial load times, as well as the "time to first pixel" and "time to first meaningful paint" metrics; a
+                                // warning will be issued at 4 MB and an error will be issued at 6 MB
+                                {
+                                    "type": "initial",
+                                    "maximumWarning": "4MB",
+                                    "maximumError": "6MB"
+                                },
+
+                                // This size of any one component stylesheet, i.e., if the stylesheet of any of the application's components exceeds
+                                // 5 kB a warning is issued and if 10 kB are exceeded an error is issued
+                                {
+                                    "type": "anyComponentStyle",
+                                    "maximumWarning": "5kB",
+                                    "maximumError": "10kB"
+                                }
+                            ],
+
+                            // Specifies that all files in the build output (except for the index HTML file) should be appended with the hash digest
+                            // of their contents, under normal circumstances, browsers aggressively cache the files that they load for a website,
+                            // since the files of an Angular application are bundled they tend to be relatively large, so this aggressive caching by
+                            // the browser is desirable, otherwise the load times for the website would drastically increase, this aggressive caching
+                            // is, however, problematic when deploying a new version of the Angular application, as the browser assumes that files
+                            // that share a file name and path are the same, therefore, the browser would always use the locally cached file and not
+                            // the updated versions on the server, this can be circumvented by telling the browser to invalidate its cache regularly,
+                            // but users will still see outdated files until the cache retention time is reached, please note that the files can be
+                            // loaded at different times, which would mean that they will be removed from the cache at different times, leading the
+                            // browser to load some of the new files and not other, leaving the website in an inconsistent state until all files were
+                            // expunged from the cache and reloaded from the server, therefore, for this to work, the retention times of the files
+                            // that make up the Angular application would need to be set to very small time frames to ensure that updated files are
+                            // not only loaded faster, but also to reduce the time that the website is in an inconsistent state, this would in turn
+                            // mean that the browser would have to regularly fetch the files from the server, even when they have not been updated,
+                            // thus rendering the cache less effective and increasing load times for users, Angular solves this problem by appending
+                            // the hash digest of the files' contents to their file names, this way, the cache retention times for the files of the
+                            // Angular application can be arbitrarily large, as updated files will have different file names, since the files required
+                            // for the initial loading of the website are referenced in the index HTML file, which by convention must be named
+                            // "index.html" (although other names, such as "index.htm" are also valid), the name of the index HTML file itself cannot
+                            // be appended with the hash digest of its content, therefore, the index HTML file must be excluded from the browser's
+                            // cache, but this is a small price to pay for being able permanently cache all other files
+                            "outputHashing": "all"
+                        }
+                    },
+
+                    // The default configuration used by the "ng build" command is the configuration for the production environment
+                    "defaultConfiguration": "production"
+                },
+
+                // Overrides build defaults and supplies extra defaults for the "ng serve" command, besides the options available for the "ng build"
+                // command, it adds options related to serving the application
+                "serve": {
+
+                    // The NPM package for the build tool used to create this target, the dev-server builder is a development server that provides
+                    // live reloading and other development features
+                    "builder": "@angular-devkit/build-angular:dev-server",
+
+                    // This section defines and names alternative configurations for different environments, which are specified in separate sections
+                    // for each environment, the alternative configurations extend the default options from the "options" section of the "serve"
+                    // target; since the "ng serve" command will always be used for local debugging, this section only contains configurations for the
+                    // "development" environment
+                    "configurations": {
+
+                        // The configuration for the "development" environment, which is used local debugging
+                        "development": {
+
+                            // Specifies which build target should be served by the "ng serve" command, this references the configuration of the
+                            // "development" environment in the build target (essentially, before starting the development server, the Angular
+                            // application needs to be built, this setting specifies that the options specified in the section build:options in
+                            // addition to the options specified in the section build:configurations:development should be used for this build)
+                            "buildTarget": "frontend:build:development"
+                        }
+                    },
+
+                    // The default configuration used by the "ng serve" command is the configuration for the development environment
+                    "defaultConfiguration": "development"
+                }
             }
-          },
-          "defaultConfiguration": ""
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "frontend:build"
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "frontend:build:production"
-            }
-          }
-        },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "frontend:build"
-          }
         }
-      }
     }
-  },
-  "defaultProject": "frontend"
 }

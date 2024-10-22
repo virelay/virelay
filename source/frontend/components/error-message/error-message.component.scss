@@ -1,0 +1,10 @@
+
+// This is the container that contains the error message; this container centers the error message both horizontally and vertically; the padding
+// prevents the error message from sticking to the left or right edge of the screen when the screen is narrow and the error message is long
+.error-message-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 1em;
+}

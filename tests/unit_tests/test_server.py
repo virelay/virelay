@@ -33,7 +33,7 @@ class TestServer:
         with test_client_with_app_in_debug_model.get('/index.html') as http_response:
             assert http_response.status_code == 404
 
-        with test_client_with_app_in_debug_model.get('/favicon.ico') as http_response:
+        with test_client_with_app_in_debug_model.get('/assets/favicon/favicon.ico') as http_response:
             assert http_response.status_code == 404
 
         with test_client_with_app_in_debug_model.get('/styles.css') as http_response:
@@ -61,33 +61,38 @@ class TestServer:
             assert http_response.status_code == 200
             assert http_response.content_type == 'text/html; charset=utf-8'
 
-        with test_client.get('/favicon.ico') as http_response:
+        with test_client.get('/assets/favicon/favicon.ico') as http_response:
             assert http_response.status_code == 200
             assert http_response.content_type in ['image/x-icon', 'image/vnd.microsoft.icon']
 
-        styles_file_names = glob.glob(os.path.join(
+        frontend_path = os.path.normpath(os.path.join(
             os.getcwd(),
+            '..',
+            '..',
             'source',
             'frontend',
             'distribution',
-            'styles.*.css'
+            'browser'
         ))
+
+        styles_file_names = glob.glob(os.path.join(frontend_path, 'styles-*.css'))
         assert len(styles_file_names) == 1
         styles_file_name = os.path.basename(styles_file_names[0])
         with test_client.get(f'/{styles_file_name}') as http_response:
             assert http_response.status_code == 200
             assert http_response.content_type == 'text/css; charset=utf-8'
 
-        main_file_names = glob.glob(os.path.join(
-            os.getcwd(),
-            'source',
-            'frontend',
-            'distribution',
-            'main.*.js'
-        ))
+        main_file_names = glob.glob(os.path.join(frontend_path, 'main-*.js'))
         assert len(main_file_names) == 1
         main_file_name = os.path.basename(main_file_names[0])
         with test_client.get(f'/{main_file_name}') as http_response:
+            assert http_response.status_code == 200
+            assert http_response.content_type == 'text/javascript; charset=utf-8'
+
+        polyfills_file_names = glob.glob(os.path.join(frontend_path, 'polyfills-*.js'))
+        assert len(polyfills_file_names) == 1
+        polyfills_file_name = os.path.basename(polyfills_file_names[0])
+        with test_client.get(f'/{polyfills_file_name}') as http_response:
             assert http_response.status_code == 200
             assert http_response.content_type == 'text/javascript; charset=utf-8'
 

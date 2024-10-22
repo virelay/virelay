@@ -1,0 +1,45 @@
+
+// The :host pseudo selector references the component element itself; this rules causes the embedding visualizer to take up all space available to it;
+// this is done by making embedding visualizer a block element, which is required for the width and height properties to work; then the width and
+// height properties are set to 100% of its parent element
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+// The container class is applied to the element that contains the render target canvas element and the selection box element; this rule makes the
+// container take up all available space inside the embedding visualizer component; the selection box may go over the edge of the container, so to
+// prevent scrollbars from being shown, its the overflown parts are hidden
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+// When the embedding visualizer component is disabled, all mouse events are disabled, so that the user can no longer interact with it or its children
+.container.disabled {
+    pointer-events: none;
+}
+
+// The canvas element is the render target for Three.js, which is used to render the embedding vectors; this rule makes the canvas take up all
+// available space inside the container element
+canvas {
+    width: 100%;
+    height: 100%;
+}
+
+// When the embedding visualizer component is disabled, the canvas is grayed out to visually indicate to the user that it is not interactive
+canvas.disabled {
+    filter: grayscale(80%);
+}
+
+// The selection-box class is applied to the element that represents the selection box;
+.selection-box  {
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    background-color: color-mix(in hsl, var(--cds-global-color-construction-900) 60%, transparent);
+    border: 2px solid var(--cds-alias-status-info);
+}

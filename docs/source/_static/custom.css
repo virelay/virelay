@@ -1,0 +1,6 @@
+
+/* Justifies the text in the documentation articles, which makes them easier to read; words are automatically hyphenated */
+section > p {
+    text-align: justify;
+    hyphens: auto;
+}

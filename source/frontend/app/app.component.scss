@@ -1,0 +1,14 @@
+
+// The content area has a small padding set by Clarity, but we want the project content to go all the way to the edge of the screen
+.content-area {
+	padding: 0 !important;
+}
+
+// Adds a custom color to the header and a custom background color for the active navigation link
+clr-header {
+	background-color: var(--clr-color-secondary-action-1000);
+
+	a.nav-link.active {
+		background-color: var(--virelay-navbar-link-active-background-color);
+	}
+}

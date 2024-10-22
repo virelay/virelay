@@ -1,4 +1,5 @@
 
+# The PyCodeStyle configuration
 [pycodestyle]
 
 # Sets the maximum line length for both code and docstrings to 150 characters

@@ -1,4 +1,4 @@
-"""Represents the server of ViRelAy, which serves the website and contains the RESTful API."""
+"""Represents the server of ViRelAy, which serves the website and contains the backend REST API."""
 
 import io
 import logging
@@ -21,7 +21,7 @@ from virelay.image_processing import render_heatmap
 
 
 class Server:
-    """Represents the server of ViRelAy, which encapsulates the website and the RESTful API."""
+    """Represents the server of ViRelAy, which encapsulates the website and the backend REST API."""
 
     def __init__(self, workspace: Workspace, is_in_debug_mode: bool = False) -> None:
         """Initializes a new Server instance.
@@ -55,7 +55,7 @@ class Server:
         # Creates the Flask application
         self.app: flask.Flask = flask.Flask('ViRelAy')
 
-        # Registers the routes of the RESTful API with the Flask application
+        # Registers the routes of the backend REST API with the Flask application
         self.app.add_url_rule(
             '/api/projects',
             'get_projects',
@@ -519,7 +519,7 @@ class Server:
 
 
 class ProjectJson(TypedDict):
-    """Represents a project in the JSON response of the RESTful API."""
+    """Represents a project in the JSON response of the backend REST API."""
 
     id: int
     """The ID of the project."""
@@ -538,7 +538,7 @@ class ProjectJson(TypedDict):
 
 
 class AnalysisJson(TypedDict):
-    """Represents an analysis in the JSON response of the RESTful API."""
+    """Represents an analysis in the JSON response of the backend REST API."""
 
     categoryName: str
     """The name of the category."""
@@ -562,7 +562,7 @@ class AnalysisJson(TypedDict):
 
 
 class AnalysisMethodJson(TypedDict):
-    """Represents an analysis method in the JSON response of the RESTful API."""
+    """Represents an analysis method in the JSON response of the backend REST API."""
 
     name: str
     """The name of the analysis method."""
@@ -578,7 +578,7 @@ class AnalysisMethodJson(TypedDict):
 
 
 class CategoryJson(TypedDict):
-    """Represents a category in the JSON response of the RESTful API."""
+    """Represents a category in the JSON response of the backend REST API."""
 
     name: str
     """The name of the category."""
@@ -588,7 +588,7 @@ class CategoryJson(TypedDict):
 
 
 class LabelJson(TypedDict):
-    """Represents a label in the JSON response of the RESTful API."""
+    """Represents a label in the JSON response of the backend REST API."""
 
     index: int
     """The index of the label."""
@@ -601,7 +601,7 @@ class LabelJson(TypedDict):
 
 
 class SampleJson(TypedDict):
-    """Represents a sample in the JSON response of the RESTful API."""
+    """Represents a sample in the JSON response of the backend REST API."""
 
     index: int
     """The index of the sample."""
@@ -620,7 +620,7 @@ class SampleJson(TypedDict):
 
 
 class AttributionJson(TypedDict):
-    """Represents an attribution in the JSON response of the RESTful API."""
+    """Represents an attribution in the JSON response of the backend REST API."""
 
     index: int
     """The index of the attribution."""

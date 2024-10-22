@@ -106,7 +106,7 @@ class Application:
         # is shut down)
         atexit.register(self.shutdown)
 
-        # Creates the Flask server, which serves the frontend website as well as the RESTful API
+        # Creates the Flask server, which serves the frontend website as well as the backend REST API
         server = Server(self.workspace, arguments.debug_mode)
         server.run(arguments.host, arguments.port)
 

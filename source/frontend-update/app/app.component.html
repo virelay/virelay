@@ -1,0 +1,19 @@
+
+<clr-main-container>
+    <clr-header>
+        <div class="branding">
+            <a href="/" class="nav-link">
+                <span class="virelay-logo"></span>
+                <span class="title">ViRelAy</span>
+            </a>
+        </div>
+
+        <img src="test.png" alt="Lorem ipsum dolor sit amet"/>
+
+        <div *ngIf="projects" class="header-nav">
+            <a *ngFor="let project of projects" routerLink="/projects/{{ project.id }}" routerLinkActive="active" class="nav-link nav-text">{{ project.name }}</a>
+        </div>
+    </clr-header>
+
+    <main class="content-container"></main>
+</clr-main-container>

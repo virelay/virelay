@@ -1,0 +1,29 @@
+
+// Center-aligns the load spinner and the failure alert for the website bootstrapping process both horizontally and vertically
+#app-component-bootstrapping-load-spinner-container, #app-component-bootstrapping-failed-alert-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+// Increases the font size for the heading of the alert that shows the error message when the bootstrapping process has failed
+#app-component-bootstrapping-failed-alert-container .alert-headline {
+    font-size: var(--cds-global-typography-section-font-size);
+    font-weight: var(--cds-global-typography-section-font-weight);
+    line-height: var(--cds-global-typography-section-line-height);
+    letter-spacing: var(--cds-global-typography-section-letter-spacing);
+}
+
+// Increases the font size for the message of the alert that shows the error message when the bootstrapping process has failed
+#app-component-bootstrapping-failed-alert-container .alert-message {
+    font-size: var(--cds-global-typography-message-font-size);
+    font-weight: var(--cds-global-typography-message-font-weight);
+    line-height: var(--cds-global-typography-message-line-height);
+    letter-spacing: var(--cds-global-typography-message-letter-spacing);
+}
+
+// Hides elements by removing them from the DOM
+.hidden {
+    display: none;
+}

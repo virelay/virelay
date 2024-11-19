@@ -232,30 +232,35 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
     /**
      * Sets the current analysis.
      *
-     * @param {Analysis} analysis The analysis that is to be displayed.
+     * @param {Analysis | null} analysis The analysis that is to be displayed.
      */
-    public set analysis(analysis: Analysis) {
+    public set analysis(analysis: Analysis | null) {
 
         // Stores the new value
         this._analysis = analysis;
 
         // Determines the total number of clusters, which is needed to determine the number of colors that are needed for the visualization
-        const clusters = new Map<number, number>();
-        for (const cluster of analysis.embedding.map(embeddingVector => embeddingVector.cluster)) {
-            let numberOfEmbeddingVectorsInCluster = clusters.get(cluster);
-            if (!numberOfEmbeddingVectorsInCluster) {
-                numberOfEmbeddingVectorsInCluster = 0;
+        if (analysis !== null) {
+            const clusters = new Map<number, number>();
+            for (const cluster of analysis.embedding.map(embeddingVector => embeddingVector.cluster)) {
+                let numberOfEmbeddingVectorsInCluster = clusters.get(cluster);
+                if (!numberOfEmbeddingVectorsInCluster) {
+                    numberOfEmbeddingVectorsInCluster = 0;
+                }
+                clusters.set(cluster, numberOfEmbeddingVectorsInCluster + 1);
             }
-            clusters.set(cluster, numberOfEmbeddingVectorsInCluster + 1);
+            this.numberOfClusters = clusters.size;
+            this.availableClusters = [...clusters.keys()].sort((a, b) => a - b).map(cluster => {
+                return {
+                    index: cluster,
+                    size: clusters.get(cluster) ?? 0,
+                    color: new THREE.Color().setHSL((360 / this.numberOfClusters * cluster) / 360, 0.5, 0.5).getStyle()
+                };
+            });
+        } else {
+            this.numberOfClusters = 0;
+            this.availableClusters = [];
         }
-        this.numberOfClusters = clusters.size;
-        this.availableClusters = [...clusters.keys()].sort((a, b) => a - b).map(cluster => {
-            return {
-                index: cluster,
-                size: clusters.get(cluster) ?? 0,
-                color: new THREE.Color().setHSL((360 / this.numberOfClusters * cluster) / 360, 0.5, 0.5).getStyle()
-            };
-        });
 
         // Refreshes the plot that displays the eigenvalues
         this.refreshEigenvaluePlot();
@@ -283,11 +288,11 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
     /**
      * Sets the name of the selected clustering.
      *
-     * @param {string} selectedClustering The name of the selected clustering that is to be set.
+     * @param {string | null} selectedClustering The name of the selected clustering that is to be set.
      */
-    public set selectedClustering(selectedClustering: string) {
+    public set selectedClustering(selectedClustering: string | null) {
         this._selectedClustering = selectedClustering;
-        if (selectedClustering) {
+        if (selectedClustering !== null) {
             void this.refreshAnalysisAsync();
         }
     }
@@ -323,7 +328,7 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
     /**
      * Gets the name of the selected embedding.
      *
-     * @returns {string} Returns the name of the selected embedding.
+     * @returns {string | null} Returns the name of the selected embedding.
      */
     public get selectedEmbedding(): string | null {
         return this._selectedEmbedding;
@@ -332,9 +337,9 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
     /**
      * Sets the name of the selected embedding.
      *
-     * @param {string} selectedEmbedding The name of the selected embedding that is to be set.
+     * @param {string | null} selectedEmbedding The name of the selected embedding that is to be set.
      */
-    public set selectedEmbedding(selectedEmbedding: string) {
+    public set selectedEmbedding(selectedEmbedding: string | null) {
 
         // Sets the new value
         this._selectedEmbedding = selectedEmbedding;

@@ -39,7 +39,10 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "npx ng serve --open",
-    "build": "npx ng build --configuration production"
+    "build": "npx ng build --configuration production",
+    "eslint": "npx eslint",
+    "stylelint": "npx stylelint '**/*.scss'",
+    "html-validate": "npx html-validate --config ../../tests/config/.htmlvalidate.js '!(node_modules)/**/*.html'"
   },
   "private": true,
   "dependencies": {
@@ -69,6 +72,13 @@
     "@types/file-saver": "^2.0.7",
     "@types/plotly.js-basic-dist-min": "^2.12.4",
     "@types/three": "^0.170.0",
-    "typescript": "~5.5.4"
+    "@virelay/eslint-config": "file:../../tests/eslint",
+    "@virelay/stylelint-config": "file:../../tests/stylelint",
+    "eslint": "^9.13.0",
+    "html-validate": "^8.27.0",
+    "html-validate-angular": "^5.1.0",
+    "stylelint": "^16.10.0",
+    "typescript": "~5.5.4",
+    "typescript-eslint": "^8.12.2"
   }
 }

@@ -21,10 +21,12 @@
     outline: max(2px, 0.08em) solid var(--clr-forms-focused-color);
     outline-offset: max(2px, 0.08em);
 }
+
 :is(a, button, input, textarea, summary):focus-visible, .btn:focus-visible, .btn.radio:has(:focus-visible) {
     outline: max(2px, 0.08em) solid var(--clr-forms-focused-color);
     outline-offset: max(2px, 0.08em);
 }
+
 :is(a, button, input, textarea, summary):focus:not(:focus-visible), .btn:focus:not(:focus-visible), .btn.radio:has(:focus:not(:focus-visible)) {
     outline: none;
 }

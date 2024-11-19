@@ -13,9 +13,11 @@ on:
       - master
       - develop
 
-# This workflow contains seven jobs: "unit-tests", which runs the unit tests, "pylint", which runs the PyLint linter, "pycodestyle", which runs the
-# linter PyCodeStyle, "pydoclint", which runs the docstring linter, "mypy", which runs the MyPy static type checker, "spell-check", which runs the
-# spell checker, and "build-documentation", which builds the documentation
+# This workflow contains ten jobs: "unit-tests", which runs the unit tests of the backend, "pylint", which runs the PyLint linter on the backend,
+# "pycodestyle", which runs the PyCodeStyle linter on the backend, "pydoclint", which runs the docstring linter on the backend, "mypy", which runs the
+# MyPy static type checker on the backend, "eslint", which runs the JavaScript/TypeScript linter on the frontend, "stylelint", which runs the CSS/Sass
+# linter on the frontend, "html-validate", which runs the HTML linter on the frontend, "spell-check", which runs the spell checker on the entire
+# repository, and "build-documentation", which builds the documentation
 jobs:
 
   # The first job runs the unit tests on Python 3.10, 3.11, 3.12, and 3.13
@@ -161,7 +163,80 @@ jobs:
       - name: Run PyLint Linter
         run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e mypy
 
-  # The sixth job runs the spell checker CSpell to spell-check all files in the repository
+  # The sixth job runs the ESLint linter
+  eslint:
+
+      # The job will run on the latest version of Ubuntu
+      name: Lint ViRelAy Frontend Using ESLint
+      runs-on: ubuntu-latest
+
+      # The job contains several steps: 1) checking out the repository, 2) installing Node.js, 3) installing the dependencies of the ESLint global
+      # configuration, 4) installing the dependencies of the frontend which includes the ESLint linter, and 5) running the ESLint linter
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+        - name: Install NodeJS
+          uses: actions/setup-node@v4
+          with:
+            node-version: 20
+        - name: Install ESLint Global Configuration
+          run: npm --prefix tests/eslint install
+        - name: Install Frontend Dependencies
+          run: npm --prefix source/frontend install
+        - name: Run ESLint Linter
+          run: npm --prefix source/frontend run eslint
+
+  # The seventh job runs the Stylelint linter
+  stylelint:
+
+      # The job will run on the latest version of Ubuntu
+      name: Lint ViRelAy Frontend Using ESLint
+      runs-on: ubuntu-latest
+
+      # The job contains several steps: 1) checking out the repository, 2) installing Node.js, 3) installing the dependencies of the Stylelint global
+      # configuration, 4) installing the dependencies of the frontend which includes the Stylelint linter, and 5) running the Stylelint linter
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+        - name: Install NodeJS
+          uses: actions/setup-node@v4
+          with:
+            node-version: 20
+        - name: Install Stylelint Global Configuration
+          run: npm --prefix tests/stylelint install
+        - name: Install Frontend Dependencies
+          run: npm --prefix source/frontend install
+        - name: Run Stylelint Linter
+          run: npm --prefix source/frontend run stylelint
+
+  # The eighth job runs the HTML-Validate linter
+  html-validate:
+
+      # The job will run on the latest version of Ubuntu
+      name: Lint ViRelAy Frontend Using ESLint
+      runs-on: ubuntu-latest
+
+      # The job contains several steps: 1) checking out the repository, 2) installing Node.js, 3) installing the dependencies of the frontend which
+      # includes the HTML-Validate linter, and 4) running the HTML-Validate linter
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+        - name: Install NodeJS
+          uses: actions/setup-node@v4
+          with:
+            node-version: 20
+        - name: Install Frontend Dependencies
+          run: npm --prefix source/frontend install
+        - name: Run HTML-Validate Linter
+          run: npm --prefix source/frontend run html-validate
+
+  # The ninth job runs the spell checker CSpell to spell-check all files in the repository
   spell-check:
 
     # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the
@@ -185,7 +260,7 @@ jobs:
       - name: Run Spell-Check
         run: npx cspell lint . --config tests/config/.cspell.json
 
-  # The seventh job builds the documentation using Sphinx
+  # The tenth job builds the documentation using Sphinx
   build-documentation:
 
     # The job will run on the latest version of Ubuntu; usually, when a job fails, the entire workflow will fail, but in this case, we do not want the

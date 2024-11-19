@@ -50,3 +50,55 @@ The frontend application is automatically compiled when the backend REST API pro
     $ npm --prefix source/frontend run build
 
 This command compiles the frontend code in production mode, incorporating optimizations and appending a hash to the file names to prevent cached versions from being served by the server. The compiled frontend output can be found in :repo:`source/frontend/distribution/browser`.  If the backend REST API is run without the ``--debug-mode`` flag, this is the location from where the frontend is served. Therefore, the frontend must be build before running the backend REST API locally without the ``--debug-mode`` flag.
+
+Linting
+=======
+
+The frontend web app adheres to a rigorous code style, which is enforced by utilizing tools like `ESLint <https://eslint.org/>`_, a JavaScript/TypeScript linter, `Stylelint <https://stylelint.io/>`_, a CSS/Sass linter, and `HTML-Validate <https://html-validate.org/>`_, an HTML linter. These checks are integral to identifying potential runtime bugs and ensuring the quality of our codebase. It is essential that contributors regularly run these tools and rectify any warnings that arise. Moreover, it is imperative to verify the absence of warnings before committing changes or creating pull requests. The linting process is integrated into our CI pipeline, which automatically runs upon the creation of a pull request. Any pull request resulting in a failed build will not be accepted.
+
+To keep the configurations for `ESLint <https://eslint.org/>`_ and `Stylelint <https://stylelint.io/>`_ separate from the frontend project and together with the configurations of the other linters, they are wrapped in their own NPM packages: :repo:`tests/eslint` and :repo:`tests/stylelint` (neither of them supports configuration files that are not in the same directory as the NPM package that is being linted). The below commands install the dependencies for these packages. This is required to run the linters locally.
+
+.. code-block:: console
+
+    $ npm --prefix tests/eslint install
+    $ npm --prefix tests/stylelint install
+
+The configuration files for each tool are located in the :repo:`tests/config` directory:
+
+* **ESLint**: :repo:`tests/eslint/eslint.config.mjs`
+* **Stylelint**: :repo:`tests/stylelint/.stylelintrc.mjs`
+* **HTML-Validate**: :repo:`tests/config/.htmlvalidate.js`
+
+The easiest way to run the linters is through NPM, which can be achieved using the following commands:
+
+.. code-block:: console
+
+    $ npm --prefix source/frontend run eslint
+    $ npm --prefix source/frontend run stylelint
+    $ npm --prefix source/frontend run html-validate
+
+Alternatively, the linters can be executed manually:
+
+.. code-block:: console
+
+    $ npx --prefix source/frontend eslint \
+        --config source/frontend/eslint.config.mjs \
+        'source/frontend/**/*.{ts,mjs}'
+
+    $ npx --prefix source/frontend stylelint \
+        --config tests/stylelint/.stylelintrc.mjs ß
+        'source/frontend/**/*.scss'
+
+    $ npx --prefix source/frontend html-validate \
+        --config tests/config/.htmlvalidate.js \
+        'source/frontend/!(node_modules)/**/*.html'
+
+.. note::
+
+    If you use Visual Studio Code and the `HTML-Validate extension <https://marketplace.visualstudio.com/items?itemName=html-validate.vscode-html-validate>`_, you need to symlink the configuration file to the root of the workspace, as the extension does not support configuration files in sub directories. This can be done by running the following command:
+
+    .. code-block:: console
+
+        $ ln -s tests/config/.htmlvalidate.js .htmlvalidate.js
+
+    The symlink is already ignored in the :repo:`.gitignore` file, so that it is not committed to the repository.

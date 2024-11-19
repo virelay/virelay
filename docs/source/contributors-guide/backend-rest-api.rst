@@ -154,7 +154,7 @@ Linting
 
 The backend REST API adheres to a rigorous code style, which is enforced by utilizing tools such as `PyLint <https://www.pylint.org/>`_, `PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_, and `PyDocLint <https://jsh9.github.io/pydoclint/>`_` for linting, in addition to `MyPy <https://mypy-lang.org/>`_ for static type checking. These checks are integral to identifying potential runtime bugs and ensuring the quality of our codebase. It is essential that contributors regularly run these tools and rectify any warnings that arise. Moreover, it is imperative to verify the absence of warnings before committing changes or creating pull requests. The linting and static type checking process is integrated into our CI pipeline, which automatically runs upon the creation of a pull request. Any pull request resulting in a failed build will not be accepted.
 
-The configuration files for each tool are located in the tests/config directory:
+The configuration files for each tool are located in the :repo:`tests/config` directory:
 
 * **PyLint**: :repo:`tests/config/.pylintrc`
 * **PyCodeStyle**: :repo:`tests/config/.pycodestyle`

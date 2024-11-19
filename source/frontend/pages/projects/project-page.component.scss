@@ -11,18 +11,19 @@
 
     --selected-attributions-pane-height: 250px;
 
-    grid-template-areas:
-        "options-pane               options-pane"
-        "embedding-visualizer       cluster-pane"
-        "selected-attributions-pane selected-attributions-pane"
-        "status-bar                 status-bar";
-    grid-template-rows: 85px 1fr var(--selected-attributions-pane-height) 35px;
-    grid-template-columns: 1fr 250px;
+    grid-template:
+        "options-pane               options-pane"               85px
+        "embedding-visualizer       cluster-pane"               1fr
+        "selected-attributions-pane selected-attributions-pane" var(--selected-attributions-pane-height)
+        "status-bar                 status-bar"                 35px
+        /
+        1fr 250px;
 
-    @media (max-height: 1080px) {
+    @media (height <= 1080px) {
         --selected-attributions-pane-height: 200px;
     }
-    @media (max-height: 720px) {
+
+    @media (height <= 720px) {
         --selected-attributions-pane-height: 150px;
     }
 
@@ -38,9 +39,11 @@
         button.btn, label.btn, .btn-group, clr-select-container, img {
             margin: 0 0.5rem;
         }
+
         :is(button.btn, label.btn, .btn-group, clr-select-container, img):first-child {
             margin-left: 1rem;
         }
+
         :is(button.btn, label.btn, .btn-group, clr-select-container, img):last-child {
             margin-right: 1rem;
         }

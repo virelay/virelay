@@ -81,6 +81,9 @@
 
     // A list of words that are not in the included default dictionary for American English
     "words": [
+        "TSES",
+        "Descriptionless",
+        "stylelintrc",
         "3rdpartylicenses",
         "absspectral",
         "addopts",

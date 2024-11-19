@@ -26,6 +26,7 @@
   - The endpoints of the REST API were available using any HTTP verb. Now, only the GET method is allowed.
   - The default port of the backed REST API was changed to 8000, because 8080 is more commonly used and might conflict with other services. The documentation was updated accordingly.
   - Version, author, license, and copyright information of the backend REST API was added to the `__init__.py` file. The version is automatically updated from the current Git tag during build.
+  - When serving the frontend files, the backend now checks if the file exists and returns HTTP 404 Not Found, if the file could not be found, instead of raising an exception, which results in an HTTP 500 Internal Server Error.
 - The list of supported Python versions was updated
   - Python 3.7 has already reached its end-of-life and the end-of-life of Python 3.8 is imminent. Although Python 3.9 will only reach its end of life in October 2025, it is missing the union operator `|` for type hints. Although this operator is not strictly necessary, it makes the type hinting for MyPy much easier to read. Also, the latest NumPy version does not support Python 3.9 anymore. Since ViRelAy is not a library that is used by other projects and most operating systems already support Python 3.10, the minimum Python version was updated to 3.10 to make the development process easier. Python 3.11, 3.12, and 3.13 were also added to the list of supported Python versions. This means that now Python 3.10, 3.11, 3.12, 3.13 are the supported Python versions for the project.
   - The following changes had to be made to because of the updated Python versions and dependencies:
@@ -77,7 +78,8 @@
   - In addition to the light theme, a dark theme was added. The theme is automatically selected based on the user's system preferences. The screenshots in the documentation were updated accordingly.
   - The toolbox and the sample viewer can now be scrolled horizontally using the mouse wheel, which makes them easier to navigate.
   - When hovering over an embedding vector, the corresponding sample is now loaded after a short delay, which prevents the constant loading of samples when the user only moves the mouse over the samples.
-  - The samples and attributions in the sample viewer are now loaded all at once instead of loading the one by one.
+  - The samples and attributions in the selected samples viewer are now loaded all at once instead of loading the one by one.
+  - The selected samples viewer is now responsive and decreases its height when the browser window gets smaller
   - Many data structures that were previously inline types or a mixture of built-in types now have proper types. This includes:
     - A type for embedding vectors,
     - a type for the hover event in the embedding visualizer,
@@ -91,6 +93,13 @@
   - A custom exception type for errors that occur in a service was added.
   - A URL builder was created, which makes it easier to build URLs for the backend REST API in the services.
 - The build output of the frontend was removed from the repository, as it will now be build as needed. The CI/CD pipeline, as well as the documentation were adapted accordingly.
+- Added multiple linters for the frontend:
+  - ESLint, a JavaScript and TypeScript linter.
+  - Stylelint, a CSS and Sass linter.
+  - HTML-Validate, an HTML linter.
+  - All issues that were detected by the linters was fixed.
+  - The documentation was updated to include instructions on how to run the linters.
+  - The GitHub Actions workflow configuration was adapted to run the linters.
 
 ### CI/CD
 

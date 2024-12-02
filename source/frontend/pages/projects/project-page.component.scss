@@ -8,12 +8,23 @@
 
 #panels-container {
     display: grid;
-    grid-template:
-        "options-pane options-pane" 85px
-        "embedding-plot cluster-pane" 1fr
-        "selected-attributions-pane selected-attributions-pane" 250px
-        "status-bar status-bar" 35px
-        / 1fr 250px;
+
+    --selected-attributions-pane-height: 250px;
+
+    grid-template-areas:
+        "options-pane               options-pane"
+        "embedding-visualizer       cluster-pane"
+        "selected-attributions-pane selected-attributions-pane"
+        "status-bar                 status-bar";
+    grid-template-rows: 85px 1fr var(--selected-attributions-pane-height) 35px;
+    grid-template-columns: 1fr 250px;
+
+    @media (max-height: 1080px) {
+        --selected-attributions-pane-height: 200px;
+    }
+    @media (max-height: 720px) {
+        --selected-attributions-pane-height: 150px;
+    }
 
     #options-pane {
         display: flex;
@@ -60,7 +71,7 @@
         flex-direction: column;
         grid-area: cluster-pane;
         align-items: center;
-        height: calc(100vh - 430px);
+        height: calc(100vh - 180px - var(--selected-attributions-pane-height));
         overflow: hidden auto;
         scrollbar-color: var(--virelay-scrollbar-thumb-color) var(--virelay-scrollbar-track-color);
         scrollbar-width: thin;
@@ -73,10 +84,10 @@
         }
     }
 
-    #embedding-plot {
-        grid-area: embedding-plot;
+    #embedding-visualizer {
+        grid-area: embedding-visualizer;
         width: calc(100vw - 250px);
-        height: calc(100vh - 430px);
+        height: calc(100vh - 180px - var(--selected-attributions-pane-height));
 
         #attribution-hover-preview {
             position: absolute;
@@ -127,18 +138,18 @@
         #selected-attribution-list {
             display: flex;
             align-items: center;
-            height: 226px;
+            height: calc(var(--selected-attributions-pane-height) - 2 * 12px);
             margin: 12px;
 
             .selected-attribution {
-                min-width: 180px;
-                max-width: 180px;
-                min-height: 210px;
-                max-height: 210px;
+                min-width: calc(var(--selected-attributions-pane-height) - 70px);
+                max-width: calc(var(--selected-attributions-pane-height) - 70px);;
+                min-height: calc(var(--selected-attributions-pane-height) - 40px);;
+                max-height: calc(var(--selected-attributions-pane-height) - 40px);;
 
                 img {
-                    width: 180px;
-                    height: 180px;
+                    width: calc(var(--selected-attributions-pane-height) - 70px);;
+                    height: calc(var(--selected-attributions-pane-height) - 70px);;
                 }
 
                 margin-left: 12px;

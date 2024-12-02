@@ -1,7 +1,7 @@
 
 // The :host pseudo selector references the component element itself; this rules causes the embedding visualizer to take up all space available to it;
-// this is done by making embedding visualizer a block element, which is required for the width and height properties to work; then the width and
-// height properties are set to 100% of its parent element
+// this is done by making it a block element, which is required for the width and height properties to work; then the width and height properties are
+// set to 100% of its parent element
 :host {
     display: block;
     width: 100%;

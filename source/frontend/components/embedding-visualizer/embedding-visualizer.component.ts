@@ -723,8 +723,8 @@ export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
 
         // Adds a camera controller for zooming and panning
         this.cameraController = new OrbitControls(this.camera, renderTargetNativeElement);
-        this.cameraController.minZoom = 0.5;
-        this.cameraController.maxZoom = 5.0;
+        this.cameraController.minZoom = 0.1;
+        this.cameraController.maxZoom = 10.0;
         this.cameraController.screenSpacePanning = true;
         this.cameraController.enableRotate = false;
 

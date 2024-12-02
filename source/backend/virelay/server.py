@@ -133,6 +133,8 @@ class Server:
                 def view_function() -> flask.Response:
                     with as_file(resources_path / relative_file_path) as file_path:
                         file_path = file_path.resolve()
+                        if not file_path.is_file():
+                            flask.abort(404)
                         return flask.send_file(cast(BinaryIO, file_path.open('rb')), download_name=file_path.name)
                 return view_function
 
@@ -140,6 +142,8 @@ class Server:
                 def view_function(file_name: str) -> flask.Response:
                     with as_file(resources_path / file_path_template.format(file_name)) as file_path:
                         file_path = file_path.resolve()
+                        if not file_path.is_file():
+                            flask.abort(404)
                         return flask.send_file(cast(BinaryIO, file_path.open('rb')), download_name=file_path.name)
                 return view_function
 

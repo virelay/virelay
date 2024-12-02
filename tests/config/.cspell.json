@@ -195,6 +195,7 @@
         "pylintrc",
         "pytest",
         "pytyped",
+        "qwen",
         "Raycaster",
         "rcfile",
         "rdiv",

@@ -3,6 +3,7 @@
 import os
 import glob
 
+import h5py
 import numpy
 import pytest
 
@@ -365,30 +366,45 @@ class TestAttributionDatabase:
     """Represents the tests for the AttributionDatabase class."""
 
     @staticmethod
-    def test_attribution_database_creation(attribution_file_path: str, label_map_file_path: str) -> None:
+    def test_attribution_database_creation(
+        attribution_with_attributions_as_hdf5_dataset_file_path: str,
+        attribution_with_attributions_as_hdf5_group_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether an attribution database can be created.
 
         Args:
-            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attributions file that is used for the tests and which
+                contains the attributions in an HDF5 dataset.
+            attribution_with_attributions_as_hdf5_group_file_path (str): The path to the attributions file that is used for the tests and which
+                contains the attributions in an HDF5 group.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+
+        attribution_database = AttributionDatabase(attribution_with_attributions_as_hdf5_dataset_file_path, label_map)
+        assert not attribution_database.is_closed
+        assert not attribution_database.is_multi_label
+
+        attribution_database = AttributionDatabase(attribution_with_attributions_as_hdf5_group_file_path, label_map)
         assert not attribution_database.is_closed
         assert not attribution_database.is_multi_label
 
     @staticmethod
-    def test_closed_attribution_database_cannot_get_attributions(attribution_file_path: str, label_map_file_path: str) -> None:
+    def test_closed_attribution_database_cannot_get_attributions(
+        attribution_with_attributions_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether the attribution database correctly refuses to operate when it was already closed.
 
         Args:
-            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attributions file that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+        attribution_database = AttributionDatabase(attribution_with_attributions_as_hdf5_dataset_file_path, label_map)
         attribution_database.close()
 
         with pytest.raises(ValueError):
@@ -398,30 +414,36 @@ class TestAttributionDatabase:
             attribution_database.get_attribution(0)
 
     @staticmethod
-    def test_attribution_database_can_be_closed_multiple_times(attribution_file_path: str, label_map_file_path: str) -> None:
+    def test_attribution_database_can_be_closed_multiple_times(
+        attribution_with_attributions_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether the attribution database can be closed multiple times without raising an error.
 
         Args:
-            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attributions file that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+        attribution_database = AttributionDatabase(attribution_with_attributions_as_hdf5_dataset_file_path, label_map)
         attribution_database.close()
         attribution_database.close()
 
     @staticmethod
-    def test_attribution_database_can_check_whether_attribution_is_available(attribution_file_path: str, label_map_file_path: str) -> None:
+    def test_attribution_database_can_check_whether_attribution_is_available(
+        attribution_with_attributions_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether it can be checked if the attribution database contains a specific attribution.
 
         Args:
-            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attributions file that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+        attribution_database = AttributionDatabase(attribution_with_attributions_as_hdf5_dataset_file_path, label_map)
 
         assert attribution_database.has_attribution(0)
         assert not attribution_database.has_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
@@ -445,16 +467,19 @@ class TestAttributionDatabase:
         assert not attribution_database.has_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
 
     @staticmethod
-    def test_attribution_database_can_retrieve_attribution(attribution_file_path: str, label_map_file_path: str) -> None:
+    def test_attribution_database_can_retrieve_attribution(
+        attribution_with_attributions_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether an attribution can be retrieved from the attribution database.
 
         Args:
-            attribution_file_path (str): The path to the attributions file that is used for the tests.
+            attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attributions file that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
-        attribution_database = AttributionDatabase(attribution_file_path, label_map)
+        attribution_database = AttributionDatabase(attribution_with_attributions_as_hdf5_dataset_file_path, label_map)
 
         with pytest.raises(LookupError):
             attribution_database.get_attribution(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES)
@@ -986,35 +1011,50 @@ class TestHdf5Dataset:
     """Represents the tests for the Hdf5Dataset class."""
 
     @staticmethod
-    def test_dataset_has_correct_size(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
+    def test_dataset_has_correct_size(
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+        hdf5_dataset_with_samples_as_hdf5_group_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether the dataset correctly reports its size/length.
 
         Args:
-            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests and which contains the
+                samples in an HDF5 dataset.
+            hdf5_dataset_with_samples_as_hdf5_group_file_path (str): The path to the HDF5 dataset that is used for the tests and which contains the
+                samples in an HDF5 group.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
+
         hdf5_dataset = Hdf5Dataset(
-            name="Test Dataset",
-            path=hdf5_dataset_file_path,
+            name="Test Dataset with Data as HDF5 Dataset",
+            path=hdf5_dataset_with_samples_as_hdf5_dataset_file_path,
+            label_map=label_map
+        )
+        assert len(hdf5_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
+
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset with Data as HDF5 Group",
+            path=hdf5_dataset_with_samples_as_hdf5_group_file_path,
             label_map=label_map
         )
         assert len(hdf5_dataset) == NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES
 
     @staticmethod
-    def test_closed_dataset_cannot_retrieve_sample(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
+    def test_closed_dataset_cannot_retrieve_sample(hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset correctly refuses to return a sample for a closed dataset.
 
         Args:
-            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=hdf5_dataset_file_path,
+            path=hdf5_dataset_with_samples_as_hdf5_dataset_file_path,
             label_map=label_map
         )
         hdf5_dataset.close()
@@ -1026,36 +1066,39 @@ class TestHdf5Dataset:
             _ = hdf5_dataset[0]
 
     @staticmethod
-    def test_dataset_can_be_closed_multiple_times(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
+    def test_dataset_can_be_closed_multiple_times(hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
         """Tests whether the dataset can be closed multiple times without raising an error.
 
         Args:
-            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=hdf5_dataset_file_path,
+            path=hdf5_dataset_with_samples_as_hdf5_dataset_file_path,
             label_map=label_map
         )
         hdf5_dataset.close()
         hdf5_dataset.close()
 
     @staticmethod
-    def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
+    def test_dataset_cannot_retrieve_sample_for_out_of_bounds_index(
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether the dataset correctly raises an exception, when a sample is to be retrieved that is not in the dataset.
 
         Args:
-            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=hdf5_dataset_file_path,
+            path=hdf5_dataset_with_samples_as_hdf5_dataset_file_path,
             label_map=label_map
         )
 
@@ -1066,18 +1109,22 @@ class TestHdf5Dataset:
             _ = hdf5_dataset[NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES]
 
     @staticmethod
-    def test_dataset_can_retrieve_samples(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
+    def test_dataset_with_samples_as_hdf5_dataset_can_retrieve_samples(
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
         """Tests whether a sample can be retrieved from the dataset.
 
         Args:
-            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests and whose samples are
+                stored in an HDF5 dataset.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=hdf5_dataset_file_path,
+            path=hdf5_dataset_with_samples_as_hdf5_dataset_file_path,
             label_map=label_map
         )
 
@@ -1092,18 +1139,92 @@ class TestHdf5Dataset:
         assert sample.data.dtype == numpy.uint8
 
     @staticmethod
-    def test_dataset_can_retrieve_multiple_samples(hdf5_dataset_file_path: str, label_map_file_path: str) -> None:
-        """Tests whether multiple samples can be retrieved at the same time.
+    def test_dataset_with_samples_as_hdf5_group_can_retrieve_samples(
+        hdf5_dataset_with_samples_as_hdf5_group_file_path: str,
+        label_map_file_path: str
+    ) -> None:
+        """Tests whether a sample can be retrieved from the dataset.
 
         Args:
-            hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests.
+            hdf5_dataset_with_samples_as_hdf5_group_file_path (str): The path to the HDF5 dataset that is used for the tests and whose samples are
+                stored in an HDF5 group.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
         hdf5_dataset = Hdf5Dataset(
             name="Test Dataset",
-            path=hdf5_dataset_file_path,
+            path=hdf5_dataset_with_samples_as_hdf5_group_file_path,
+            label_map=label_map
+        )
+
+        sample = hdf5_dataset.get_sample(0)
+        assert sample.index == 0
+        assert len(sample.labels) == 1
+        assert sample.labels[0].index == 0
+        assert sample.labels[0].word_net_id == '00000000'
+        assert sample.labels[0].name == 'Class 0'
+        assert isinstance(sample.data, numpy.ndarray)
+        assert sample.data.shape == (32, 32, 3)
+        assert sample.data.dtype == numpy.uint8
+
+    @staticmethod
+    def test_dataset_with_samples_as_hdf5_dataset_can_retrieve_multiple_samples(
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+        label_map_file_path: str
+    ) -> None:
+        """Tests whether multiple samples can be retrieved at the same time.
+
+        Args:
+            hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset that is used for the tests and whose samples are
+                stored in an HDF5 dataset.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=hdf5_dataset_with_samples_as_hdf5_dataset_file_path,
+            label_map=label_map
+        )
+
+        samples = hdf5_dataset[2:6]
+        assert isinstance(samples, list)
+        assert len(samples) == 4
+
+        samples = hdf5_dataset[[2, 10, 12, 20, 19]]
+        assert isinstance(samples, list)
+        assert len(samples) == 5
+
+        samples = hdf5_dataset[(8, 13, 27)]
+        assert isinstance(samples, list)
+        assert len(samples) == 3
+
+        samples = hdf5_dataset[numpy.array([21, 4])]
+        assert isinstance(samples, list)
+        assert len(samples) == 2
+
+        samples = hdf5_dataset[range(10)]
+        assert isinstance(samples, list)
+        assert len(samples) == 10
+
+    @staticmethod
+    def test_dataset_with_samples_as_hdf5_group_can_retrieve_multiple_samples(
+        hdf5_dataset_with_samples_as_hdf5_group_file_path: str,
+        label_map_file_path: str
+    ) -> None:
+        """Tests whether multiple samples can be retrieved at the same time.
+
+        Args:
+            hdf5_dataset_with_samples_as_hdf5_group_file_path (str): The path to the HDF5 dataset that is used for the tests and whose samples are
+                stored in an HDF5 group.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+        hdf5_dataset = Hdf5Dataset(
+            name="Test Dataset",
+            path=hdf5_dataset_with_samples_as_hdf5_group_file_path,
             label_map=label_map
         )
 
@@ -1662,6 +1783,218 @@ class TestLabelMap:
 
         label_map = LabelMap(label_map_file_path)
 
+        label = label_map.get_label_from_index(0)
+        assert label.index == 0
+        assert label.name == 'Class 0'
+        assert label.word_net_id == '00000000'
+
+        label = label_map.get_label_from_index(1)
+        assert label.index == 1
+        assert label.name == 'Class 1'
+        assert label.word_net_id == '00000001'
+
+        label = label_map.get_label_from_index(2)
+        assert label.index == 2
+        assert label.name == 'Class 2'
+        assert label.word_net_id == '00000002'
+
+        with pytest.raises(LookupError):
+            label_map.get_label_from_index(3)
+
+    @staticmethod
+    def test_labels_can_be_retrieved_via_wordnet_id(label_map_file_path: str) -> None:
+        """Tests whether labels can be retrieved via WordNet ID from a label map.
+
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+
+        label = label_map.get_label_from_word_net_id('00000000')
+        assert label.index == 0
+        assert label.name == 'Class 0'
+        assert label.word_net_id == '00000000'
+
+        label = label_map.get_label_from_word_net_id('00000001')
+        assert label.index == 1
+        assert label.name == 'Class 1'
+        assert label.word_net_id == '00000001'
+
+        label = label_map.get_label_from_word_net_id('00000002')
+        assert label.index == 2
+        assert label.name == 'Class 2'
+        assert label.word_net_id == '00000002'
+
+        with pytest.raises(LookupError):
+            label_map.get_label_from_word_net_id('')
+
+    @staticmethod
+    def test_labels_can_be_retrieved_via_one_hot_vector(label_map_file_path: str) -> None:
+        """Tests whether labels can be retrieved via one-hot vector from a label map.
+
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([1, 0, 0]))
+        assert len(labels) == 1
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([0, 1, 0]))
+        assert len(labels) == 1
+        assert labels[0].index == 1
+        assert labels[0].name == 'Class 1'
+        assert labels[0].word_net_id == '00000001'
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([0, 0, 1]))
+        assert len(labels) == 1
+        assert labels[0].index == 2
+        assert labels[0].name == 'Class 2'
+        assert labels[0].word_net_id == '00000002'
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([1, 0, 1]))
+        assert len(labels) == 2
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 2
+        assert labels[1].name == 'Class 2'
+        assert labels[1].word_net_id == '00000002'
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([0, 1, 1]))
+        assert len(labels) == 2
+        assert labels[0].index == 1
+        assert labels[0].name == 'Class 1'
+        assert labels[0].word_net_id == '00000001'
+        assert labels[1].index == 2
+        assert labels[1].name == 'Class 2'
+        assert labels[1].word_net_id == '00000002'
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([1, 1, 0]))
+        assert len(labels) == 2
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 1
+        assert labels[1].name == 'Class 1'
+        assert labels[1].word_net_id == '00000001'
+
+        labels = label_map.get_labels_from_n_hot_vector(numpy.array([1, 1, 1]))
+        assert len(labels) == 3
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 1
+        assert labels[1].name == 'Class 1'
+        assert labels[1].word_net_id == '00000001'
+        assert labels[2].index == 2
+        assert labels[2].name == 'Class 2'
+        assert labels[2].word_net_id == '00000002'
+
+        with pytest.raises(LookupError):
+            label_map.get_labels_from_n_hot_vector(numpy.array([0, 0, 0, 1]))
+
+    @staticmethod
+    def test_labels_can_be_retrieved_via_generic_retrieval_method(
+        hdf5_dataset_with_samples_as_hdf5_group_file_path: str,
+        hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path: str,
+        label_map_file_path: str
+    ) -> None:
+        """Tests whether labels can be retrieved via the general retrieval method of the label map class.
+
+        Args:
+            hdf5_dataset_with_samples_as_hdf5_group_file_path (str): The path to the HDF5 dataset that is used for the tests, which uses groups for
+                its samples. This dataset is used to test whether the get_labels method is able to retrieve the labels for a indices that are a scalar
+                value of type h5py.Dataset.
+            hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path (str): The path to the HDF5 dataset that is used for the tests,
+                which uses groups for its samples and where each sample has multiple labels. This dataset is used to test whether the get_labels
+                method is able to retrieve the labels for a one-hot encoded vector that is of type h5py.Dataset.
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+
+        hdf5_dataset_with_samples_as_hdf5_group = h5py.File(hdf5_dataset_with_samples_as_hdf5_group_file_path, 'r')
+        singular_labels = hdf5_dataset_with_samples_as_hdf5_group['label']
+
+        hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels = \
+            h5py.File(hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path, 'r')
+        multi_labels = hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels['label']
+
+        label = label_map.get_labels(0)
+        assert label.index == 0
+        assert label.name == 'Class 0'
+        assert label.word_net_id == '00000000'
+
+        label = label_map.get_labels(numpy.array([1])[0])
+        assert label.index == 1
+        assert label.name == 'Class 1'
+        assert label.word_net_id == '00000001'
+
+        label = label_map.get_labels('00000002')
+        assert label.index == 2
+        assert label.name == 'Class 2'
+        assert label.word_net_id == '00000002'
+
+        labels = label_map.get_labels([0, 1])
+        assert len(labels) == 2
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 1
+        assert labels[1].name == 'Class 1'
+        assert labels[1].word_net_id == '00000001'
+
+        labels = label_map.get_labels((0, 1))
+        assert len(labels) == 2
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 1
+        assert labels[1].name == 'Class 1'
+        assert labels[1].word_net_id == '00000001'
+
+        labels = label_map.get_labels(numpy.array([1, 1, 0]))
+        assert len(labels) == 2
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 1
+        assert labels[1].name == 'Class 1'
+        assert labels[1].word_net_id == '00000001'
+
+        label = label_map.get_labels(singular_labels[list(singular_labels.keys())[0]])
+        assert label.index == 0
+        assert label.name == 'Class 0'
+        assert label.word_net_id == '00000000'
+
+        labels = label_map.get_labels(multi_labels[list(multi_labels.keys())[0]])
+        assert len(labels) == 2
+        assert labels[0].index == 0
+        assert labels[0].name == 'Class 0'
+        assert labels[0].word_net_id == '00000000'
+        assert labels[1].index == 1
+        assert labels[1].name == 'Class 1'
+        assert labels[1].word_net_id == '00000001'
+
+        with pytest.raises(LookupError):
+            label_map.get_labels({})
+
+    @staticmethod
+    def test_label_names_can_be_retrieved_via_index(label_map_file_path: str) -> None:
+        """Tests whether label names can be retrieved via index from a label map.
+
+        Args:
+            label_map_file_path (str): The path to the label map file that is used for the tests.
+        """
+
+        label_map = LabelMap(label_map_file_path)
+
         assert label_map.get_label_name_from_index(0) == 'Class 0'
         assert label_map.get_label_name_from_index(1) == 'Class 1'
         assert label_map.get_label_name_from_index(2) == 'Class 2'
@@ -1670,8 +2003,8 @@ class TestLabelMap:
             label_map.get_label_name_from_index(3)
 
     @staticmethod
-    def test_labels_can_be_retrieved_via_wordnet_id(label_map_file_path: str) -> None:
-        """Tests whether labels can be retrieved via WordNet ID from a label map.
+    def test_label_names_can_be_retrieved_via_wordnet_id(label_map_file_path: str) -> None:
+        """Tests whether label names can be retrieved via WordNet ID from a label map.
 
         Args:
             label_map_file_path (str): The path to the label map file that is used for the tests.
@@ -1684,11 +2017,11 @@ class TestLabelMap:
         assert label_map.get_label_name_from_word_net_id('00000002') == 'Class 2'
 
         with pytest.raises(LookupError):
-            label_map.get_label_name_from_word_net_id("")
+            label_map.get_label_name_from_word_net_id('')
 
     @staticmethod
-    def test_labels_can_be_retrieved_via_one_hot_vector(label_map_file_path: str) -> None:
-        """Tests whether labels can be retrieved via one-hot vector from a label map.
+    def test_label_names_can_be_retrieved_via_one_hot_vector(label_map_file_path: str) -> None:
+        """Tests whether label names can be retrieved via one-hot vector from a label map.
 
         Args:
             label_map_file_path (str): The path to the label map file that is used for the tests.
@@ -1708,24 +2041,43 @@ class TestLabelMap:
             label_map.get_label_names_from_n_hot_vector(numpy.array([0, 0, 0, 1]))
 
     @staticmethod
-    def test_labels_can_be_retrieved_via_generic_retrieval_method(label_map_file_path: str) -> None:
-        """Tests whether labels can be retrieved via the general retrieval method of the label map class.
+    def test_label_names_can_be_retrieved_via_generic_retrieval_method(
+        hdf5_dataset_with_samples_as_hdf5_group_file_path: str,
+        hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path: str,
+        label_map_file_path: str
+    ) -> None:
+        """Tests whether label names can be retrieved via the general retrieval method of the label map class.
 
         Args:
+            hdf5_dataset_with_samples_as_hdf5_group_file_path (str): The path to the HDF5 dataset that is used for the tests, which uses groups for
+                its samples. This dataset is used to test whether the get_label_names method is able to retrieve the label names for a indices that
+                are a scalar value of type h5py.Dataset.
+            hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path (str): The path to the HDF5 dataset that is used for the tests,
+                which uses groups for its samples and where each sample has multiple labels. This dataset is used to test whether the get_label_names
+                method is able to retrieve the label names for a one-hot encoded vector that is of type h5py.Dataset.
             label_map_file_path (str): The path to the label map file that is used for the tests.
         """
 
         label_map = LabelMap(label_map_file_path)
 
-        assert label_map.get_label_names(numpy.array([0])[0]) == 'Class 0'
-        assert label_map.get_label_names(1) == 'Class 1'
+        hdf5_dataset_with_samples_as_hdf5_group = h5py.File(hdf5_dataset_with_samples_as_hdf5_group_file_path, 'r')
+        singular_labels = hdf5_dataset_with_samples_as_hdf5_group['label']
+
+        hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels = \
+            h5py.File(hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path, 'r')
+        multi_labels = hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels['label']
+
+        assert label_map.get_label_names(0) == 'Class 0'
+        assert label_map.get_label_names(numpy.array([1])[0]) == 'Class 1'
         assert label_map.get_label_names('00000002') == 'Class 2'
+        assert label_map.get_label_names([0, 1]) == ['Class 0', 'Class 1']
+        assert label_map.get_label_names((0, 1)) == ['Class 0', 'Class 1']
         assert label_map.get_label_names(numpy.array([1, 1, 0])) == ['Class 0', 'Class 1']
+        assert label_map.get_label_names(singular_labels[list(singular_labels.keys())[0]]) == 'Class 0'
+        assert label_map.get_label_names(multi_labels[list(multi_labels.keys())[0]]) == ['Class 0', 'Class 1']
 
         with pytest.raises(LookupError):
-            label_map.get_label_names([0, 1])  # type: ignore
-        with pytest.raises(LookupError):
-            label_map.get_label_names((0, 1))  # type: ignore
+            label_map.get_label_names({})
 
 
 class TestLabel:

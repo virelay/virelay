@@ -34,7 +34,7 @@ When starting ViRelAy, at lease one project file must be specified, which contai
         sources:
             - ilsvrc2012-small-sg/analysis/ilsvrc2012-small.smoothgrad.h5
 
-ViRelAy allows you to load multiple project files simultaneously, which can be beneficial for comparing multiple similar classifiers. You can specify multiple project files as arguments when running ViRelAy using its command line interface or the built-in HTTP server:
+ViRelAy allows you to load multiple project files simultaneously, which can be beneficial for comparing multiple similar classifiers. You can specify multiple project files as arguments when running ViRelAy using its command-line interface or the built-in HTTP server:
 
 .. code-block:: console
 

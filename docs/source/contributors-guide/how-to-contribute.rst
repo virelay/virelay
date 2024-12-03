@@ -43,7 +43,7 @@ To contribute code or documentation, follow these steps:
 1. Fork the Repository
 ----------------------
 
-To begin contributing to this project, you will first need to fork the repository on GitHub. This creates a copy of the original repository under your own account. Once you have cloned your fork, please create a new branch specifically for your feature or bug fix. When naming your branch, we recommend using kebab-case (lowercase words separated by hyphens) to clearly describe its purpose, e.g., ``my-new-feature``.
+To begin contributing to this project, you will first need to `fork the repository on GitHub <https://github.com/virelay/virelay/fork>`_. This creates a copy of the original repository under your own account. Once you have cloned your fork, please create a new branch specifically for your feature or bug fix. When naming your branch, we recommend using kebab-case (lowercase words separated by hyphens) to clearly describe its purpose, e.g., ``my-new-feature``.
 
 2. Make your Changes
 --------------------
@@ -66,23 +66,61 @@ To ensure the reliability and stability of our codebase, please write comprehens
 
 Before committing your changes, please ensure that all unit tests pass without errors or failures. This ensures that our codebase remains robust and maintains its expected functionality.
 
-4. Update the tox Configuration & GitHub Actions Workflow
----------------------------------------------------------
+4. Update the Documentation
+---------------------------
 
-Our continuous integration and deployment (CI/CD) pipeline, built using GitHub Actions Workflows, relies on tox to run unit tests, linters, static type checkers, and documentation builds. If you've made changes that require updates to the tox configuration or GitHub Actions workflow, please ensure that the relevant sections are revised accordingly.
+If your changes have impacted how the project is used or you made changes to its functionality, please ensure that the relevant sections of our documentation are updated accordingly. We use `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to generate our documentation, which can be found in the :repo:`docs/source` directory.
 
-The configuration files for these tools can be found in:
+A local build of the documentation can be created using the following command:
 
-* **tox Configuration**: :repo:`tests/config/tox.ini`
-* **GitHub Actions workflow**: :repo:`.github/workflows/tests.yaml`
+.. code-block:: console
 
-To run tests locally using tox, execute the following command from the project root:
+    $ uv run --directory source/backend tox --conf ../../tests/config/tox.ini -e docs
+
+5. Testing & Linting
+--------------------
+
+We use tox to run unit tests, linters and static type checkers on the backend REST API, as well as to build the documentation. If you've made any changes to the backend REST API or the documentation that require updates to configurations of the linters, type checker, or tox, please ensure that the relevant sections in the following configuration files are are revised accordingly:
+
+* **tox**: :repo:`tests/config/tox.ini`
+* **PyLint**: :repo:`tests/config/pylint.ini`
+* **PyCodeStyle**: :repo:`tests/config/.pycodestyle`
+* **PyDocLint**: :repo:`tests/config/.pydoclint.toml`
+* **MyPy**: :repo:`tests/config/.mypy.ini`
+
+To run tests and build the documentation locally using tox, execute the following command from the project root:
 
 .. code-block:: console
 
     $ uv --directory source/backend run tox --conf ../../tests/config/tox.ini run
 
-Alternatively, you can use the `act tool <https://nektosact.com/>`_ to test the GitHub Actions workflow locally. Install the act tool according to the `official installation instructions <https://nektosact.com/installation/index.html>`_. After the installation, the GitHub Actions workflow can be run locally using the following commands:
+To check the code quality of the frontend web app, we also use a range of linters, which can be run using the following commands:
+
+.. code-block:: console
+
+    $ npm --prefix source/frontend run eslint
+    $ npm --prefix source/frontend run stylelint
+    $ npm --prefix source/frontend run html-validate
+
+If your changes require updates to the configurations of the frontend linters, please update the following configuration files:
+
+* **ESLint**: :repo:`tests/eslint/eslint.config.mjs`
+* **Stylelint**: :repo:`tests/stylelint/.stylelintrc.mjs`
+* **HTML-Validate**: :repo:`tests/config/.htmlvalidate.js`
+
+Finally, we use a Markdown linter to ensure the quality of the read me and a spell checker to verify the correct spelling of all text, including code files. The Markdown linter and the spell checker can be run using the following commands:
+
+.. code-block:: console
+
+    $ npm --prefix tests/markdownlint run markdownlint
+    $ npm --prefix tests/cspell run cspell
+
+If your changes require updates to the configurations of the Markdown linter or the spell checker, please update the following configuration files:
+
+* **Markdown Linter**: :repo:`tests/markdownlint/.markdownlint.yaml`
+* **Spell Checker**: :repo:`tests/cspell/.cspell.json`
+
+Our continuous integration and deployment (CI/CD) pipeline is built using GitHub Actions Workflows. You can use the `act tool <https://nektosact.com/>`_ to test the GitHub Actions workflow locally. Install the act tool according to the `official installation instructions <https://nektosact.com/installation/index.html>`_. After the installation, the GitHub Actions workflow can be run locally using the following commands:
 
 .. code-block:: console
 
@@ -90,6 +128,8 @@ Alternatively, you can use the `act tool <https://nektosact.com/>`_ to test the 
     $ act --job <job-id> # Runs a single job with the specified ID (e.g., unit-tests, build-documentation, pylint, etc.)
 
 When prompted to select a Docker image, we recommend using the "full" image.
+
+If your changes require updates to the GitHub Actions workflows, please update the following configuration file: :repo:`.github/workflows/tests.yaml`.
 
 To ensure a successful review of your pull request, please verify that:
 
@@ -99,10 +139,6 @@ To ensure a successful review of your pull request, please verify that:
 
 If any of these checks fail, we will not be able to accept the pull request.
 
-5. Update the Documentation
----------------------------
-
-If your changes have impacted how the project is used or you made changes to its functionality, please ensure that the relevant sections of our documentation are updated accordingly. We use `Sphinx <https://www.sphinx-doc.org/en/master/>`_ to generate our documentation, which can be found in the :repo:`docs/source` directory.
 
 6. Update the Changelog
 -----------------------

@@ -55,14 +55,22 @@ class TestServer:
 
         with test_client.get('/') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == 'inline; filename=index.html'
             assert http_response.content_type == 'text/html; charset=utf-8'
 
         with test_client.get('/index.html') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == 'inline; filename=index.html'
+            assert http_response.content_type == 'text/html; charset=utf-8'
+
+        with test_client.get('/projects/0') as http_response:
+            assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == 'inline; filename=index.html'
             assert http_response.content_type == 'text/html; charset=utf-8'
 
         with test_client.get('/assets/favicon/favicon.ico') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == 'inline; filename=favicon.ico'
             assert http_response.content_type in ['image/x-icon', 'image/vnd.microsoft.icon']
 
         frontend_path = os.path.normpath(os.path.join(
@@ -80,6 +88,7 @@ class TestServer:
         styles_file_name = os.path.basename(styles_file_names[0])
         with test_client.get(f'/{styles_file_name}') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == f'inline; filename={styles_file_name}'
             assert http_response.content_type == 'text/css; charset=utf-8'
 
         main_file_names = glob.glob(os.path.join(frontend_path, 'main-*.js'))
@@ -87,6 +96,7 @@ class TestServer:
         main_file_name = os.path.basename(main_file_names[0])
         with test_client.get(f'/{main_file_name}') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == f'inline; filename={main_file_name}'
             assert http_response.content_type == 'text/javascript; charset=utf-8'
 
         polyfills_file_names = glob.glob(os.path.join(frontend_path, 'polyfills-*.js'))
@@ -94,11 +104,16 @@ class TestServer:
         polyfills_file_name = os.path.basename(polyfills_file_names[0])
         with test_client.get(f'/{polyfills_file_name}') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == f'inline; filename={polyfills_file_name}'
             assert http_response.content_type == 'text/javascript; charset=utf-8'
 
         with test_client.get('/assets/images/virelay-logo.png') as http_response:
             assert http_response.status_code == 200
+            assert http_response.headers['Content-Disposition'] == 'inline; filename=virelay-logo.png'
             assert http_response.content_type == 'image/png'
+
+        with test_client.get('/test.css') as http_response:
+            assert http_response.status_code == 404
 
     @staticmethod
     def test_get_projects(test_client: FlaskClient) -> None:
@@ -281,6 +296,208 @@ class TestServer:
             assert http_response.content_type == 'application/json'
 
         with test_client.get(f'/api/projects/0/attributions/{NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES}') as http_response:
+            assert http_response.status_code == 404
+            assert http_response.content_type == 'application/json'
+
+    @staticmethod
+    def test_get_attributions(test_client: FlaskClient) -> None:
+        """Tests whether the ViRelAy server correctly serves multiple attributions at once.
+
+        Args:
+            test_client (FlaskClient): The HTTP client that is used for the tests.
+        """
+
+        with test_client.get('/api/projects/0/attributions?indices=0,1,2') as http_response:
+            assert http_response.status_code == 200
+            assert http_response.content_type == 'application/json'
+
+            attributions = http_response.get_json()
+            assert isinstance(attributions, list)
+            assert len(attributions) == 3
+
+            attribution = attributions[0]
+            assert attribution['index'] == 0
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 0
+            assert attribution['labels'][0]['wordNetId'] == '00000000'
+            assert attribution['labels'][0]['name'] == 'Class 0'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['black-green'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['jet'] == '/api/projects/0/dataset/0/image'
+            assert attribution['urls']['seismic'] == '/api/projects/0/dataset/0/image'
+
+            attribution = attributions[1]
+            assert attribution['index'] == 1
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 1
+            assert attribution['labels'][0]['wordNetId'] == '00000001'
+            assert attribution['labels'][0]['name'] == 'Class 1'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['black-green'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['jet'] == '/api/projects/0/dataset/1/image'
+            assert attribution['urls']['seismic'] == '/api/projects/0/dataset/1/image'
+
+            attribution = attributions[2]
+            assert attribution['index'] == 2
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 2
+            assert attribution['labels'][0]['wordNetId'] == '00000002'
+            assert attribution['labels'][0]['name'] == 'Class 2'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['black-green'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['jet'] == '/api/projects/0/dataset/2/image'
+            assert attribution['urls']['seismic'] == '/api/projects/0/dataset/2/image'
+
+        with test_client.get('/api/projects/0/attributions?indices=0,1,2&imageMode=attribution') as http_response:
+            assert http_response.status_code == 200
+            assert http_response.content_type == 'application/json'
+
+            attributions = http_response.get_json()
+            assert isinstance(attributions, list)
+            assert len(attributions) == 3
+
+            attribution = attributions[0]
+            assert attribution['index'] == 0
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 0
+            assert attribution['labels'][0]['wordNetId'] == '00000000'
+            assert attribution['labels'][0]['name'] == 'Class 0'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/attributions/0/heatmap?colorMap=afm-hot&superimpose=False'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/attributions/0/heatmap?colorMap=black-fire-red&superimpose=False'
+            assert attribution['urls']['black-green'] == '/api/projects/0/attributions/0/heatmap?colorMap=black-green&superimpose=False'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/attributions/0/heatmap?colorMap=black-yellow&superimpose=False'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/attributions/0/heatmap?colorMap=blue-white-red&superimpose=False'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/attributions/0/heatmap?colorMap=gray-red&superimpose=False'
+            assert attribution['urls']['jet'] == '/api/projects/0/attributions/0/heatmap?colorMap=jet&superimpose=False'
+            assert attribution['urls']['seismic'] == '/api/projects/0/attributions/0/heatmap?colorMap=seismic&superimpose=False'
+
+            attribution = attributions[1]
+            assert attribution['index'] == 1
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 1
+            assert attribution['labels'][0]['wordNetId'] == '00000001'
+            assert attribution['labels'][0]['name'] == 'Class 1'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/attributions/1/heatmap?colorMap=afm-hot&superimpose=False'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/attributions/1/heatmap?colorMap=black-fire-red&superimpose=False'
+            assert attribution['urls']['black-green'] == '/api/projects/0/attributions/1/heatmap?colorMap=black-green&superimpose=False'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/attributions/1/heatmap?colorMap=black-yellow&superimpose=False'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/attributions/1/heatmap?colorMap=blue-white-red&superimpose=False'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/attributions/1/heatmap?colorMap=gray-red&superimpose=False'
+            assert attribution['urls']['jet'] == '/api/projects/0/attributions/1/heatmap?colorMap=jet&superimpose=False'
+            assert attribution['urls']['seismic'] == '/api/projects/0/attributions/1/heatmap?colorMap=seismic&superimpose=False'
+
+            attribution = attributions[2]
+            assert attribution['index'] == 2
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 2
+            assert attribution['labels'][0]['wordNetId'] == '00000002'
+            assert attribution['labels'][0]['name'] == 'Class 2'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/attributions/2/heatmap?colorMap=afm-hot&superimpose=False'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/attributions/2/heatmap?colorMap=black-fire-red&superimpose=False'
+            assert attribution['urls']['black-green'] == '/api/projects/0/attributions/2/heatmap?colorMap=black-green&superimpose=False'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/attributions/2/heatmap?colorMap=black-yellow&superimpose=False'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/attributions/2/heatmap?colorMap=blue-white-red&superimpose=False'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/attributions/2/heatmap?colorMap=gray-red&superimpose=False'
+            assert attribution['urls']['jet'] == '/api/projects/0/attributions/2/heatmap?colorMap=jet&superimpose=False'
+            assert attribution['urls']['seismic'] == '/api/projects/0/attributions/2/heatmap?colorMap=seismic&superimpose=False'
+
+        with test_client.get('/api/projects/0/attributions?indices=0,1,2&imageMode=overlay') as http_response:
+            assert http_response.status_code == 200
+            assert http_response.content_type == 'application/json'
+
+            attributions = http_response.get_json()
+            assert isinstance(attributions, list)
+            assert len(attributions) == 3
+
+            attribution = attributions[0]
+            assert attribution['index'] == 0
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 0
+            assert attribution['labels'][0]['wordNetId'] == '00000000'
+            assert attribution['labels'][0]['name'] == 'Class 0'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/attributions/0/heatmap?colorMap=afm-hot&superimpose=True'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/attributions/0/heatmap?colorMap=black-fire-red&superimpose=True'
+            assert attribution['urls']['black-green'] == '/api/projects/0/attributions/0/heatmap?colorMap=black-green&superimpose=True'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/attributions/0/heatmap?colorMap=black-yellow&superimpose=True'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/attributions/0/heatmap?colorMap=blue-white-red&superimpose=True'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/attributions/0/heatmap?colorMap=gray-red&superimpose=True'
+            assert attribution['urls']['jet'] == '/api/projects/0/attributions/0/heatmap?colorMap=jet&superimpose=True'
+            assert attribution['urls']['seismic'] == '/api/projects/0/attributions/0/heatmap?colorMap=seismic&superimpose=True'
+
+            attribution = attributions[1]
+            assert attribution['index'] == 1
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 1
+            assert attribution['labels'][0]['wordNetId'] == '00000001'
+            assert attribution['labels'][0]['name'] == 'Class 1'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/attributions/1/heatmap?colorMap=afm-hot&superimpose=True'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/attributions/1/heatmap?colorMap=black-fire-red&superimpose=True'
+            assert attribution['urls']['black-green'] == '/api/projects/0/attributions/1/heatmap?colorMap=black-green&superimpose=True'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/attributions/1/heatmap?colorMap=black-yellow&superimpose=True'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/attributions/1/heatmap?colorMap=blue-white-red&superimpose=True'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/attributions/1/heatmap?colorMap=gray-red&superimpose=True'
+            assert attribution['urls']['jet'] == '/api/projects/0/attributions/1/heatmap?colorMap=jet&superimpose=True'
+            assert attribution['urls']['seismic'] == '/api/projects/0/attributions/1/heatmap?colorMap=seismic&superimpose=True'
+
+            attribution = attributions[2]
+            assert attribution['index'] == 2
+            assert len(attribution['labels']) == 1
+            assert attribution['labels'][0]['index'] == 2
+            assert attribution['labels'][0]['wordNetId'] == '00000002'
+            assert attribution['labels'][0]['name'] == 'Class 2'
+            assert len(attribution['prediction']) == NUMBER_OF_CLASSES
+            assert attribution['width'] == 32
+            assert attribution['height'] == 32
+            assert attribution['urls']['afm-hot'] == '/api/projects/0/attributions/2/heatmap?colorMap=afm-hot&superimpose=True'
+            assert attribution['urls']['black-fire-red'] == '/api/projects/0/attributions/2/heatmap?colorMap=black-fire-red&superimpose=True'
+            assert attribution['urls']['black-green'] == '/api/projects/0/attributions/2/heatmap?colorMap=black-green&superimpose=True'
+            assert attribution['urls']['black-yellow'] == '/api/projects/0/attributions/2/heatmap?colorMap=black-yellow&superimpose=True'
+            assert attribution['urls']['blue-white-red'] == '/api/projects/0/attributions/2/heatmap?colorMap=blue-white-red&superimpose=True'
+            assert attribution['urls']['gray-red'] == '/api/projects/0/attributions/2/heatmap?colorMap=gray-red&superimpose=True'
+            assert attribution['urls']['jet'] == '/api/projects/0/attributions/2/heatmap?colorMap=jet&superimpose=True'
+            assert attribution['urls']['seismic'] == '/api/projects/0/attributions/2/heatmap?colorMap=seismic&superimpose=True'
+
+        with test_client.get('/api/projects/1/attributions?indices=0,1,2') as http_response:
+            assert http_response.status_code == 404
+            assert http_response.content_type == 'application/json'
+
+        with test_client.get(f'/api/projects/0/attributions?indices=0,{NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES}') as http_response:
             assert http_response.status_code == 404
             assert http_response.content_type == 'application/json'
 

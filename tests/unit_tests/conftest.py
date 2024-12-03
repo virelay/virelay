@@ -47,9 +47,9 @@ def get_label_map_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
     return label_map_file_path.as_posix()
 
 
-@pytest.fixture(name='hdf5_dataset_file_path', scope='session')
-def get_hdf5_dataset_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an HDF5 dataset file.
+@pytest.fixture(name='hdf5_dataset_with_samples_as_hdf5_dataset_file_path', scope='session')
+def get_hdf5_dataset_with_samples_as_hdf5_dataset_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an HDF5 dataset file, where the samples are stored in an HDF5 dataset.
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the HDF5 dataset file will be created.
@@ -58,37 +58,102 @@ def get_hdf5_dataset_file_path_fixture(tmp_path_factory: TempPathFactory) -> str
         str: Returns the path to the created input file.
     """
 
-    data = None
-    data_labels = None
-    hdf5_dataset_file_path = tmp_path_factory.getbasetemp() / 'hdf5-dataset.h5'
+    data = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES, 3, 32, 32))
+    data_labels = []
     for label_index in range(NUMBER_OF_CLASSES):
+        data_labels.extend([label_index] * NUMBER_OF_SAMPLES)
 
-        new_data = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
-        if data is None:
-            data = new_data
-        else:
-            data = numpy.concatenate((data, new_data), axis=0)
-        new_data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
-        if data_labels is None:
-            data_labels = new_data_labels
-        else:
-            data_labels = numpy.concatenate((data_labels, new_data_labels), axis=0)
-
-    with h5py.File(hdf5_dataset_file_path, 'w') as dataset_file:
+    hdf5_dataset_with_samples_as_hdf5_dataset_file_path = tmp_path_factory.getbasetemp() / 'hdf5-dataset-with-samples-as-hdf5-dataset.h5'
+    with h5py.File(hdf5_dataset_with_samples_as_hdf5_dataset_file_path, 'w') as dataset_file:
         dataset_file.create_dataset(
             'data',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
-            dtype='float32',
+            dtype=numpy.float32,
             data=data
         )
         dataset_file.create_dataset(
             'label',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
-            dtype='uint16',
-            data=data_labels
+            dtype=numpy.uint16,
+            data=numpy.array(data_labels)
         )
 
-    return hdf5_dataset_file_path.as_posix()
+    return hdf5_dataset_with_samples_as_hdf5_dataset_file_path.as_posix()
+
+
+@pytest.fixture(name='hdf5_dataset_with_samples_as_hdf5_group_file_path', scope='session')
+def get_hdf5_dataset_with_samples_as_hdf5_group_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an HDF5 dataset file, where the samples are stored in an HDF5 group.
+
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the HDF5 dataset file will be created.
+
+    Returns:
+        str: Returns the path to the created input file.
+    """
+
+    hdf5_dataset_with_samples_as_hdf5_group_file_path = tmp_path_factory.getbasetemp() / 'hdf5-dataset-with-samples-as-hdf5-group.h5'
+    with h5py.File(hdf5_dataset_with_samples_as_hdf5_group_file_path, 'w') as dataset_file:
+        dataset_file.create_group('data')
+        dataset_file.create_group('label')
+
+        for label_index in range(NUMBER_OF_CLASSES):
+            for sample_index in range(NUMBER_OF_SAMPLES):
+                dataset_file['data'].create_dataset(
+                    f'sample-{sample_index}-label-{label_index}',
+                    shape=(3, 32, 32),
+                    dtype=numpy.float32,
+                    data=numpy.random.uniform(0, 1, size=(3, 32, 32))
+                )
+
+                dataset_file['label'].create_dataset(
+                    f'sample-{sample_index}-label-{label_index}',
+                    shape=(),
+                    dtype=numpy.uint16,
+                    data=label_index
+                )
+
+    return hdf5_dataset_with_samples_as_hdf5_group_file_path.as_posix()
+
+
+@pytest.fixture(name='hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path', scope='session')
+def get_hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an HDF5 dataset file, where the samples are stored in an HDF5 group.
+
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the HDF5 dataset file will be created.
+
+    Returns:
+        str: Returns the path to the created input file.
+    """
+
+    hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path = \
+        tmp_path_factory.getbasetemp() / 'hdf5-dataset-with-samples-as-hdf5-group-and-multiple-labels.h5'
+    with h5py.File(hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path, 'w') as dataset_file:
+        dataset_file.create_group('data')
+        dataset_file.create_group('label')
+
+        for label_index in range(NUMBER_OF_CLASSES):
+            for sample_index in range(NUMBER_OF_SAMPLES):
+                dataset_file['data'].create_dataset(
+                    f'sample-{sample_index}-label-{label_index}',
+                    shape=(3, 32, 32),
+                    dtype=numpy.float32,
+                    data=numpy.random.uniform(0, 1, size=(3, 32, 32))
+                )
+
+                labels = [False] * NUMBER_OF_CLASSES
+                labels[label_index] = True
+                labels[(label_index + 1) % NUMBER_OF_CLASSES] = True
+
+                dataset_file['label'].create_dataset(
+                    f'sample-{sample_index}-label-{label_index}',
+                    shape=(NUMBER_OF_CLASSES,),
+                    dtype=numpy.bool,
+                    data=numpy.array(labels, dtype=numpy.bool)
+                )
+
+    return hdf5_dataset_with_samples_as_hdf5_group_and_multiple_labels_file_path.as_posix()
 
 
 @pytest.fixture(name='image_directory_dataset_with_label_indices_path', scope='session')
@@ -188,9 +253,9 @@ def get_image_directory_dataset_with_sample_paths_file_path_fixture(tmp_path_fac
     return image_directory_dataset_path.as_posix()
 
 
-@pytest.fixture(name='attribution_file_path', scope='session')
-def get_attribution_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
-    """A test fixture, which creates an attribution file.
+@pytest.fixture(name='attribution_with_attributions_as_hdf5_dataset_file_path', scope='session')
+def get_attribution_with_attributions_as_hdf5_dataset_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an attribution file, where the attributions are stored in an HDF5 dataset.
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the attribution file will be created.
@@ -199,49 +264,77 @@ def get_attribution_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
         str: Returns the path to the created attribution file.
     """
 
-    attributions = None
-    predictions = None
-    data_labels = None
-    attribution_file_path = tmp_path_factory.getbasetemp() / 'attributions.h5'
+    attributions = numpy.random.uniform(-1, 1, size=(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES, 3, 32, 32))
+    predictions = numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES * NUMBER_OF_SAMPLES, NUMBER_OF_CLASSES))
+    data_labels = []
     for label_index in range(NUMBER_OF_CLASSES):
+        data_labels.extend([label_index] * NUMBER_OF_SAMPLES)
 
-        new_attributions = numpy.random.uniform(-1, 1, size=(NUMBER_OF_SAMPLES, 3, 32, 32))
-        if attributions is None:
-            attributions = new_attributions
-        else:
-            attributions = numpy.concatenate((attributions, new_attributions), axis=0)
-        new_predictions = numpy.random.uniform(0, 1, size=(NUMBER_OF_SAMPLES, NUMBER_OF_CLASSES))
-        if predictions is None:
-            predictions = new_predictions
-        else:
-            predictions = numpy.concatenate((predictions, new_predictions), axis=0)
-        new_data_labels = numpy.array([label_index] * NUMBER_OF_SAMPLES)
-        if data_labels is None:
-            data_labels = new_data_labels
-        else:
-            data_labels = numpy.concatenate((data_labels, new_data_labels), axis=0)
-
-    with h5py.File(attribution_file_path, 'w') as attribution_file:
+    attribution_with_attributions_as_hdf5_dataset_file_path = tmp_path_factory.getbasetemp() / 'attributions.h5'
+    with h5py.File(attribution_with_attributions_as_hdf5_dataset_file_path, 'w') as attribution_file:
         attribution_file.create_dataset(
             'attribution',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
-            dtype='float32',
+            dtype=numpy.float32,
             data=attributions
         )
         attribution_file.create_dataset(
             'prediction',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, NUMBER_OF_CLASSES),
-            dtype='float32',
+            dtype=numpy.float32,
             data=predictions
         )
         attribution_file.create_dataset(
             'label',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
-            dtype='uint16',
-            data=data_labels
+            dtype=numpy.uint16,
+            data=numpy.array(data_labels)
         )
 
-    return attribution_file_path.as_posix()
+    return attribution_with_attributions_as_hdf5_dataset_file_path.as_posix()
+
+
+@pytest.fixture(name='attribution_with_attributions_as_hdf5_group_file_path', scope='session')
+def get_attribution_with_attributions_as_hdf5_group_file_path_fixture(tmp_path_factory: TempPathFactory) -> str:
+    """A test fixture, which creates an attribution file, where the attributions are stored in an HDF5 group.
+
+    Args:
+        tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the attribution file will be created.
+
+    Returns:
+        str: Returns the path to the created attribution file.
+    """
+
+    attribution_with_attributions_as_hdf5_group_file_path = tmp_path_factory.getbasetemp() / 'attributions.h5'
+    with h5py.File(attribution_with_attributions_as_hdf5_group_file_path, 'w') as attribution_file:
+        attribution_file.create_group('attribution')
+        attribution_file.create_group('prediction')
+        attribution_file.create_group('label')
+
+        for label_index in range(NUMBER_OF_CLASSES):
+            for sample_index in range(NUMBER_OF_SAMPLES):
+                attribution_file['attribution'].create_dataset(
+                    f'attribution-{sample_index}-label-{label_index}',
+                    shape=(3, 32, 32),
+                    dtype=numpy.float32,
+                    data=numpy.random.uniform(-1, 1, size=(3, 32, 32))
+                )
+
+                attribution_file['prediction'].create_dataset(
+                    f'attribution-{sample_index}-label-{label_index}',
+                    shape=(NUMBER_OF_CLASSES,),
+                    dtype=numpy.float32,
+                    data=numpy.random.uniform(0, 1, size=(NUMBER_OF_CLASSES,))
+                )
+
+                attribution_file['label'].create_dataset(
+                    f'attribution-{sample_index}-label-{label_index}',
+                    shape=(),
+                    dtype=numpy.uint16,
+                    data=label_index
+                )
+
+    return attribution_with_attributions_as_hdf5_group_file_path.as_posix()
 
 
 @pytest.fixture(name='attribution_file_with_sample_indices_path', scope='session')
@@ -282,25 +375,25 @@ def get_attribution_file_with_sample_indices_path_fixture(tmp_path_factory: Temp
         attribution_file.create_dataset(
             'index',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
-            dtype='uint32',
+            dtype=numpy.uint32,
             data=numpy.arange(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, dtype=numpy.uint32)
         )
         attribution_file.create_dataset(
             'attribution',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, 3, 32, 32),
-            dtype='float32',
+            dtype=numpy.float32,
             data=attributions
         )
         attribution_file.create_dataset(
             'prediction',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES, NUMBER_OF_CLASSES),
-            dtype='float32',
+            dtype=numpy.float32,
             data=predictions
         )
         attribution_file.create_dataset(
             'label',
             shape=(NUMBER_OF_SAMPLES * NUMBER_OF_CLASSES,),
-            dtype='uint16',
+            dtype=numpy.uint16,
             data=data_labels
         )
 
@@ -308,12 +401,17 @@ def get_attribution_file_with_sample_indices_path_fixture(tmp_path_factory: Temp
 
 
 @pytest.fixture(name='spectral_analysis_file_path', scope='session')
-def get_spectral_analysis_file_path_fixture(tmp_path_factory: TempPathFactory, attribution_file_path: str, label_map_file_path: str) -> str:
+def get_spectral_analysis_file_path_fixture(
+    tmp_path_factory: TempPathFactory,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
+    label_map_file_path: str
+) -> str:
     """A test fixture, which creates an analysis file that contains a spectral analysis.
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the analysis file will be created.
-        attribution_file_path (str): The path to the attribution file that contains the attributions for which the analysis is to be generated.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file that contains the attributions for which the
+            analysis is to be generated.
         label_map_file_path (str): The path to the label map file.
 
     Returns:
@@ -327,7 +425,7 @@ def get_spectral_analysis_file_path_fixture(tmp_path_factory: TempPathFactory, a
     label_map = {element['index']: element['word_net_id'] for element in label_map}
 
     number_of_clusters_to_try = [2, 3]
-    with h5py.File(attribution_file_path, 'r') as attribution_file:
+    with h5py.File(attribution_with_attributions_as_hdf5_dataset_file_path, 'r') as attribution_file:
         with h5py.File(spectral_analysis_file_path, 'w') as analysis_file:
 
             data_labels = attribution_file['label'][:]
@@ -390,25 +488,25 @@ def get_spectral_analysis_file_path_fixture(tmp_path_factory: TempPathFactory, a
                     cluster_group[cluster_id] = clustering
                     cluster_group[cluster_id].attrs['embedding'] = 'spectral'
                     cluster_group[cluster_id].attrs['k'] = number_of_clusters
-                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
                 for number_of_clusters, clustering in zip(number_of_clusters_to_try, dbscan):
                     cluster_id = f'dbscan-eps={number_of_clusters / 10.0:.1f}'
                     cluster_group[cluster_id] = clustering
                     cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
                 cluster_id = 'hdbscan'
                 cluster_group[cluster_id] = hdbscan
                 cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
                 for number_of_clusters, clustering in zip(number_of_clusters_to_try, agglomerative):
                     cluster_id = f'agglomerative-{number_of_clusters:02d}'
                     cluster_group[cluster_id] = clustering
                     cluster_group[cluster_id].attrs['embedding'] = 'spectral'
                     cluster_group[cluster_id].attrs['k'] = number_of_clusters
-                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
     return spectral_analysis_file_path.as_posix()
 
@@ -416,14 +514,15 @@ def get_spectral_analysis_file_path_fixture(tmp_path_factory: TempPathFactory, a
 @pytest.fixture(name='spectral_analysis_file_without_eigenvalues_path', scope='session')
 def get_spectral_analysis_file_without_eigenvalues_path_fixture(
     tmp_path_factory: TempPathFactory,
-    attribution_file_path: str,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
     label_map_file_path: str
 ) -> str:
     """A test fixture, which creates an analysis file that contains a spectral analysis, but without eigenvalues.
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the analysis file will be created.
-        attribution_file_path (str): The path to the attribution file that contains the attributions for which the analysis is to be generated.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file that contains the attributions for which the
+            analysis is to be generated.
         label_map_file_path (str): The path to the label map file.
 
     Returns:
@@ -438,10 +537,15 @@ def get_spectral_analysis_file_without_eigenvalues_path_fixture(
     label_map = {element['index']: element['word_net_id'] for element in label_map}
 
     number_of_clusters_to_try = [2, 3]
-    with h5py.File(attribution_file_path, 'r') as attribution_file:
+    with h5py.File(attribution_with_attributions_as_hdf5_dataset_file_path, 'r') as attribution_file:
         with h5py.File(spectral_analysis_file_without_eigenvalues_path, 'w') as analysis_file:
 
-            data_labels = attribution_file['label'][:]
+            labels: h5py.Dataset | h5py.Group = attribution_file['label']
+            if isinstance(labels, h5py.Dataset):
+                data_labels = labels[:]
+            else:
+                data_labels = numpy.array([label[()] for label in labels.values()])
+            print(type(data_labels))
 
             for label_index in [int(element) for element in label_map]:
                 index, = numpy.nonzero(data_labels == label_index)
@@ -499,25 +603,25 @@ def get_spectral_analysis_file_without_eigenvalues_path_fixture(
                     cluster_group[cluster_id] = clustering
                     cluster_group[cluster_id].attrs['embedding'] = 'spectral'
                     cluster_group[cluster_id].attrs['k'] = number_of_clusters
-                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
                 for number_of_clusters, clustering in zip(number_of_clusters_to_try, dbscan):
                     cluster_id = f'dbscan-eps={number_of_clusters / 10.0:.1f}'
                     cluster_group[cluster_id] = clustering
                     cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
                 cluster_id = 'hdbscan'
                 cluster_group[cluster_id] = hdbscan
                 cluster_group[cluster_id].attrs['embedding'] = 'spectral'
-                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
                 for number_of_clusters, clustering in zip(number_of_clusters_to_try, agglomerative):
                     cluster_id = f'agglomerative-{number_of_clusters:02d}'
                     cluster_group[cluster_id] = clustering
                     cluster_group[cluster_id].attrs['embedding'] = 'spectral'
                     cluster_group[cluster_id].attrs['k'] = number_of_clusters
-                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype='uint32')
+                    cluster_group[cluster_id].attrs['index'] = numpy.arange(embedding.shape[1], dtype=numpy.uint32)
 
     return spectral_analysis_file_without_eigenvalues_path.as_posix()
 
@@ -525,16 +629,16 @@ def get_spectral_analysis_file_without_eigenvalues_path_fixture(
 @pytest.fixture(name='project_file_with_hdf5_dataset_path', scope='session')
 def get_project_file_with_hdf5_dataset_path_fixture(
         tmp_path_factory: TempPathFactory,
-        hdf5_dataset_file_path: str,
-        attribution_file_path: str,
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+        attribution_with_attributions_as_hdf5_dataset_file_path: str,
         spectral_analysis_file_path: str,
         label_map_file_path: str) -> str:
     """A test fixture, which creates an project file with an HDF5 dataset.
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
-        attribution_file_path (str): The path to the attribution file.
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file.
         spectral_analysis_file_path (str): The path to the spectral analysis file.
         label_map_file_path (str): The path to the label map file.
 
@@ -552,12 +656,12 @@ def get_project_file_with_hdf5_dataset_path_fixture(
             'dataset': {
                 'name': "HDF5 Dataset",
                 'type': 'hdf5',
-                'path': os.path.relpath(hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
+                'path': os.path.relpath(hdf5_dataset_with_samples_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
             },
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
+                'sources': [os.path.relpath(attribution_with_attributions_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
             },
             'analyses': [
                 {
@@ -580,8 +684,8 @@ def get_project_file_with_hdf5_dataset_path_fixture(
 @pytest.fixture(name='project_file_without_eigenvalues_in_analysis_database_path', scope='session')
 def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
     tmp_path_factory: TempPathFactory,
-    hdf5_dataset_file_path: str,
-    attribution_file_path: str,
+    hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
     spectral_analysis_file_without_eigenvalues_path: str,
     label_map_file_path: str
 ) -> str:
@@ -589,8 +693,8 @@ def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
-        attribution_file_path (str): The path to the attribution file.
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file.
         spectral_analysis_file_without_eigenvalues_path (str): The path to the spectral analysis file.
         label_map_file_path (str): The path to the label map file.
 
@@ -609,12 +713,12 @@ def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
             'dataset': {
                 'name': "HDF5 Dataset",
                 'type': 'hdf5',
-                'path': os.path.relpath(hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
+                'path': os.path.relpath(hdf5_dataset_with_samples_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
             },
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
+                'sources': [os.path.relpath(attribution_with_attributions_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
             },
             'analyses': [
                 {
@@ -638,7 +742,7 @@ def get_project_file_without_eigenvalues_in_analysis_database_path_fixture(
 def get_project_file_with_image_directory_dataset_path_fixture(
     tmp_path_factory: TempPathFactory,
     image_directory_dataset_with_label_indices_path: str,
-    attribution_file_path: str,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
     spectral_analysis_file_path: str,
     label_map_file_path: str
 ) -> str:
@@ -647,7 +751,7 @@ def get_project_file_with_image_directory_dataset_path_fixture(
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
         image_directory_dataset_with_label_indices_path (str): The path to the image directory dataset file.
-        attribution_file_path (str): The path to the attribution file.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file.
         spectral_analysis_file_path (str): The path to the analysis file.
         label_map_file_path (str): The path to the label map file.
 
@@ -655,8 +759,7 @@ def get_project_file_with_image_directory_dataset_path_fixture(
         str: Returns the path to the created project file.
     """
 
-    project_file_with_image_directory_dataset_path = \
-        tmp_path_factory.getbasetemp() / 'project-with-image-directory-dataset.yaml'
+    project_file_with_image_directory_dataset_path = tmp_path_factory.getbasetemp() / 'project-with-image-directory-dataset.yaml'
 
     project = {
         'project': {
@@ -680,7 +783,7 @@ def get_project_file_with_image_directory_dataset_path_fixture(
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
+                'sources': [os.path.relpath(attribution_with_attributions_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
             },
             'analyses': [
                 {
@@ -703,8 +806,8 @@ def get_project_file_with_image_directory_dataset_path_fixture(
 @pytest.fixture(name='project_file_with_multiple_analysis_databases_path', scope='session')
 def get_project_file_with_multiple_analysis_databases_path_fixture(
     tmp_path_factory: TempPathFactory,
-    hdf5_dataset_file_path: str,
-    attribution_file_path: str,
+    hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
     spectral_analysis_file_path: str,
     label_map_file_path: str
 ) -> str:
@@ -712,8 +815,8 @@ def get_project_file_with_multiple_analysis_databases_path_fixture(
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
-        attribution_file_path (str): The path to the attribution file.
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file.
         spectral_analysis_file_path (str): The path to the spectral analysis file.
         label_map_file_path (str): The path to the label map file.
 
@@ -732,12 +835,12 @@ def get_project_file_with_multiple_analysis_databases_path_fixture(
             'dataset': {
                 'name': "HDF5 Dataset",
                 'type': 'hdf5',
-                'path': os.path.relpath(hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
+                'path': os.path.relpath(hdf5_dataset_with_samples_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
             },
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
+                'sources': [os.path.relpath(attribution_with_attributions_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
             },
             'analyses': [
                 {
@@ -767,14 +870,14 @@ def get_project_file_with_multiple_analysis_databases_path_fixture(
 @pytest.fixture(name='project_file_without_attributions_or_analyses_path', scope='session')
 def get_project_file_without_attributions_or_analyses_path_fixture(
     tmp_path_factory: TempPathFactory,
-    hdf5_dataset_file_path: str,
+    hdf5_dataset_with_samples_as_hdf5_dataset_file_path: str,
     label_map_file_path: str
 ) -> str:
     """A test fixture, which creates an project file without attributions or analyses.
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
-        hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
+        hdf5_dataset_with_samples_as_hdf5_dataset_file_path (str): The path to the HDF5 dataset file.
         label_map_file_path (str): The path to the label map file.
 
     Returns:
@@ -792,7 +895,7 @@ def get_project_file_without_attributions_or_analyses_path_fixture(
             'dataset': {
                 'name': "HDF5 Dataset",
                 'type': 'hdf5',
-                'path': os.path.relpath(hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
+                'path': os.path.relpath(hdf5_dataset_with_samples_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())
             }
         }
     }
@@ -806,7 +909,7 @@ def get_project_file_without_attributions_or_analyses_path_fixture(
 @pytest.fixture(name='project_file_with_unknown_dataset_type_path', scope='session')
 def get_project_file_with_unknown_dataset_type_path_fixture(
     tmp_path_factory: TempPathFactory,
-    attribution_file_path: str,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
     spectral_analysis_file_path: str,
     label_map_file_path: str
 ) -> str:
@@ -814,7 +917,7 @@ def get_project_file_with_unknown_dataset_type_path_fixture(
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
-        attribution_file_path (str): The path to the attribution file.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file.
         spectral_analysis_file_path (str): The path to the analysis file.
         label_map_file_path (str): The path to the label map file.
 
@@ -836,7 +939,7 @@ def get_project_file_with_unknown_dataset_type_path_fixture(
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
+                'sources': [os.path.relpath(attribution_with_attributions_as_hdf5_dataset_file_path, start=tmp_path_factory.getbasetemp().as_posix())]
             },
             'analyses': [
                 {
@@ -859,7 +962,7 @@ def get_project_file_with_unknown_dataset_type_path_fixture(
 @pytest.fixture(name='project_file_without_dataset_path', scope='session')
 def get_project_file_without_dataset_path_fixture(
     tmp_path_factory: TempPathFactory,
-    attribution_file_path: str,
+    attribution_with_attributions_as_hdf5_dataset_file_path: str,
     spectral_analysis_file_path: str,
     label_map_file_path: str
 ) -> str:
@@ -867,7 +970,7 @@ def get_project_file_without_dataset_path_fixture(
 
     Args:
         tmp_path_factory (TempPathFactory): A factory for creating a temporary directory in which the project file will be created.
-        attribution_file_path (str): The path to the attribution file.
+        attribution_with_attributions_as_hdf5_dataset_file_path (str): The path to the attribution file.
         spectral_analysis_file_path (str): The path to the analysis file.
         label_map_file_path (str): The path to the label map file.
 
@@ -885,7 +988,10 @@ def get_project_file_without_dataset_path_fixture(
             'attributions': {
                 'attribution_method': 'Random Attribution',
                 'attribution_strategy': 'true_label',
-                'sources': [os.path.relpath(attribution_file_path, start=tmp_path_factory.getbasetemp().as_posix())],
+                'sources': [os.path.relpath(
+                    attribution_with_attributions_as_hdf5_dataset_file_path,
+                    start=tmp_path_factory.getbasetemp().as_posix()
+                )],
             },
             'analyses': [
                 {

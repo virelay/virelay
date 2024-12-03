@@ -4,6 +4,7 @@ import io
 import logging
 import traceback
 import threading
+import functools
 import webbrowser
 from typing import Any, BinaryIO, cast
 from importlib.resources import files, as_file
@@ -118,75 +119,68 @@ class Server:
         )
 
         # When the application is not in debug mode, then the Angular frontend is served via the static file serving feature in Flask; the
-        # create_static_file_view_function and create_static_file_parameterized_view_function functions are used to create view functions for the
-        # files that are to be served; otherwise specialized functions for each route would have to be created; these methods take a file path and
-        # return a view function that returns the specified file; the un-parameterized version creates a view function that serves the specified file
-        # directly, while the parameterized version creates a view function that serves a file with a file name that is specified as a parameter in
-        # the URL, which is passed to the view function as an argument by Flask (when ViRelAy is run from the source code, then the frontend is
-        # located in the source/frontend/distribution/browser directory; if, however, ViRelAy is run from an installed package, then the frontend is
-        # included in the package)
+        # create_view_function function is used to create view functions for the files that are to be served; otherwise specialized functions for each
+        # route would have to be created; this method takes a file path and returns a view function that returns the specified file; if the specified
+        # template does not contain a wildcard for the file name, then functools.partial is used to create an un-parameterized version of the view
+        # function that serves the specified file directly; otherwise, the file name specified in the route will be passed to the view function by
+        # Flask, which is then filled in to create the actual path of the file that is to be served (when ViRelAy is run from the source code, the
+        # frontend is located in the source/frontend/distribution/browser directory; if, however, ViRelAy is run from an installed package, the
+        # frontend is included in the package)
         resources_path = files('virelay') / 'frontend'
-        if not resources_path.is_dir() or len(list(resources_path.iterdir())) == 0:
+        if not resources_path.is_dir() or len(list(resources_path.iterdir())) == 0:  # pragma: no cover
             resources_path = files('virelay') / '..' / '..' / 'frontend' / 'distribution' / 'browser'
         if not self.is_in_debug_mode:
-            def create_static_file_view_function(relative_file_path: str) -> RouteCallable:
-                def view_function() -> flask.Response:
-                    with as_file(resources_path / relative_file_path) as file_path:
-                        file_path = file_path.resolve()
-                        if not file_path.is_file():
-                            flask.abort(404)
-                        return flask.send_file(cast(BinaryIO, file_path.open('rb')), download_name=file_path.name)
-                return view_function
-
-            def create_static_file_parameterized_view_function(file_path_template: str) -> RouteCallable:
+            def create_view_function(file_path_template: str) -> RouteCallable:
                 def view_function(file_name: str) -> flask.Response:
                     with as_file(resources_path / file_path_template.format(file_name)) as file_path:
                         file_path = file_path.resolve()
                         if not file_path.is_file():
                             flask.abort(404)
                         return flask.send_file(cast(BinaryIO, file_path.open('rb')), download_name=file_path.name)
-                return view_function
+                if '{0}' in file_path_template:
+                    return view_function
+                return functools.partial(view_function, file_name='')
 
             self.app.add_url_rule(
                 '/',
                 'serve_frontend_root',
-                create_static_file_view_function('index.html'),
+                create_view_function('index.html'),
                 methods=['GET']
             )
             self.app.add_url_rule(
                 '/index.html',
                 'serve_frontend_index',
-                create_static_file_view_function('index.html'),
+                create_view_function('index.html'),
                 methods=['GET']
             )
             self.app.add_url_rule(
                 '/<string:file_name>.css',
                 'serve_frontend_css',
-                create_static_file_parameterized_view_function('{0}.css'),
+                create_view_function('{0}.css'),
                 methods=['GET']
             )
             self.app.add_url_rule(
                 '/<string:file_name>.js',
                 'serve_frontend_javascript',
-                create_static_file_parameterized_view_function('{0}.js'),
+                create_view_function('{0}.js'),
                 methods=['GET']
             )
             self.app.add_url_rule(
                 '/assets/images/<string:file_name>.png',
                 'serve_frontend_image_assets',
-                create_static_file_parameterized_view_function('assets/images/{0}.png'),
+                create_view_function('assets/images/{0}.png'),
                 methods=['GET']
             )
             self.app.add_url_rule(
                 '/assets/favicon/<string:file_name>',
                 'serve_frontend_favicon_assets',
-                create_static_file_parameterized_view_function('assets/favicon/{0}'),
+                create_view_function('assets/favicon/{0}'),
                 methods=['GET']
             )
             self.app.add_url_rule(
                 '/<path:file_name>',
                 'serve_frontend_catch_all',
-                create_static_file_parameterized_view_function('index.html'),
+                create_view_function('index.html'),
                 methods=['GET']
             )
 
@@ -273,8 +267,7 @@ class Server:
                     'name': category.name,
                     'humanReadableName': category.human_readable_name
                 })
-            if project_json['analysisMethods'] is not None:
-                project_json['analysisMethods'].append(analysis_method_json)
+            project_json['analysisMethods'].append(analysis_method_json)
 
         return http_ok(project_json)
 

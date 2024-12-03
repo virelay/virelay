@@ -301,8 +301,7 @@ class Project:
         """Closes the project, its dataset, and all of its sources."""
 
         if not self.is_closed:
-            if self.dataset is not None:
-                self.dataset.close()
+            self.dataset.close()
             for attribution in self.attributions:
                 attribution.close()
             self.attributions = []
@@ -344,12 +343,13 @@ class AttributionDatabase:
 
         # Determines if the dataset allows multiple labels or only single labels (when the dataset is multi-label, then the labels are stored as a
         # boolean NumPy array where the index is the label index and the value determines whether the sample has the label, when the dataset is
-        # single-label, then the label is just a scalar value containing the index of the label)self.is_multi_label: bool = False
+        # single-label, then the label is just a scalar value containing the index of the label)
+        self.is_multi_label: bool = False
         labels: h5py.Group | h5py.Dataset = self.attribution_file['label']
         if isinstance(labels, h5py.Dataset):
-            self.is_multi_label = labels.dtype == bool
+            self.is_multi_label = labels.dtype == numpy.bool
         if isinstance(labels, h5py.Group):
-            self.is_multi_label = labels[next(labels.keys())].dtype == bool
+            self.is_multi_label = labels[list(labels.keys())[0]].dtype == numpy.bool
 
     def has_attribution(self, index: int) -> bool:
         """Determines whether the attribution database contains the attribution with the specified index.
@@ -369,7 +369,11 @@ class AttributionDatabase:
 
         if 'index' in self.attribution_file.keys():
             return index in self.attribution_file['index']
-        number_of_attributions: int = self.attribution_file['attribution'].shape[0]
+        attributions: h5py.Dataset | h5py.Group = self.attribution_file['attribution']
+        if isinstance(attributions, h5py.Dataset):
+            number_of_attributions: int = self.attribution_file['attribution'].shape[0]
+        else:
+            number_of_attributions = len(attributions)
         return index < number_of_attributions
 
     def get_attribution(self, index: int) -> 'Attribution':
@@ -399,11 +403,27 @@ class AttributionDatabase:
         if 'index' in self.attribution_file:
             index = numpy.where(index == self.attribution_file['index'][:])[0][0].item()
 
-        # Extracts the information about the sample from the dataset
-        attribution_data = self.attribution_file['attribution'][index]
-        attribution_label_reference = self.attribution_file['label'][index]
+        # Extracts the attribution data from the HDF5 file
+        attributions: h5py.Dataset | h5py.Group = self.attribution_file['attribution']
+        if isinstance(attributions, h5py.Dataset):
+            attribution_data = attributions[index]
+        else:
+            attribution_data = attributions[list(attributions.keys())[index]][:]
+
+        # Extracts the predictions from the HDF5 file
+        predictions: h5py.Dataset | h5py.Group = self.attribution_file['prediction']
+        if isinstance(predictions, h5py.Dataset):
+            attribution_prediction = predictions[index]
+        else:
+            attribution_prediction = predictions[list(predictions.keys())[index]][:]
+
+        # Extracts the labels from the HDF5 file
+        labels: h5py.Dataset | h5py.Group = self.attribution_file['label']
+        if isinstance(labels, h5py.Dataset):
+            attribution_label_reference = labels[index]
+        else:
+            attribution_label_reference = labels[list(labels.keys())[index]]
         attribution_labels = self.label_map.get_labels(attribution_label_reference)
-        attribution_prediction = self.attribution_file['prediction'][index]
 
         # Wraps the attribution in an object and returns it
         return Attribution(
@@ -760,9 +780,9 @@ class Hdf5Dataset:
         self.is_multi_label: bool = False
         labels: h5py.Group | h5py.Dataset = self.dataset_file['label']
         if isinstance(labels, h5py.Dataset):
-            self.is_multi_label = labels.dtype == bool
+            self.is_multi_label = labels.dtype == numpy.bool
         if isinstance(labels, h5py.Group):
-            self.is_multi_label = labels[next(labels.keys())].dtype == bool
+            self.is_multi_label = labels[list(labels.keys())[0]].dtype == numpy.bool
 
     def get_sample(self, index: int) -> 'Sample':
         """Gets the sample at the specified index.
@@ -784,8 +804,17 @@ class Hdf5Dataset:
 
         # Extracts the information about the sample from the dataset
         try:
-            sample_data = self.dataset_file['data'][index][()]
-            sample_label_reference = self.dataset_file['label'][index]
+            data = self.dataset_file['data']
+            if isinstance(data, h5py.Dataset):
+                sample_data = data[index]
+            else:
+                sample_data = data[list(data.keys())[index]]
+
+            labels = self.dataset_file['label']
+            if isinstance(labels, h5py.Dataset):
+                sample_label_reference = labels[index]
+            else:
+                sample_label_reference = labels[list(labels.keys())[index]]
             sample_labels = self.label_map.get_labels(sample_label_reference)
         except IndexError as error:
             raise LookupError(f'No sample with the index {index} could be found.') from error
@@ -821,8 +850,6 @@ class Hdf5Dataset:
             int: Returns the number of samples in the datasets.
         """
 
-        if self.dataset_file is None:
-            return 0
         return len(self.dataset_file['data'])
 
     def close(self) -> None:
@@ -948,7 +975,7 @@ class ImageDirectoryDataset:
             match = re.match(self.label_index_regex, sample_path)
             if match:
                 label = self.label_map.get_label_from_index(int(match.groups()[0]))
-        elif self.label_word_net_id_regex is not None:
+        if self.label_word_net_id_regex is not None:
             match = re.match(self.label_word_net_id_regex, sample_path)
             if match:
                 label = self.label_map.get_label_from_word_net_id(match.groups()[0])
@@ -1132,12 +1159,26 @@ class LabelMap:
             list[Label]: Returns a list of all the human-readable names of the labels that matched the specified reference.
         """
 
-    def get_labels(self, reference: int | str | numpy.int64 | list[int] | tuple[int, ...] | NDArray[numpy.int64]) -> 'Label | list[Label]':
+    @overload
+    def get_labels(self, reference: h5py.Dataset) -> 'Label | list[Label]':
+        """Retrieves the human-readable names of the labels that match the specified reference. The reference must be a n-hot encoded vector.
+
+        Args:
+            reference (h5py.Dataset): The reference for which all matching labels are to be retrieved. This must be a n-hot encoded vector.
+
+        Returns:
+            Label | list[Label]: Returns a list of all the human-readable names of the labels that matched the specified reference.
+        """
+
+    def get_labels(
+        self,
+        reference: int | str | numpy.int64 | list[int] | tuple[int, ...] | NDArray[numpy.int64] | h5py.Dataset
+    ) -> 'Label | list[Label]':
         """Retrieves the labels that match the specified reference. The reference may either be an index, a n-hot encoded vector, or a WordNet ID.
 
         Args:
-            reference (int | str | numpy.int64 | list[int] | tuple[int, ...] | NDArray[numpy.int64]): The reference for which all matching labels are
-                to be retrieved. This can either be an index, a n-hot encoded vector, or a WordNet ID.
+            reference (int | str | numpy.int64 | list[int] | tuple[int, ...] | NDArray[numpy.int64] | h5py.Dataset): The reference for which all
+                matching labels are to be retrieved. This can either be an index, a n-hot encoded vector, or a WordNet ID.
 
         Raises:
             LookupError: When no labels for the specified reference could be found (or one or more in case of a n-hot vector), then a LookupError is
@@ -1157,6 +1198,10 @@ class LabelMap:
             return [self.get_label_from_index(index) for index in reference]
         if isinstance(reference, numpy.ndarray):
             return self.get_labels_from_n_hot_vector(reference)
+        if isinstance(reference, h5py.Dataset) and len(reference.shape) == 0 and reference.dtype == numpy.uint16:
+            return self.get_label_from_index(reference[()])
+        if isinstance(reference, h5py.Dataset) and reference.dtype == numpy.bool:
+            return self.get_labels_from_n_hot_vector(reference[:])
         raise LookupError(f'No labels for the specified reference "{reference}" could be found.')
 
     @overload
@@ -1172,23 +1217,38 @@ class LabelMap:
         """
 
     @overload
-    def get_label_names(self, reference: NDArray[numpy.int64]) -> list[str]:
+    def get_label_names(self, reference: list[int] | tuple[int, ...] | NDArray[numpy.int64]) -> list[str]:
         """Retrieves the human-readable names of the labels that match the specified reference. The reference must be a n-hot encoded vector.
 
         Args:
-            reference (NDArray[numpy.int64]): The reference for which all matching labels are to be retrieved. This must be a n-hot encoded vector.
+            reference (list[int] | tuple[int, ...] | NDArray[numpy.int64]): The reference for which all matching labels are to be retrieved. This must
+                be a n-hot encoded vector.
 
         Returns:
             list[str]: Returns a list of all the human-readable names of the labels that matched the specified reference.
         """
 
-    def get_label_names(self, reference: int | str | numpy.int64 | NDArray[numpy.int64]) -> str | list[str]:
+    @overload
+    def get_label_names(self, reference: h5py.Dataset) -> str | list[str]:
+        """Retrieves the human-readable names of the labels that match the specified reference. The reference must be a n-hot encoded vector.
+
+        Args:
+            reference (h5py.Dataset): The reference for which all matching labels are to be retrieved. This must be a n-hot encoded vector.
+
+        Returns:
+            str | list[str]: Returns a list of all the human-readable names of the labels that matched the specified reference.
+        """
+
+    def get_label_names(
+        self,
+        reference: int | str | numpy.int64 | list[int] | tuple[int, ...] | NDArray[numpy.int64] | h5py.Dataset
+    ) -> str | list[str]:
         """Retrieves the human-readable names of the labels that match the specified reference. The reference may either be an index, a n-hot encoded
         vector, or a WordNet ID, the method will figure out which it is and retrieve the correct labels.
 
         Args:
-            reference (int | str | numpy.int64 | NDArray[numpy.int64]): The reference for which all matching labels are to be retrieved. This can
-                either be an index, a n-hot encoded vector, or a WordNet ID.
+            reference (int | str | numpy.int64 | list[int] | tuple[int, ...] | NDArray[numpy.int64] | h5py.Dataset): The reference for which all
+                matching labels are to be retrieved. This can either be an index, a n-hot encoded vector, or a WordNet ID.
 
         Raises:
             LookupError: When no labels for the specified reference could be found (or one or more in case of a n-hot vector), then a LookupError is
@@ -1205,8 +1265,14 @@ class LabelMap:
             return self.get_label_name_from_index(reference.item())
         if isinstance(reference, str):
             return self.get_label_name_from_word_net_id(reference)
+        if isinstance(reference, (list, tuple)):
+            return [self.get_label_name_from_index(index) for index in reference]
         if isinstance(reference, numpy.ndarray):
             return self.get_label_names_from_n_hot_vector(reference)
+        if isinstance(reference, h5py.Dataset) and len(reference.shape) == 0 and reference.dtype == numpy.uint16:
+            return self.get_label_name_from_index(reference[()])
+        if isinstance(reference, h5py.Dataset) and reference.dtype == numpy.bool:
+            return self.get_label_names_from_n_hot_vector(reference[:])
         raise LookupError(f'No labels for the specified reference "{reference}" could be found.')
 
     def get_label_from_index(self, index: int) -> 'Label':
@@ -1239,12 +1305,12 @@ class LabelMap:
 
         return self.get_label_from_index(index).name
 
-    def get_labels_from_n_hot_vector(self, n_hot_vector: NDArray[numpy.int64]) -> list['Label']:
+    def get_labels_from_n_hot_vector(self, n_hot_vector: NDArray[numpy.int64 | numpy.bool]) -> list['Label']:
         """Retrieves the labels that are specified by the n-hot encoded vector.
 
         Args:
-            n_hot_vector (NDArray[numpy.int64]): A n-hot encoded vector, where the indices are the label indices and the values are True/1 when the
-                label is present and False/0 when the label is not present.
+            n_hot_vector (NDArray[numpy.int64 | numpy.bool]): A n-hot encoded vector, where the indices are the label indices and the values are
+                True/1 when the label is present and False/0 when the label is not present.
 
         Raises:
             LookupError: If the length of the n-hot encoded vector is greater than the number of labels (that is there are indices for which there are

@@ -2,15 +2,15 @@
 Basic Usage
 ===========
 
-If you already have a project file that you would like to open, ViRelAy can be started on the command line using the following command. If you do not have a project file yet, you can read the :doc:`example-project` article, which guides you through the creation of a randomly generated project that you can use to familiarize yourself with the ViRelAy user interface. Creating a real-world project is much more involved, but if you would like to skip ahead, please refer to the :doc:`../user-guide/how-to-create-a-project` article, which describes the project creation process in-depth.
+If you already have a project file that you would like to open, ViRelAy can be started on the command-line using the following command. If you do not have a project file yet, you can read the :doc:`example-project` article, which guides you through the creation of a randomly generated project that you can use to familiarize yourself with the ViRelAy user interface. Creating a real-world project is much more involved, but if you would like to skip ahead, please refer to the :doc:`../user-guide/how-to-create-a-project` article, which describes the project creation process in-depth.
 
 .. code-block:: console
 
     $ virelay '<project-file>' ['<project-file>' ...]
 
-This command will start the server at http://localhost:8000 and automatically open your default browser. Optionally, you can specify an alternative host and port using the ``--host`` and ``--port`` command line arguments.
+This command will start the server at http://localhost:8000 and automatically open your default browser. Optionally, you can specify an alternative host and port using the ``--host`` and ``--port`` command-line arguments.
 
-Please note that starting ViRelAy using the provided command line interface will start a rather slow development server. For improved load times or when running ViRelAy on a remote server, we recommend using the WSGI HTTP server Gunicorn. For more information, please refer to :doc:`../user-guide/using-virelay-with-gunicorn`.
+Please note that starting ViRelAy using the provided command-line interface will start a rather slow development server. For improved load times or when running ViRelAy on a remote server, we recommend using the WSGI HTTP server Gunicorn. For more information, please refer to :doc:`../user-guide/using-virelay-with-gunicorn`.
 
 After launching ViRelAy, you will be greeted with a user interface like in the following screenshot. The exact setup will depend on the project(s) that you have loaded, but in this instance the randomly generated test project is shown:
 

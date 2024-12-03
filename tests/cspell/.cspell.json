@@ -21,14 +21,20 @@
     // A list of paths that are ignored when spell-checking (ignores the .git directory, but excludes the commit message file that is created by Git
     // during a commit, and the cSpell configuration file itself)
     "ignorePaths": [
-        "!.git/COMMIT_EDITMSG",
-        ".git",
         "**/__pycache__",
         "**/.cspell.json",
+        "**/.git/!(COMMIT_EDITMSG)",
         "**/*.svg",
+        "**/docs/build",
+        "**/docs/doctree",
+        "**/node_modules",
+        "**/source/backend",
+        "**/source/backend/dist",
+        "**/source/backend/htmlcov",
         "**/source/frontend/distribution",
         "**/source/frontend/node_modules",
         "**/source/frontend/package-lock.json",
+        "**/test-project",
         "**/uv.lock"
     ],
 

@@ -53,7 +53,7 @@ To run ViRelAy, use the following command, providing the necessary project files
 Command Line Interface
 ======================
 
-The ViRelAy command line interface offers a convenient way to start the application. The basic syntax for running the CLI is as follows:
+The ViRelAy command-line interface offers a convenient way to start the application. The basic syntax for running the CLI is as follows:
 
 .. code-block:: console
 
@@ -122,7 +122,7 @@ To ensure the highest quality of contributions, it is essential that all modific
 
         $ npm --prefix source/frontend run build
 
-To manually execute the tests, utilize the ``pytest`` command line interface to run the unit tests located in the ``tests/unit_tests`` directory:
+To manually execute the tests, utilize the ``pytest`` command-line interface to run the unit tests located in the ``tests/unit_tests`` directory:
 
 .. code-block:: console
 
@@ -259,3 +259,14 @@ The example scripts in the documentation have dependencies that currently do not
 .. warning::
 
     When using ZSH instead of Bash, it is necessary to modify the globbing pattern in the script. Specifically, the wildcard notation ``docs/examples/**/*.py`` will not only match files in the sub-directories of ``docs/examples``, but also in the directory itself, which includes the files that were already matched by the ``docs/examples/*.py`` pattern. This leads to inconsistencies with MyPy, which interprets multiple instances of the same file name as distinct modules and subsequently triggers errors.
+
+Building
+========
+
+Finally, to build a publishable version of the backend REST API, which can be deployed to the `Python package index (PyPI) <https://pypi.org/>`_, execute the following command:
+
+.. code-block:: console
+
+    $ uv --directory source/backend build
+
+This will build the source distribution and the wheel for the package and store them in the :repo:`source/backend/dist` directory. The source distribution is a compressed archive containing the source code and the metadata required for installation, while the wheel is a binary distribution format that can be installed directly without the need for compilation. The wheel is the preferred format for distribution, as it is faster to install and more secure than the source distribution.

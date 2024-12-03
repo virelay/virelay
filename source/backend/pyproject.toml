@@ -89,6 +89,7 @@ virelay = "virelay.application:run_cli_app"
 dev-dependencies = [
 
     # Dependencies required for building the documentation
+    "sphinx>=8.1.3,<9.0.0",
     "sphinx-copybutton>=0.5.2,<1.0.0",
     "sphinx-new-tab-link>=0.6.1,<1.0.0",
     "sphinx-rtd-theme>=3.0.1,<4.0.0",

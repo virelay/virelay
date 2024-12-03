@@ -22,8 +22,8 @@ def create_dataset(dataset_file_path: str, samples_shape: tuple[int, ...], numbe
     """
 
     dataset_file = h5py.File(dataset_file_path, 'w')
-    dataset_file.create_dataset('data', shape=(number_of_samples,) + samples_shape, dtype='float32')
-    dataset_file.create_dataset('label', shape=(number_of_samples,), dtype='uint16')
+    dataset_file.create_dataset('data', shape=(number_of_samples,) + samples_shape, dtype=numpy.float32)
+    dataset_file.create_dataset('label', shape=(number_of_samples,), dtype=numpy.uint16)
     return dataset_file
 
 

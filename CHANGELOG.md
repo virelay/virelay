@@ -56,6 +56,7 @@
   - The configuration file was generally cleaned up and is now completely documented.
   - `tox-uv` is used so that tox uses uv as package manager.
   - The new linters and the type checker are now included, and the they also lint and type-check the unit tests, the Sphinx configuration script and the example scripts in the documentation.
+- Updated the unit tests to reflect the changes in the backend API and to reach 100% test coverage again.
 
 ### Frontend
 
@@ -123,6 +124,7 @@
 - Some of the screenshots of the UI were updated to showcase the new dark-mode UI.
 - A plugin was added, which causes all external links to be opened in a new tab.
 - The paragraphs in the documentation are now justified.
+- Updated the repository read me to reflect the changes to the project and the documentation, and added shields.io badges for the license, the build status and the latest version.
 
 ## v0.4.0
 

@@ -139,17 +139,17 @@ To simplify the process of creating attribution databases, we provide two helper
         attribution_database_file.create_dataset(
             'attribution',
             shape=(number_of_samples,) + tuple(attribution_shape),
-            dtype='float32'
+            dtype=numpy.float32
         )
         attribution_database_file.create_dataset(
             'prediction',
             shape=(number_of_samples, number_of_classes),
-            dtype='float32'
+            dtype=numpy.float32
         )
         attribution_database_file.create_dataset(
             'label',
             shape=(number_of_samples,),
-            dtype='uint16'
+            dtype=numpy.uint16
         )
         return attribution_database_file
 
@@ -278,12 +278,12 @@ Depending on whether all images have the same shape, the data and labels can be 
         dataset_file.create_dataset(
             'data',
             shape=(number_of_samples,) + tuple(samples_shape),
-            dtype='float32'
+            dtype=numpy.float32
         )
         dataset_file.create_dataset(
             'label',
             shape=(number_of_samples,),
-            dtype='uint16'
+            dtype=numpy.uint16
         )
         return dataset_file
 

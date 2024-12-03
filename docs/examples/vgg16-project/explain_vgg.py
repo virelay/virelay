@@ -3,6 +3,7 @@
 import argparse
 
 import h5py
+import numpy
 import torch
 from torchvision import transforms
 from torchvision.models import vgg16
@@ -31,9 +32,9 @@ def create_attribution_database(
     """
 
     attribution_database_file = h5py.File(attribution_database_file_path, 'w')
-    attribution_database_file.create_dataset('attribution', shape=(number_of_samples,) + tuple(attribution_shape), dtype='float32')
-    attribution_database_file.create_dataset('prediction', shape=(number_of_samples, number_of_classes), dtype='float32')
-    attribution_database_file.create_dataset('label', shape=(number_of_samples,), dtype='uint16')
+    attribution_database_file.create_dataset('attribution', shape=(number_of_samples,) + tuple(attribution_shape), dtype=numpy.float32)
+    attribution_database_file.create_dataset('prediction', shape=(number_of_samples, number_of_classes), dtype=numpy.float32)
+    attribution_database_file.create_dataset('label', shape=(number_of_samples,), dtype=numpy.uint16)
     return attribution_database_file
 
 

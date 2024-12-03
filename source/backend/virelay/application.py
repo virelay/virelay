@@ -1,4 +1,4 @@
-"""Contains the command line interface for the ViRelAy application."""
+"""Contains the command-line interface for the ViRelAy application."""
 
 import os
 import atexit
@@ -12,9 +12,9 @@ from virelay.model import Workspace
 
 
 def run_cli_app() -> None:
-    """Runs the application with a command line interface (CLI) using the built-in server."""
+    """Runs the application with a command-line interface (CLI) using the built-in server."""
 
-    # Initializes the command line argument parser
+    # Initializes the command-line argument parser
     argument_parser: argparse.ArgumentParser = argparse.ArgumentParser(
         prog="virelay",
         description="A tool for visualizing relevance analyses.",
@@ -64,7 +64,7 @@ def run_cli_app() -> None:
     # Initializes the workspace, which will contain all the loaded projects
     workspace: Workspace = Workspace()
 
-    # Parses the command line arguments
+    # Parses the command-line arguments
     arguments = argument_parser.parse_args()
 
     # Adds the projects to the workspace

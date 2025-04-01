@@ -27,39 +27,35 @@ jobs:
       matrix:
         include:
           - tox-environment: py310
-            python-version: "3.10.15"
+            python-version: "3.10.16"
           - tox-environment: py311
-            python-version: "3.11.10"
+            python-version: "3.11.11"
           - tox-environment: py312
-            python-version: "3.12.7"
+            python-version: "3.12.9"
           - tox-environment: py313
-            python-version: "3.13.0"
+            python-version: "3.13.2"
 
     # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
     # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, 5) installing Node.js for building the frontend,
-    # which is required by the unit tests for testing whether the frontend files are correctly served via the backend, 6) installing the dependencies
-    # of the frontend, 7) building the frontend, and finally 8) running the unit tests
+    # which is required by the unit tests for testing whether the frontend files are correctly served via the backend, and finally 6) running the unit
+    # tests
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: 0.4.24
+          version: 0.6.13
       - name: Install Python
         run: uv python install ${{ matrix.python-version }}
       - name: Install ViRelAy and its Dependencies
         run: uv --directory source/backend sync --all-extras --dev
-      - name: Install NodeJS
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install Frontend Dependencies
-        run: npm --prefix source/frontend install
-      - name: Build Frontend
-        run: npm --prefix source/frontend run build
+          node-version: '22.14.0'
       - name: Run Unit Tests
         run: uv --directory source/backend run tox --conf ../../tests/config/tox.ini run -e ${{ matrix.tox-environment }}
 
@@ -77,11 +73,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: 0.4.24
+          version: 0.6.13
       - name: Install Python
-        run: uv python install 3.13.0 3.9.20
+        run: uv python install 3.13.2 3.9.21
       - name: Install ViRelAy and its Dependencies
         run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
@@ -101,11 +97,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: 0.4.24
+          version: 0.6.13
       - name: Install Python
-        run: uv python install 3.13.0 3.9.20
+        run: uv python install 3.13.2 3.9.21
       - name: Install ViRelAy and its Dependencies
         run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
@@ -125,11 +121,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: 0.4.24
+          version: 0.6.13
       - name: Install Python
-        run: uv python install 3.13.0 3.9.20
+        run: uv python install 3.13.2 3.9.21
       - name: Install ViRelAy and its Dependencies
         run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
@@ -149,11 +145,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: 0.4.24
+          version: 0.6.13
       - name: Install Python
-        run: uv python install 3.13.0 3.9.20
+        run: uv python install 3.13.2 3.9.21
       - name: Install ViRelAy and its Dependencies
         run: uv --directory source/backend sync --all-extras --dev
       - name: Run PyLint Linter
@@ -173,10 +169,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install NodeJS
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.14.0'
       - name: Install ESLint Global Configuration
         run: npm --prefix tests/eslint install
       - name: Install Frontend Dependencies
@@ -198,10 +194,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install NodeJS
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.14.0'
       - name: Install Stylelint Global Configuration
         run: npm --prefix tests/stylelint install
       - name: Install Frontend Dependencies
@@ -223,10 +219,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install NodeJS
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.14.0'
       - name: Install Frontend Dependencies
         run: npm --prefix source/frontend install
       - name: Run HTML-Validate Linter
@@ -246,10 +242,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install NodeJS
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.14.0'
       - name: Install Markdownlint Global Configuration
         run: npm --prefix tests/markdownlint install
       - name: Run Markdown Linter
@@ -271,10 +267,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install NodeJS
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.14.0'
       - name: Install CSpell Global Configuration
         run: npm --prefix tests/cspell install
       - name: Run CSpell Spell Checker
@@ -297,11 +293,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: 0.4.24
+          version: 0.6.13
       - name: Install Python
-        run: uv python install 3.13.0 3.9.20
+        run: uv python install 3.13.2 3.9.21
       - name: Install TeX Live for Pybtex
         run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
       - name: Build Documentation

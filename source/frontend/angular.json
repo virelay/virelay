@@ -67,7 +67,7 @@
                     // The NPM package for the build tool used to create this target, the application builder is used for building Angular
                     // applications that target a browser environment and that may use server-side-rendering, it uses esbuild to bundle the files and
                     // is based on @angular-devkit/build-angular:browser-esbuild
-                    "builder": "@angular-devkit/build-angular:application",
+                    "builder": "@angular/build:application",
 
                     // This section contains default build target options, these can be extended and overridden by named alternative configurations
                     // specified in the "configurations" section
@@ -259,7 +259,7 @@
 
                     // The NPM package for the build tool used to create this target, the dev-server builder is a development server that provides
                     // live reloading and other development features
-                    "builder": "@angular-devkit/build-angular:dev-server",
+                    "builder": "@angular/build:dev-server",
 
                     // This section defines and names alternative configurations for different environments, which are specified in separate sections
                     // for each environment, the alternative configurations extend the default options from the "options" section of the "serve"

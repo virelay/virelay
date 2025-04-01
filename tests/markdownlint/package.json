@@ -1,6 +1,6 @@
 {
   "name": "@virelay/markdownlint-config",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "The MarkdownLint configuration for ViRelAy.",
   "author": {
     "name": "David Neumann",
@@ -9,8 +9,8 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "dependencies": {
-    "markdownlint": "^0.36.1",
-    "markdownlint-cli2": "^0.15.0"
+    "markdownlint": "^0.37.4",
+    "markdownlint-cli2": "^0.17.2"
   },
   "scripts": {
     "markdownlint": "npx markdownlint-cli2 --config .markdownlint.yaml '../../**/*.md' '#../../**/node_modules' '#../../**/.venv' '#../../**/.tox' '#../../**/dist' '#../../**/.pytest_cache'"

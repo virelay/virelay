@@ -17,7 +17,6 @@ ViRelAy consists of two primary components:
 * **Backend REST API** -- Written in Python using `Flask <https://flask.palletsprojects.com/en/stable/>`_, this part provides the foundation for our system's functionality.
 * **Frontend** -- Developed using `Angular <https://angular.io/>`_ and `Clarity <https://clarity.design/>`_, the frontend delivers a user-friendly interface.
 
-
 To delve deeper into each component, we recommend reviewing the in-depth articles on the :doc:`backend-rest-api` and the :doc:`frontend`.
 
 Reporting Issues & Feature Requests
@@ -28,7 +27,7 @@ If you encounter a bug or have a feature request, we encourage you to submit an 
 When submitting a new issue, provide as much relevant information as possible to facilitate prompt identification and resolution of the problem. This includes:
 
 * Operating system details (e.g., Windows 11, macOS 15, Ubuntu 24.04)
-* ViRelAy version you are using
+* The ViRelAy version you are using
 * Any pertinent configuration settings or dependencies
 
 Also, please provide a clear, step-by-step guide on how to reproduce the issue. This will enable us to diagnose and fix the problem more quickly. If possible, including a minimal example that reproduces the issue (i.e., a project file, dataset, label map, attributions, and analysis results) is highly appreciated.
@@ -36,7 +35,7 @@ Also, please provide a clear, step-by-step guide on how to reproduce the issue. 
 Contributing Code or Documentation
 ==================================
 
-Before contributing code or documentation, please ensure that there is no existing issue that aligns with your ideas. This helps avoid duplication of effort and ensures a seamless integration of your contributions into the project. If you have an idea for a contribution but can't find a related issue, we encourage you to open an issue before starting you work, where you outline your proposal. This facilitates alignment with the rest of the team and may prevent unnecessary work.
+Before contributing code or documentation, please ensure that there is no existing issue that aligns with your ideas. This helps avoid duplication of effort and ensures a seamless integration of your contributions into the project. If you have an idea for a contribution but can't find a related issue, we encourage you to open an issue, where you outline your proposal, before starting your work. This facilitates alignment with the rest of the team and may prevent unnecessary work.
 
 To contribute code or documentation, follow these steps:
 
@@ -57,7 +56,7 @@ When modifying existing code, please refrain from altering the project's coding 
 * `PyDocLint <https://jsh9.github.io/pydoclint/>`_ -- Ensures proper documentation and adherence to Docstring style guidelines.
 * `MyPy <https://mypy-lang.org/>`_ -- Statically type-checks the backend REST API.
 
-Before committing your changes, please verify that none of these tools produce warnings. Additionally, we advise against modifying the configuration of these tools unless a compelling reason exists (please provide details on your reasoning in the accompanying issue or pull request).
+Before committing your changes, please verify that none of these tools produce warnings. Additionally, we advise against modifying the configuration of these tools unless a compelling reason exists (please provide details on your reasoning in the accompanying issue or pull request). For more information, please refer to the :ref:`testing-and-linting` section.
 
 3. Write Unit Tests
 -------------------
@@ -76,6 +75,8 @@ A local build of the documentation can be created using the following command:
 .. code-block:: console
 
     $ uv run --directory source/backend tox --conf ../../tests/config/tox.ini -e docs
+
+.. _testing-and-linting:
 
 5. Testing & Linting
 --------------------

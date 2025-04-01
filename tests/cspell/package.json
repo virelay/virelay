@@ -1,6 +1,6 @@
 {
   "name": "@virelay/cspell-config",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "The CSpell configuration for ViRelAy.",
   "author": {
     "name": "David Neumann",
@@ -9,7 +9,7 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "dependencies": {
-    "cspell": "^8.16.1"
+    "cspell": "^8.18.1"
   },
   "scripts": {
     "cspell": "npx --prefix tests/cspell cspell lint --config .cspell.json --root ../.. '**'"

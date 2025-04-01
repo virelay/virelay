@@ -5,14 +5,22 @@ module.exports = {
     // This is the root configuration and HTML-validate should not search for other configuration files
     root: true,
 
+    // Specifies the plugins that should be loaded; here the Angular plugin is used, which provides transformers that can be applied to the Angular
+    // templates, so that they can be validated as regular HTML
+    plugins: [
+        "html-validate-angular"
+    ],
+
     // For proper validation some metadata for each element is required, detailing in which context it can be used, allowed/disallowed attributes,
     // etc., here the rules permitted by HTML5 are used
     elements: [
         "html5"
     ],
 
+    // Specifies that the Angular template files should be transformed using the HTML-validate Angular plugin (these transformers are used to
+    // transform the Angular templates into regular HTML, so that they can be validated)
     transform: {
-        "^.*\\.html$": "html-validate-angular/html"
+        "^.*\\.html$": "html-validate-angular:html"
     },
 
     // A list of configuration presets, on which this configuration is based, here the recommended preset is used, which contains all rules except for

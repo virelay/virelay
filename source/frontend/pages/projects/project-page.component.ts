@@ -41,7 +41,6 @@ PlotlyModule.plotlyjs = PlotlyJS;
  */
 @Component({
     selector: 'virelay-project-page',
-    standalone: true,
     templateUrl: 'project-page.component.html',
     styleUrl: 'project-page.component.scss',
     imports: [
@@ -244,9 +243,7 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
             const clusters = new Map<number, number>();
             for (const cluster of analysis.embedding.map(embeddingVector => embeddingVector.cluster)) {
                 let numberOfEmbeddingVectorsInCluster = clusters.get(cluster);
-                if (!numberOfEmbeddingVectorsInCluster) {
-                    numberOfEmbeddingVectorsInCluster = 0;
-                }
+                numberOfEmbeddingVectorsInCluster ??= 0;
                 clusters.set(cluster, numberOfEmbeddingVectorsInCluster + 1);
             }
             this.numberOfClusters = clusters.size;

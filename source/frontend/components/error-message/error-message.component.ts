@@ -7,7 +7,6 @@ import { ClarityModule } from "@clr/angular";
  */
 @Component({
     selector: 'virelay-error-message',
-    standalone: true,
     templateUrl: 'error-message.component.html',
     styleUrl: 'error-message.component.scss',
     imports: [ClarityModule]

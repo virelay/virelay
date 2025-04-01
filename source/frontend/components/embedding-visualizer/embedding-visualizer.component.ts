@@ -14,16 +14,13 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
  */
 @Component({
     selector: 'virelay-embedding-visualizer',
-    standalone: true,
     templateUrl: 'embedding-visualizer.component.html',
     styleUrl: 'embedding-visualizer.component.scss',
-    imports: [
-    ],
     providers: [{
-        provide: NG_VALUE_ACCESSOR,
-        useExisting: forwardRef(() => EmbeddingVisualizerComponent),
-        multi: true
-    }]
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => EmbeddingVisualizerComponent),
+            multi: true
+        }]
 })
 export class EmbeddingVisualizerComponent implements AfterViewInit, OnDestroy {
 

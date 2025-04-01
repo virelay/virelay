@@ -1,17 +1,49 @@
 # Changelog
 
+## v0.6.0
+
+*Release date to be determined.*
+
+### Backend REST API Updates in v0.6.0
+
+- The Python versions supported by the backend REST API were updated:
+  - Python 3.13.0 → 3.13.2,
+  - Python 3.12.7 → 3.12.9,
+  - Python 3.11.10 → 3.11.11, and
+  - Python 3.10.15 → 3.10.16.
+- The dependencies of the backend REST API were updated to their respective latest version.
+- All linter errors that arose due to the updates were fixed.
+- Previously, before running the unit tests of the backend, the frontend needed to be built manually. This was required, because the unit tests test if the frontend could be served through the backend, for which the frontend build artifacts are required. This was a cumbersome process and it required a warning in the documentation, which was not ideal, especially for new contributors. This process was automated by adding the building of the frontend to the tox configuration.
+
+### Frontend Updates in v0.6.0
+
+- The frontend project was updated to Angular 19.2, Clarity Design System 6.15, and Clarity 17.9.
+- The dependencies and the development dependencies of the frontend project were updated to their respective latest versions.
+- The dependencies of the Node.js-based linters were updated to their respective latest versions.
+- All configuration issues and linter errors that arose due to the updates were fixed.
+
+### CI/CD Updates in v0.6.0
+
+- The actions used in the GitHub Actions workflow configuration file were updated to their latest versions.
+- Since the frontend is now built automatically using tox, the steps required to build the frontend before running the unit tests of the backend REST API were removed from the GitHub Actions workflow configuration file.
+
+### Documentation Updates in v0.6.0
+
+- Some minor spelling mistakes were corrected in the documentation.
+- Also, the warning about having to build the frontend project before running the unit tests of the backend REST API was removed, because the frontend project is now built automatically in tox and no longer needs to be built manually.
+
 ## v0.5.0
 
 *Released on April 10, 2025.*
 
-### General
+### General Updates in v0.5.0
 
 - Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected all spelling mistakes.
 - Removed the `LICENSE` file. Previously, there were two license files: `COPYING`, which contained the AGPL 3.0 license text, and `LICENSE`, which contained a note about where to find the license of the project and any third-party licenses. This was done, because GPL prefers the file name `COPYING`, but back then GitHub did not support that file name. Now, GitHub also supports `COPYING`. As the information about where to find the project license and the third-party licenses is also contained in the read me, the `LICENSE` file was removed.
 - Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.
 - Moved the ViRelAy logo from the `docs/images` directory a new top-level directory called `design`, in order to clean up the repository.
 
-### Backend REST API
+### Backend REST API Updates in v0.5.0
 
 - Converted the project from `setuptools` and `setup.py` to the Python package and project manager [uv](https://github.com/astral-sh/uv) and `pyproject.toml`.
   - This was made necessary, because the `virelay` package was moved into a `source/backend` directory and the `frontend` project was also moved from the `virelay` package into the `source/frontend` directory, and setuptools does not allow us to include data files that are not contained in the package directory.
@@ -58,7 +90,7 @@
   - The new linters and the type checker are now included, and the they also lint and type-check the unit tests, the Sphinx configuration script and the example scripts in the documentation.
 - Updated the unit tests to reflect the changes in the backend API and to reach 100% test coverage again.
 
-### Frontend
+### Frontend Updates in v0.5.0
 
 - Migrated the frontend project from Angular 13 and Clarity 13 to Angular 18 and Clarity 17.
 - Updated the dependencies and the development dependencies of the frontend project to their respective latest versions.
@@ -102,7 +134,7 @@
   - The documentation was updated to include instructions on how to run the linters.
   - The GitHub Actions workflow configuration was adapted to run the linters.
 
-### CI/CD
+### CI/CD Updates in v0.5.0
 
 - The GitHub Actions Workflow configuration file was updated
   - The Workflow configuration file was cleaned up and documented.
@@ -112,7 +144,7 @@
 - The spell-checking was also added to the GitHub Actions tests workflow. This will run the spell-checking on all files in the repository and report any misspelled words during the CI/CD process.
 - Set up a new GitHub Actions workflow that automatically publishes the ViRelAy package to the Python Package Index (PyPI) when a new release is created on GitHub.
 
-### Documentation
+### Documentation Updates in v0.5.0
 
 - The Sphinx build configuration and the configuration for "Read the Docs" were updated:
   - The year in the copyright notice of the documentation is now always set to the current year.

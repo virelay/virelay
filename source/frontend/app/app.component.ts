@@ -14,7 +14,6 @@ import { ErrorMessageComponent } from '@components/error-message/error-message.c
  */
 @Component({
     selector: 'virelay-app',
-    standalone: true,
     imports: [
         CommonModule,
         RouterModule,

@@ -1,6 +1,6 @@
 {
   "name": "@virelay/eslint-config",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "The ESLint configuration for ViRelAy. Having the configuration in a separate package makes it easier to use in a monorepo.",
   "author": {
     "name": "David Neumann",
@@ -10,17 +10,17 @@
   "private": true,
   "main": "eslint.config.mjs",
   "dependencies": {
-    "globals": "^15.11.0",
-    "@eslint/js": "^9.13.0",
-    "typescript-eslint": "^8.12.2",
-    "angular-eslint": "^18.4.0"
+    "@eslint/js": "^9.24.0",
+    "angular-eslint": "^19.3.0",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.29.1"
   },
   "devDependencies": {
     "@types/eslint__js": "^8.42.3"
   },
   "peerDependencies": {
-    "eslint": "^9.13.0",
-    "typescript-eslint": "^8.12.2",
-    "typescript": "~5.5.4"
+    "eslint": "^9.24.0",
+    "typescript-eslint": "^8.29.1",
+    "typescript": "~5.8.3"
   }
 }

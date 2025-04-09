@@ -87,9 +87,6 @@
 
     // A list of words that are not in the included default dictionary for American English
     "words": [
-        "TSES",
-        "Descriptionless",
-        "stylelintrc",
         "3rdpartylicenses",
         "absspectral",
         "addopts",
@@ -125,6 +122,7 @@
         "dbscan",
         "deadsnakes",
         "delslice",
+        "Descriptionless",
         "Descriptionless",
         "DNNs",
         "docstrings",
@@ -194,6 +192,7 @@
         "overgeneral",
         "parseable",
         "Pattarawat",
+        "pixelating",
         "plotlyjs",
         "posargs",
         "Pybtex",
@@ -222,6 +221,7 @@
         "srcdir",
         "standarderror",
         "stylelintrc",
+        "stylelintrc",
         "synset",
         "Talmaj",
         "tamasfe",
@@ -233,6 +233,7 @@
         "torchvision",
         "toxinidir",
         "toxworkdir",
+        "TSES",
         "TSES",
         "tsne",
         "TYPECHECK",

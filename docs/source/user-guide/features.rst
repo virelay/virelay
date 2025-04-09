@@ -206,6 +206,22 @@ The heatmaps are rendered using a selected color map, which can be chosen from a
 
     Figure 14: The color map that is used to render the heatmaps can be selected in the toolbox.
 
+Depending on the size of the sample images and heatmaps, the sample viewer will either display the image smooth or pixelated. The smooth mode is used for larger images, while the pixelated mode is used for smaller images. This makes it easier for users to inspect samples and heatmaps without losing important details: when the sample images and heatmaps are small, smoothing the image could potentially smear out important details, while pixelating large images could potentially hide small details (cf. Figure 15).
+
+.. figure:: ../../images/user-guide/features/image-sampling-modes.png
+    :alt: Sample image in both smooth and pixelation image sampling modes
+    :align: center
+
+    Figure 15: A sample image in both smooth and pixelation image sampling modes.
+
+Although the sample viewer automatically selects the appropriate mode based on the size of the sample images and heatmaps, i.e., if the sample images or heatmaps are smaller than the image element on the screen, the pixelated mode is used, while the smooth mode is used for sample images and heatmaps that are larger than the image element, users can manually override this behavior by clicking the "Smooth" or "Pixelated" buttons in the toolbox. This allows for greater flexibility in visualizing samples and heatmaps according to user preferences (cf. Figure 16).
+
+.. figure:: ../../images/user-guide/features/image-sampling-mode-selection.png
+    :alt: Image Sampling Mode Selection in the ViRelAy UI
+    :align: center
+
+    Figure 16: The buttons for switching between automatic, smooth, and pixelated image sampling modes in the toolbox.
+
 Exporting, Importing & Sharing Results
 =======================================
 
@@ -214,7 +230,7 @@ ViRelAy provides several features for managing and sharing results, allowing use
 Exporting Results
 -----------------
 
-To capture your analysis progress or save specific findings for later reference, click the "Export" button in the toolbar (cd. Figure 15). This will generate a JSON file containing the current project configuration, including:
+To capture your analysis progress or save specific findings for later reference, click the "Export" button in the toolbar (cd. Figure 17). This will generate a JSON file containing the current project configuration, including:
 
 * Current project
 * Selected Analysis
@@ -226,22 +242,22 @@ To capture your analysis progress or save specific findings for later reference,
     :alt: Import, Export & Share Buttons in the ViRelAy UI
     :align: center
 
-    Figure 15: The toolbar contains 3 buttons for importing, exporting, and sharing findings.
+    Figure 17: The toolbar contains 3 buttons for importing, exporting, and sharing findings.
 
 Importing Saved States
 ----------------------
 
-This JSON file can be imported later using the "Import" button or used independently for further evaluation, plotting, or sharing. To restore a previously exported state, click the Import button in the toolbar. ViRelAy will load the saved configuration, restoring the exact same settings and selected embedding vectors that were present when the export was created (cf. Figure 15).
+This JSON file can be imported later using the "Import" button or used independently for further evaluation, plotting, or sharing. To restore a previously exported state, click the Import button in the toolbar. ViRelAy will load the saved configuration, restoring the exact same settings and selected embedding vectors that were present when the export was created (cf. Figure 17).
 
 Sharing Results with Others
 ---------------------------
 
 For collaborative work or knowledge transfer, users can share their findings by clicking the "Share" button in the toolbar. This will generate a unique link containing the current project configuration, which can be copied and shared with others.
 
-When the recipient opens this sharable link, ViRelAy will restore the exact same state that was present when the link was generated (cf. Figure 16). This ensures seamless collaboration and knowledge transfer between team members or stakeholders.
+When the recipient opens this sharable link, ViRelAy will restore the exact same state that was present when the link was generated (cf. Figure 18). This ensures seamless collaboration and knowledge transfer between team members or stakeholders.
 
 .. figure:: ../../images/user-guide/features/share-link-dialog.png
     :alt: Share Link Dialog in the ViRelAy UI
     :align: center
 
-    Figure 16: Clicking the "Share" button in the toolbar generates a sharable link, which can be copied from the share link dialog.
+    Figure 18: Clicking the "Share" button in the toolbar generates a sharable link, which can be copied from the share link dialog.

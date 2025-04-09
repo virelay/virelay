@@ -17,6 +17,11 @@
 
 ### Frontend Updates in v0.6.0
 
+- Previously, the previews of the sample images and heatmaps were smoothed. Now, the UI offers a new feature, which allows users to select the sampling method for the images:
+  - By default, the option is set to auto, which will select a method based on sizes of the sample image and the HTML element.
+  - The user can, however, override this option and select either smooth or pixelated image sampling.
+  - This will make it easier to inspect the sample images and the heatmaps: when the sample images and heatmaps are small, smoothing the image could potentially smear out important details, while pixelating large images could potentially hide small details.
+  - The documentation was updated to include this new feature. As the feature caused some changes in the UI, the screenshots in the documentation were updated as well.
 - The frontend project was updated to Angular 19.2, Clarity Design System 6.15, and Clarity 17.9.
 - The dependencies and the development dependencies of the frontend project were updated to their respective latest versions.
 - The dependencies of the Node.js-based linters were updated to their respective latest versions.

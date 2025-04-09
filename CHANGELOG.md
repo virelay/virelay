@@ -22,6 +22,7 @@
   - The user can, however, override this option and select either smooth or pixelated image sampling.
   - This will make it easier to inspect the sample images and the heatmaps: when the sample images and heatmaps are small, smoothing the image could potentially smear out important details, while pixelating large images could potentially hide small details.
   - The documentation was updated to include this new feature. As the feature caused some changes in the UI, the screenshots in the documentation were updated as well.
+- Fixed the alternative text of the sample and heatmap images in the sample viewer. Previously, the text was `[Object object]`, which is the default string that is returned when the `toString` method of an object is called. The alternative text of the sample images and heatmaps is generated from their sample labels. The problem was, that the labels were not strings, but objects containing the label index, the WordNetId, and the human-readable name of the label.
 - The frontend project was updated to Angular 19.2, Clarity Design System 6.15, and Clarity 17.9.
 - The dependencies and the development dependencies of the frontend project were updated to their respective latest versions.
 - The dependencies of the Node.js-based linters were updated to their respective latest versions.

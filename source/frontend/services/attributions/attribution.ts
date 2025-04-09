@@ -79,6 +79,13 @@ export class Attribution {
     public accessor height: number;
 
     /**
+     * Gets the length of the shorter side of the attribution heatmap image.
+     */
+    public get shorterSide(): number {
+        return Math.min(this.width, this.height);
+    }
+
+    /**
      * Gets or sets the URLs to the heatmaps for the attribution for all supported color maps.
      */
     public accessor urls: Record<string, string>;

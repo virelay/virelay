@@ -115,11 +115,11 @@
             <div class="radio btn">
                 <input
                     type="radio"
-                    id="img-radio-input"
-                    name="img-radio"
+                    id="radio-button-attribution-image-mode-input"
+                    name="radio-button-attribution-image-mode"
                     value="input"
                     [(ngModel)]="attributionImageMode">
-                <label for="img-radio-input">
+                <label for="radio-button-attribution-image-mode-input">
                     <cds-icon shape="image"></cds-icon>
                     Input
                 </label>
@@ -128,11 +128,11 @@
             <div class="radio btn">
                 <input
                     type="radio"
-                    id="img-radio-overlay"
-                    name="img-radio"
+                    id="radio-button-attribution-image-mode-overlay"
+                    name="radio-button-attribution-image-mode"
                     value="overlay"
                     [(ngModel)]="attributionImageMode">
-                <label for="img-radio-overlay" tabindex="0">
+                <label for="radio-button-attribution-image-mode-overlay" tabindex="0">
                     <cds-icon shape="layers"></cds-icon>
                     Overlay
                 </label>
@@ -141,13 +141,54 @@
             <div class="radio btn">
                 <input
                     type="radio"
-                    id="img-radio-attribution"
-                    name="img-radio"
+                    id="radio-button-attribution-image-mode-attribution"
+                    name="radio-button-attribution-image-mode"
                     value="attribution"
                     [(ngModel)]="attributionImageMode">
-                <label for="img-radio-attribution" tabindex="0">
+                <label for="radio-button-attribution-image-mode-attribution" tabindex="0">
                     <cds-icon shape="bubble-chart"></cds-icon>
                     Attribution
+                </label>
+            </div>
+        </div>
+
+        <div class="btn-group" *ngIf="selectedAnalysisMethod">
+            <div class="radio btn">
+                <input
+                    type="radio"
+                    id="radio-button-image-sampling-mode-automatic"
+                    name="radio-button-image-sampling-mode"
+                    value="automatic"
+                    [(ngModel)]="imageSamplingMode">
+                <label for="radio-button-image-sampling-mode-automatic">
+                    <cds-icon shape="wand"></cds-icon>
+                    Auto
+                </label>
+            </div>
+
+            <div class="radio btn">
+                <input
+                    type="radio"
+                    id="radio-button-image-sampling-mode-smooth"
+                    name="radio-button-image-sampling-mode"
+                    value="smooth"
+                    [(ngModel)]="imageSamplingMode">
+                <label for="radio-button-image-sampling-mode-smooth" tabindex="0">
+                    <cds-icon shape="picture"></cds-icon>
+                    Smooth
+                </label>
+            </div>
+
+            <div class="radio btn">
+                <input
+                    type="radio"
+                    id="radio-button-image-sampling-mode-pixelated"
+                    name="radio-button-image-sampling-mode"
+                    value="pixelated"
+                    [(ngModel)]="imageSamplingMode">
+                <label for="radio-button-image-sampling-mode-pixelated" tabindex="0">
+                    <cds-icon shape="heat-map"></cds-icon>
+                    Pixelated
                 </label>
             </div>
         </div>
@@ -191,6 +232,7 @@
             id="attribution-hover-preview"
             *ngIf="hoveredEmbeddingVectorDatasetSamplePreview && isHoveringOverEmbeddingVector"
             [src]="hoveredEmbeddingVectorDatasetSamplePreview.url"
+            [style.image-rendering]="(hoveredEmbeddingVectorDatasetSamplePreview.shorterSide <= 128 && imageSamplingMode === 'automatic') || imageSamplingMode === 'pixelated' ? 'pixelated' : 'auto'"
             alt="Preview of the Attribution of the Hovered Embedding Vector">
     </section>
 
@@ -224,7 +266,8 @@
 
                 <img
                     [src]="selectedEmbeddingVectorAttribution.attribution.urls[selectedColorMap.name]"
-                    [alt]="selectedEmbeddingVectorAttribution.attribution.labelDisplay">
+                    [alt]="selectedEmbeddingVectorAttribution.attribution.labelDisplay"
+                    [style.image-rendering]="(selectedEmbeddingVectorAttribution.attribution.shorterSide <= 150 && imageSamplingMode === 'automatic') || imageSamplingMode === 'pixelated' ? 'pixelated' : 'auto'">
 
                 <p>
                     <span [style.color]="selectedEmbeddingVectorAttribution.color">&#11044;</span>

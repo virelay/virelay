@@ -14,7 +14,7 @@ export class ColorMap {
      * @param {ColorMapJson} colorMap The JSON object that was retrieved from the backend REST API.
      * @param {string} baseUrl The base URL that is added to the heatmap URLs.
      *
-     * @throws {ServiceException} The analysis category is <code>null</code> or <code>undefined</code>.
+     * @throws {ServiceException} The color map is <code>null</code> or <code>undefined</code>.
      */
     public constructor(colorMap?: ColorMapJson, baseUrl?: string) {
 

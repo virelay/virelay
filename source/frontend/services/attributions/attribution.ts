@@ -1,4 +1,5 @@
 
+import { Label, LabelJson } from '@services/datasets/label';
 import { ServiceException } from '@services/service-exception';
 
 /**
@@ -23,7 +24,7 @@ export class Attribution {
         }
 
         this.index = attribution.index;
-        this.labels = attribution.labels;
+        this.labels = attribution.labels.map(label => new Label(label));
         this.prediction = attribution.prediction;
         this.width = attribution.width;
         this.height = attribution.height;
@@ -49,7 +50,7 @@ export class Attribution {
     /**
      * Gets or sets the true labels of the dataset sample for which the attribution was generated.
      */
-    public accessor labels: string | string[];
+    public accessor labels: Label[];
 
     /**
      * Gets a comma-separated list of all labels, which can be used for displaying the labels.
@@ -57,10 +58,23 @@ export class Attribution {
      * @returns {string} Returns a string containing a comma-separated list of all labels.
      */
     public get labelDisplay(): string {
-        if (Array.isArray(this.labels)) {
-            return this.labels.join(', ');
+        if (this.labels.length === 0) {
+            return '';
         }
-        return this.labels;
+
+        if (this.labels.length === 1) {
+            return this.labels[0].name;
+        }
+
+        if (this.labels.length === 2) {
+            return `${this.labels[0].name} and ${this.labels[1].name}`;
+        }
+
+        return this.labels
+            .slice(0, this.labels.length - 1)
+            .map(label => label.name)
+            .join(', ')
+            .concat(' and ', this.labels[this.labels.length - 1].name);
     }
 
     /**
@@ -108,7 +122,7 @@ export interface AttributionJson {
     /**
      * Contains the true labels of the dataset sample for which the attribution was generated.
      */
-    labels: string | string[];
+    labels: LabelJson[];
 
     /**
      * Contains the output of the model for the dataset sample for which the attribution was generated.

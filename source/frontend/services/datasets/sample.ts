@@ -1,4 +1,5 @@
 
+import { Label, LabelJson } from '@services/datasets/label';
 import { ServiceException } from '@services/service-exception';
 
 /**
@@ -14,7 +15,7 @@ export class Sample {
      * @param {SampleJson} sample The JSON object that was retrieved from the backend REST API.
      * @param {string}  baseUrl The base URL that is added to the image URL.
      *
-     * @throws {ServiceException} The analysis category is <code>null</code> or <code>undefined</code>.
+     * @throws {ServiceException} The sample is <code>null</code> or <code>undefined</code>.
      */
     public constructor(sample?: SampleJson, baseUrl?: string) {
 
@@ -23,7 +24,7 @@ export class Sample {
         }
 
         this.index = sample.index;
-        this.labels = sample.labels;
+        this.labels = sample.labels.map(label => new Label(label));
         this.width = sample.width;
         this.height = sample.height;
         this.url = sample.url;
@@ -44,16 +45,29 @@ export class Sample {
     /**
      * Gets or sets the true labels of the dataset sample.
      */
-    public accessor labels: string | string[];
+    public accessor labels: Label[];
 
     /**
      * Gets a comma-separated list of all labels, which can be used for displaying the labels.
      */
     public get labelDisplay(): string {
-        if (Array.isArray(this.labels)) {
-            return this.labels.join(', ');
+        if (this.labels.length === 0) {
+            return '';
         }
-        return this.labels;
+
+        if (this.labels.length === 1) {
+            return this.labels[0].name;
+        }
+
+        if (this.labels.length === 2) {
+            return `${this.labels[0].name} and ${this.labels[1].name}`;
+        }
+
+        return this.labels
+            .slice(0, this.labels.length - 1)
+            .map(label => label.name)
+            .join(', ')
+            .concat(' and ', this.labels[this.labels.length - 1].name);
     }
 
     /**
@@ -96,7 +110,7 @@ export interface SampleJson {
     /**
      * Contains the true labels of the dataset sample.
      */
-    labels: string | string[];
+    labels: LabelJson[];
 
     /**
      * Contains the width of the sample image.

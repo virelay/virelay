@@ -67,6 +67,13 @@ export class Sample {
     public accessor height: number;
 
     /**
+     * Gets the length of the shorter side of the sample image.
+     */
+    public get shorterSide(): number {
+        return Math.min(this.width, this.height);
+    }
+
+    /**
      * Gets or sets the URL to the image of the dataset sample.
      */
     public accessor url: string;

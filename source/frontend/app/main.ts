@@ -9,14 +9,17 @@ import {
     checkIcon,
     errorStandardIcon,
     exportIcon,
+    heatMapIcon,
     imageIcon,
     importIcon,
     layersIcon,
     libraryIcon,
     organizationIcon,
+    pictureIcon,
     shareIcon,
     storageIcon,
-    timesIcon
+    timesIcon,
+    wandIcon
 } from '@cds/core/icon';
 import '@cds/core/icon/register.js';
 
@@ -81,14 +84,17 @@ ClarityIcons.addIcons(
     checkIcon,
     errorStandardIcon,
     exportIcon,
+    heatMapIcon,
     imageIcon,
     importIcon,
     layersIcon,
     libraryIcon,
     organizationIcon,
+    pictureIcon,
     shareIcon,
     storageIcon,
-    timesIcon
+    timesIcon,
+    wandIcon
 );
 
 // When an Angular application is started, i.e., a user navigated to the website, then the index.html file will be loaded, which references the

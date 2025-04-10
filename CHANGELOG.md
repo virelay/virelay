@@ -6,6 +6,7 @@
 
 ### General
 
+- Set up a new GitHub Actions workflow that automatically publishes the ViRelAy package to the Python Package Index (PyPI) when a new release is created on GitHub.
 - Added a CSpell configuration for spell-checking the contents of the repository, checked all files, and corrected all spelling mistakes.
 - Removed the `LICENSE` file. Previously, there were two license files: `COPYING`, which contained the AGPL 3.0 license text, and `LICENSE`, which contained a note about where to find the license of the project and any third-party licenses. This was done, because GPL prefers the file name `COPYING`, but back then GitHub did not support that file name. Now, GitHub also supports `COPYING`. As the information about where to find the project license and the third-party licenses is also contained in the read me, the `LICENSE` file was removed.
 - Added a `CITATION.cff` file, which contains the necessary information to cite this repository. This file is based on the [Citation File Format (CFF)](https://citation-file-format.github.io) standard.

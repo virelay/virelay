@@ -114,14 +114,6 @@ To ensure the highest quality of contributions, it is essential that all modific
         --conf ../../tests/config/tox.ini \
         run -e py310,pylint
 
-.. warning::
-
-    If the ``TestServer::test_angular_frontend_is_served_when_server_is_not_in_debug_mode`` test fails due to a ``FileNotFoundError`` exception, ensure that you have built the frontend beforehand. While running the unit tests, the frontend files are served from the ``source/frontend/distribution/browser`` directory. If the frontend files are not present in this directory, then the test will fail. To build the frontend, you can use the following command:
-
-    .. code-block:: console
-
-        $ npm --prefix source/frontend run build
-
 To manually execute the tests, utilize the ``pytest`` command-line interface to run the unit tests located in the ``tests/unit_tests`` directory:
 
 .. code-block:: console
@@ -203,8 +195,8 @@ The example scripts in the documentation have dependencies that currently do not
 
     $ uv run \
         --no-project \
-        --python 3.9.20 \
-        --with 'pylint==3.3.1' \
+        --python 3.9.21 \
+        --with 'pylint==3.3.6' \
         --with 'zennit==0.5.1' \
         --with 'corelay==0.2.1' \
         --with 'h5py==3.12.1' \
@@ -217,7 +209,7 @@ The example scripts in the documentation have dependencies that currently do not
 
     $ uv run \
         --no-project \
-        --python 3.9.20 \
+        --python 3.9.21 \
         --with 'pycodestyle==2.12.1' \
         --with 'zennit==0.5.1' \
         --with 'corelay==0.2.1' \
@@ -230,7 +222,7 @@ The example scripts in the documentation have dependencies that currently do not
 
     $ uv run \
         --no-project \
-        --python 3.9.20 \
+        --python 3.9.21 \
         --with 'pydoclint==0.5.9' \
         --with 'zennit==0.5.1' \
         --with 'corelay==0.2.1' \
@@ -243,7 +235,7 @@ The example scripts in the documentation have dependencies that currently do not
 
     $ uv run \
         --no-project \
-        --python 3.9.20 \
+        --python 3.9.21 \
         --with 'mypy==1.12.0' \
         --with 'zennit==0.5.1' \
         --with 'corelay==0.2.1' \

@@ -1,35 +1,36 @@
 
-import { Subscription, fromEvent } from 'rxjs';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ClarityModule, ClrModalModule } from '@clr/angular';
-import * as PlotlyJS from 'plotly.js-basic-dist-min';
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { PlotlyModule } from 'angular-plotly.js';
+import { Subscription, fromEvent } from 'rxjs';
+import * as PlotlyJS from 'plotly.js-basic-dist-min';
 import * as THREE from 'three'
 import saveAs from 'file-saver';
 
+import { AnalysesService } from '@services/analyses/analyses.service';
+import { Analysis } from '@services/analyses/analysis';
+import { AnalysisCategory } from '@services/projects/analysis-category';
+import { AnalysisMethod } from '@services/projects/analysis-method';
+import { Attribution } from '@services/attributions/attribution';
+import { AttributionImageMode } from '@services/attributions/attribution-image-mode';
+import { AttributionsService } from '@services/attributions/attributions.service';
 import { Cluster } from '@pages/projects/cluster';
+import { ColorMap } from '@services/color-maps/color-map';
+import { ColorMapsService } from '@services/color-maps/color-maps.service';
+import { DatasetsService } from '@services/datasets/datasets.service';
+import { EmbeddingVector } from '@services/analyses/embedding-vector';
 import { EmbeddingVectorAttribution } from '@pages/projects/embedding-vector-attribution';
 import { EmbeddingVisualizerComponent } from '@components/embedding-visualizer/embedding-visualizer.component';
 import { ErrorMessageComponent } from '@components/error-message/error-message.component';
-import { ProjectsService } from '@services/projects/projects.service';
-import { AnalysesService } from '@services/analyses/analyses.service';
-import { AttributionsService } from '@services/attributions/attributions.service';
-import { DatasetsService } from '@services/datasets/datasets.service';
-import { ColorMapsService } from '@services/color-maps/color-maps.service';
-import { Project } from '@services/projects/project';
-import { ColorMap } from '@services/color-maps/color-map';
-import { ResourceState } from '@services/resource-state';
-import { EmbeddingVector } from '@services/analyses/embedding-vector';
-import { Sample } from '@services/datasets/sample';
-import { AttributionImageMode } from '@services/attributions/attribution-image-mode';
-import { Analysis } from '@services/analyses/analysis';
-import { AnalysisMethod } from '@services/projects/analysis-method';
-import { AnalysisCategory } from '@services/projects/analysis-category';
-import { Attribution } from '@services/attributions/attribution';
 import { HoverEvent } from '@components/embedding-visualizer/hover-event';
+import { ImageSamplingMode } from '@pages/projects/image-sampling-mode';
+import { Project } from '@services/projects/project';
+import { ProjectsService } from '@services/projects/projects.service';
+import { ResourceState } from '@services/resource-state';
+import { Sample } from '@services/datasets/sample';
 import type { HTMLInputEvent } from '@pages/projects/html-input-event';
 
 // Tells Angular PlotlyJS to use the PlotlyJS library
@@ -41,7 +42,6 @@ PlotlyModule.plotlyjs = PlotlyJS;
  */
 @Component({
     selector: 'virelay-project-page',
-    standalone: true,
     templateUrl: 'project-page.component.html',
     styleUrl: 'project-page.component.scss',
     imports: [
@@ -244,9 +244,7 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
             const clusters = new Map<number, number>();
             for (const cluster of analysis.embedding.map(embeddingVector => embeddingVector.cluster)) {
                 let numberOfEmbeddingVectorsInCluster = clusters.get(cluster);
-                if (!numberOfEmbeddingVectorsInCluster) {
-                    numberOfEmbeddingVectorsInCluster = 0;
-                }
+                numberOfEmbeddingVectorsInCluster ??= 0;
                 clusters.set(cluster, numberOfEmbeddingVectorsInCluster + 1);
             }
             this.numberOfClusters = clusters.size;
@@ -489,6 +487,17 @@ export class ProjectPageComponent implements OnInit, OnDestroy {
         this._attributionImageMode = attributionImageMode;
         void this.refreshAttributionsOfSelectedEmbeddingVectorsAsync();
     }
+
+    /**
+     * Contains a value that determines how the dataset sample and attribution images are sampled. The value "automatic" determines the sampling mode
+     * based on the image size and the size of the image element displaying the image, "smooth" uses a smooth sampling method such as bicubic or
+     * bilinear interpolation, and "pixelated" uses a nearest neighbor sampling method. The image sampling mode helps users with the visual inspection
+     * of the dataset samples and the attributions: For very small images, using a smooth sampling method can make the images look blurry and
+     * difficult to interpret, while using a pixelated sampling method can make the images look sharper and more defined. For very large images on the
+     * other hand, using a smooth sampling method makes the images look clearer and more detailed, while using a pixelated sampling method can make
+     * the images look jagged and less defined.
+     */
+    public imageSamplingMode: ImageSamplingMode = ImageSamplingMode.Automatic;
 
     /**
      * Gets or sets the current state of the loading of the attributions.

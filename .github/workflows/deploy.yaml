@@ -58,4 +58,4 @@ jobs:
       - name: Build the ViRelAy Project
         run: uv --directory source/backend build
       - name: Publish the ViRelAy Project to PyPI
-        run: uv --directory source/backend publish --repository pypi
+        run: uv --directory source/backend publish

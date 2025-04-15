@@ -2,7 +2,7 @@
 
 ## v0.6.0
 
-*Release date to be determined.*
+*Released on April 15, 2025.*
 
 ### Backend REST API Updates in v0.6.0
 

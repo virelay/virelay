@@ -1,6 +1,6 @@
 {
   "name": "@virelay/frontend",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "ViRelAy is an XAI visualization tool for the analysis of the results of spectral relevance analysis (SpRAy) pipelines.",
   "keywords": [
     "ViRelAy",

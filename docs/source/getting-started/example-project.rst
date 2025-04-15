@@ -10,9 +10,9 @@ If you installed ViRelAy from the project's Git repository, then you already hav
 
     $ mkdir -p virelay-example/test-project
     $ cd virelay-example
-    $ curl -o 'meta_analysis.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/meta_analysis.py'
-    $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/make_project.py'
-    $ curl -o 'make_test_data.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/test-project/make_test_data.py'
+    $ curl -o 'meta_analysis.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/meta_analysis.py'
+    $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/make_project.py'
+    $ curl -o 'make_test_data.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/test-project/make_test_data.py'
 
 The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed using your favorite Python package manager, e.g., ``pip``. If you use ``pip`` it is recommended to create a virtual environment in order to not pollute your base environment. The test project scripts support many different clustering and embedding methods. To use the UMAP embedding method and the HDBSCAN clustering method, optional support for them has to be installed as well. Using ``pip``, this can be done like so:
 

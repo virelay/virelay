@@ -31,11 +31,11 @@ Alternatively, if you installed ViRelAy using PyPI, you can retrieve the latest 
 
     $ mkdir vgg16-project
     $ cd vgg16-project
-    $ curl -o 'meta_analysis.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/meta_analysis.py'
-    $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/make_project.py'
-    $ curl -o 'train_vgg.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/vgg16-project/train_vgg.py'
-    $ curl -o 'explain_vgg.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/vgg16-project/explain_vgg.py'
-    $ curl -o 'make_dataset.py' 'https://raw.githubusercontent.com/virelay/virelay/master/docs/examples/vgg16-project/make_dataset.py'
+    $ curl -o 'meta_analysis.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/meta_analysis.py'
+    $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/make_project.py'
+    $ curl -o 'train_vgg.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/vgg16-project/train_vgg.py'
+    $ curl -o 'explain_vgg.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/vgg16-project/explain_vgg.py'
+    $ curl -o 'make_dataset.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/vgg16-project/make_dataset.py'
 
 The scripts ``meta_analysis.py`` and ``make_project.py``, available under :repo:`docs/examples`, are general-purpose scripts for performing a meta-analysis and creating a ViRelAy project file, which can be used as a starting point for any project. In contrast, the scripts ``train_vgg.py``, ``explain_vgg.py``, and ``make_dataset.py``, available under :repo:`docs/examples/vgg16-project`, are tailored specifically to this VGG16 project but can serve as a blueprint for your own projects. These scripts include:
 

@@ -4,9 +4,9 @@ name: ViRelAy Continuous Deployment
 
 # This workflow will run when a new release is created on GitHub, the process works like this:
 #   1) For each milestone multiple issues are created)
-#   2) For each issue a new branch is branched off from the develop branch (which itself is branched off from master)
+#   2) For each issue a new branch is branched off from the develop branch (which itself is branched off from main)
 #   3) When the issue is resolved, a pull request is created to merge the issue branch into the develop branch
-#   4) Once all issues for a milestone are resolved, a pull request is created to merge the develop branch into the master branch
+#   4) Once all issues for a milestone are resolved, a pull request is created to merge the develop branch into the main branch
 #   5) When the pull request is merged, a new release is created
 #   6) This workflow will then be triggered and the ViRelAy project will be built and published to PyPI
 on:

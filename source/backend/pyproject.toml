@@ -76,7 +76,7 @@ classifiers = [
 Documentation = "https://virelay.readthedocs.io/en/latest/"
 Repository = "https://github.com/virelay/virelay.git"
 Issues = "https://github.com/virelay/virelay/issues"
-Changelog = "https://github.com/virelay/virelay/blob/master/CHANGELOG.md"
+Changelog = "https://github.com/virelay/virelay/blob/main/CHANGELOG.md"
 
 # Entrypoints for the project (these are installed as scripts when the package is installed)
 [project.scripts]

@@ -68,12 +68,12 @@ def get_latest_git_tag() -> str:
     """Retrieves the latest Git tag in the source code repository.
 
     Returns:
-        str: Returns the name of the latest Git tag in the source code repository. If no tags are available, then "master" is returned.
+        str: Returns the name of the latest Git tag in the source code repository. If no tags are available, then "main" is returned.
     """
 
     # Tries to get the most recent tag in the source code repository using the git describe command, which returns the
-    # closest tag that can be reached from the specified revision, which in this case is the latest commit on master,
-    # if no tags are available, then "master" is returned as a fallback
+    # closest tag that can be reached from the specified revision, which in this case is the latest commit on main,
+    # if no tags are available, then "main" is returned as a fallback
     try:
         return run(
             ['git', 'describe', '--tags', 'HEAD'],
@@ -82,7 +82,7 @@ def get_latest_git_tag() -> str:
             text=True
         ).stdout[:-1]
     except CalledProcessError:
-        return 'master'
+        return 'main'
 
 
 def get_object_by_name(name: str, module: ModuleType) -> ModuleType | type[Any] | None:

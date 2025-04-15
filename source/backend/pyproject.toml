@@ -135,11 +135,15 @@ raw-options = { root = "../.." }
 version-file = "virelay/version.py"
 
 # Configures the Hatch Fancy PyPI Readme plugin to compose the content of the read me file from the project's read me file, which is located in the
-# root directory of the repository
+# root directory of the repository; any dark-mode-only images are removed from the read me file, because this is a feature only supported by GitHub,
+# PyPI would display both images in the read me file; since PyPI only has a light mode, the light-mode-only images remain in the read me file
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "../../README.md"
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\!\[[^\]]+\]\([^\)]+#gh-dark-mode-only\)\n?'
+replacement = ''
 
 # Configures the hatch-build-script plugin, which uses build hooks to run arbitrary build scripts during the build of the project; this is used to
 # the Angular frontend of the project and include its files in the source distribution (the wheel will be build by extracting the source distribution

@@ -1,6 +1,6 @@
 {
   "name": "@virelay/cspell-config",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "The CSpell configuration for ViRelAy.",
   "author": {
     "name": "David Neumann",

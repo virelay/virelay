@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.1
+
+*Released on April 15, 2025.*
+
+### General
+
+- Renamed the `master` branch to `main` in order to avoid any links to sensitive topics.
+  - All references to the `master` branch in the repository were updated to `main`.
+
 ## v0.6.0
 
 *Released on April 15, 2025.*

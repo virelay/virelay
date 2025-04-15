@@ -2,15 +2,15 @@
 # This workflow will run the unit tests, the linters, the static type checker, the spell checker, and will build the documentation
 name: ViRelAy Continuous Integration
 
-# This workflow runs when commits are pushed to the master/develop branch or when a pull request for the master/develop branch is opened or pushed to
+# This workflow runs when commits are pushed to the main/develop branch or when a pull request for the main/develop branch is opened or pushed to
 on:
   push:
     branches:
-      - master
+      - main
       - develop
   pull_request:
     branches:
-      - master
+      - main
       - develop
 
 # This workflow contains multiple jobs for unit testing, linting, type checking, spell checking, and building

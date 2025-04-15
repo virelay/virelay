@@ -8,6 +8,8 @@
 
 - Renamed the `master` branch to `main` in order to avoid any links to sensitive topics.
   - All references to the `master` branch in the repository were updated to `main`.
+- Changed the URLs in the read me that point to the GitHub repository to be absolute URLs, which is necessary, because PyPI cannot resolve the relative GitHub URLs. This means that the images are not displayed in the read me and the links cannot be clicked.
+  - Some of the images in the read me use a feature of GitHub, which allows to display different images based on whether GitHub is in dark mode or light mode. This feature is not supported by PyPI, so both images are displayed in PyPI, which is not ideal. Fortunately, we are already using the Hatch Fancy PyPI Readme plugin for Hatchling, which allows us to make substitutions in the read me. The pyproject.toml configuration was updated to remove any dark-mode-only images in the read me. PyPI only has a light mode, so the light-mode-only images remain in the read me.
 
 ## v0.6.0
 

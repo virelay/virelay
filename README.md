@@ -4,7 +4,7 @@
 <tr>
 <td align="center" width="1182px">
 
-<img src="design/virelay-logo-with-title.png" alt="ViRelAy Logo"/>
+<img src="https://raw.githubusercontent.com/virelay/virelay/refs/heads/main/design/virelay-logo-with-title.png" alt="ViRelAy Logo"/>
 
 # Visualizing Relevance Analyses
 
@@ -19,8 +19,8 @@
 </tbody>
 </table>
 
-![ViRelAy Light Mode UI](design/virelay-light-mode-ui.png#gh-light-mode-only)
-![ViRelAy Dark Mode UI](design/virelay-dark-mode-ui.png#gh-dark-mode-only)
+![ViRelAy Light Mode UI](https://raw.githubusercontent.com/virelay/virelay/refs/heads/main/design/virelay-light-mode-ui.png#gh-light-mode-only)
+![ViRelAy Dark Mode UI](https://raw.githubusercontent.com/virelay/virelay/refs/heads/main/design/virelay-dark-mode-ui.png#gh-dark-mode-only)
 
 For more information about ViRelAy, getting started guides, in-depth tutorials, and API documentation, please refer to the [documentation](https://virelay.readthedocs.io/en/latest/).
 
@@ -83,7 +83,7 @@ To unlock faster performance and scalability, we recommend running ViRelAy with 
 
 ## Contributing
 
-If you would like to contribute, there are multiple ways you can help out. If you find a bug or have a feature request, please feel free to [open an issue on GitHub](https://github.com/virelay/virelay/issues). If you want to contribute code, please [fork the repository](https://github.com/virelay/virelay/fork) and use a feature branch. Pull requests are always welcome. Before forking, please open an issue where you describe what you want to do. This helps to align your ideas with ours and may prevent you from doing work, that we are already planning on doing. If you have contributed to the project, please add yourself to the [contributors list](CONTRIBUTORS.md).
+If you would like to contribute, there are multiple ways you can help out. If you find a bug or have a feature request, please feel free to [open an issue on GitHub](https://github.com/virelay/virelay/issues). If you want to contribute code, please [fork the repository](https://github.com/virelay/virelay/fork) and use a feature branch. Pull requests are always welcome. Before forking, please open an issue where you describe what you want to do. This helps to align your ideas with ours and may prevent you from doing work, that we are already planning on doing. If you have contributed to the project, please add yourself to the [contributors list](https://github.com/virelay/virelay/blob/main/CONTRIBUTORS.md).
 
 To help speed up the merging of your pull request, please comment and document your code extensively, try to emulate the coding style of the project, and update the documentation if necessary.
 
@@ -91,4 +91,4 @@ For more information on how to contribute, please refer to our [contributor's gu
 
 ## License
 
-ViRelAy is licensed under the [GNU Affero General Public License Version 3 (AGPL v3)](https://www.gnu.org/licenses/agpl-3.0.html) later. For more information see the [license](COPYING). For licenses of bundled third party software packages please refer to the [3rd party license list](/source/frontend/distribution/3rdpartylicenses.txt), which is available after [building the frontend](https://virelay.readthedocs.io/en/latest/contributors-guide/frontend.html#building-the-frontend).
+ViRelAy is licensed under the [GNU Affero General Public License Version 3 (AGPL v3)](https://www.gnu.org/licenses/agpl-3.0.html) later. For more information see the [license](https://github.com/virelay/virelay/blob/main/COPYING). For licenses of bundled third party software packages please refer to the 3rd party license list, which is available in `source/frontend/distribution/3rdpartylicenses.txt` after [building the frontend](https://virelay.readthedocs.io/en/latest/contributors-guide/frontend.html#building-the-frontend).

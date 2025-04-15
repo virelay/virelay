@@ -1,6 +1,6 @@
 {
   "name": "@virelay/eslint-config",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "The ESLint configuration for ViRelAy. Having the configuration in a separate package makes it easier to use in a monorepo.",
   "author": {
     "name": "David Neumann",

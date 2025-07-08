@@ -2,6 +2,7 @@
 
 import json
 import argparse
+from typing import Annotated
 
 import h5py
 import numpy
@@ -68,7 +69,7 @@ class Absolute(Processor):
 class Normalize(Processor):
     """Represents a CoRelAy processor, which normalizes its input data."""
 
-    axes = Param(tuple, (1, 2))
+    axes = Annotated[tuple[int], Param(tuple, (1, 2))]
     """A parameter of the processor, which determines the axis over which the data is to be normalized. Defaults to the second and third axes."""
 
     def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
@@ -88,7 +89,7 @@ class Normalize(Processor):
 class Histogram(Processor):
     """Represents a CoRelAy processor, which computes a histogram over its input data."""
 
-    bins = Param(int, 256)
+    bins = Annotated[int, Param(int, 256)]
     """A parameter of the processor, which determines the number of bins that are used to compute the histogram."""
 
     def function(self, data: NDArray[numpy.float64]) -> NDArray[numpy.float64]:

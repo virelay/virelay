@@ -109,8 +109,8 @@ A ViRelAy project requires several essential components to function properly. Th
 
 For a detailed understanding of database and project file structures, please refer to:
 
-* :doc:../contributors-guide/database-specification
-* :doc:../contributors-guide/project-file-format
+* :doc:`../contributors-guide/database-specification`
+* :doc:`../contributors-guide/project-file-format`
 
 These resources provide in-depth information on correctly creating and configuring your ViRelAy project files.
 

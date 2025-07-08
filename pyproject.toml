@@ -124,15 +124,20 @@ requires = [
 ]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+include = ["source/backend"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["source/backend/virelay"]
+
 # Configures the Hatch-VCS plugin that is used to dynamically determine the version of the project based on the current Git tag
 [tool.hatch.version]
 source = "vcs"
 fallback-version = "0.0.0"
-raw-options = { root = "../.." }
 
 # Configures the Hatch-VCS build hook, which is used to write the version of the project to the version file
 [tool.hatch.build.hooks.vcs]
-version-file = "virelay/version.py"
+version-file = "source/backend/virelay/version.py"
 
 # Configures the Hatch Fancy PyPI Readme plugin to compose the content of the read me file from the project's read me file, which is located in the
 # root directory of the repository; any dark-mode-only images are removed from the read me file, because this is a feature only supported by GitHub,
@@ -140,7 +145,7 @@ version-file = "virelay/version.py"
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
-path = "../../README.md"
+path = "README.md"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
 pattern = '\!\[[^\]]+\]\([^\)]+#gh-dark-mode-only\)\n?'
 replacement = ''
@@ -148,12 +153,12 @@ replacement = ''
 # Configures the hatch-build-script plugin, which uses build hooks to run arbitrary build scripts during the build of the project; this is used to
 # the Angular frontend of the project and include its files in the source distribution (the wheel will be build by extracting the source distribution
 # into a temporary directory, therefore, the script is only run for the source distribution because it will already include the frontend files; also,
-# the relative path "../frontend" is no longer available in the temporary directory from where the wheel is build; no artifacts are copied here,
+# the relative path "source/frontend" is no longer available in the temporary directory from where the wheel is build; no artifacts are copied here,
 # because the hatch-build-script plugin would copy the entire directory structure, which is not the way we want the files to be included; instead, the
 # frontend files are included using the force-include configuration below)
 [[tool.hatch.build.targets.sdist.hooks.build-scripts.scripts]]
-out_dir = "virelay/frontend"
-work_dir = "../frontend"
+out_dir = "source/backend/virelay/frontend"
+work_dir = "source/frontend"
 commands = [
     "npm install",
     "npm run build"
@@ -163,4 +168,9 @@ artifacts = []
 
 # Includes the build artifacts of the Angular frontend in the source distribution of the project
 [tool.hatch.build.targets.sdist.force-include]
-"../frontend/distribution/browser" = "virelay/frontend"
+"source/frontend/distribution/browser" = "source/frontend/distribution/browser"
+
+# Includes the build artifacts of the Angular frontend in the wheel distribution of the project
+# Note that the wheel distribution is built from the source-distribution: changing the path in the sdist requires to also change the path in the wheel
+[tool.hatch.build.targets.wheel.force-include]
+"source/frontend/distribution/browser" = "virelay/frontend"

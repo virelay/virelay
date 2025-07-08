@@ -189,18 +189,14 @@ Alternatively, these linters and the type checker can be executed individually:
         ../../tests/unit_tests \
         ../../docs/source/conf.py
 
-The example scripts in the documentation have dependencies that currently do not support Python 3.10 or later. For this reason they cannot be linted using the project's dependencies. They also require some extra dependencies that would have to be installed separately. For this reason, it is easier to run them using ``uv run`` with the ``--no-project`` flag, which will run the script without the project's dependencies. The ``--python`` and ``--with`` arguments specify the Python version and the dependencies that are to be used for the example scripts.
+The example scripts in the documentation have dependencies that currently do not support Python 3.10 or later. For this reason they cannot be linted using the project's dependencies. They also require some extra dependencies that would have to be installed separately. For this reason, it is easier to run them using ``uv run``. The ``--python`` and ``--with`` arguments specify the Python version and the dependencies that are to be used for the example scripts.
 
 .. code-block:: console
 
     $ uv run \
-        --no-project \
         --python 3.9.21 \
-        --with 'pylint==3.3.6' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
+        --with 'corelay==1.0.0' \
+        --with 'zennit==1.0.0' \
         pylint \
             --rcfile tests/config/.pylintrc \
             --disable duplicate-code \
@@ -208,40 +204,27 @@ The example scripts in the documentation have dependencies that currently do not
             docs/examples/**/*.py
 
     $ uv run \
-        --no-project \
         --python 3.9.21 \
-        --with 'pycodestyle==2.12.1' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
+        --with 'corelay==1.0.0' \
+        --with 'zennit==1.0.0' \
         pycodestyle \
             --config tests/config/.pycodestyle \
             docs/examples/*.py \
             docs/examples/**/*.py
 
     $ uv run \
-        --no-project \
         --python 3.9.21 \
-        --with 'pydoclint==0.5.9' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
+        --with 'corelay==1.0.0' \
+        --with 'zennit==1.0.0' \
         pydoclint \
             --config tests/config/.pydoclint.toml \
             docs/examples/*.py \
             docs/examples/**/*.py
 
     $ uv run \
-        --no-project \
         --python 3.9.21 \
-        --with 'mypy==1.12.0' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
-        --with 'types-PyYAML==6.0.12.20240917' \
+        --with 'corelay==1.0.0' \
+        --with 'zennit==1.0.0' \
         mypy \
             --config-file tests/config/.mypy.ini \
             --ignore-missing-imports \

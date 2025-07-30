@@ -1,10 +1,31 @@
 # Changelog
 
+## v1.0.0
+
+*Release date to be determined.*
+
+### General Updates in v1.0.0
+
+- Moved the Python project file into the root directory of the repository:
+  - During the build of the documentation on ReadTheDocs, the ViRelAy package needs to be available, as it is referenced in the configuration file of the documentation. Unfortunately, ReadTheDocs requires the `pyproject.toml` file to be in the root directory of the repository. Therefore, the `pyproject.toml` file has been moved from the `source/backend` directory to the root directory of the repository.
+  - Also, the `uv.lock`, `.python-versions` and the `tox.ini` files have been moved to the root directory.
+  - All references to the these files, as well as relative paths in the code, the tox configuration file, the GitHub Actions workflow files, and the documentation were updated accordingly.
+  - Some necessary changes where made to the `pyproject.toml` file to ensure that the package can still be built and installed correctly.
+- Updated the ViRelAy screenshot used in the PyPI read me:
+  - The read me of the repository is also used as the project description, which is displayed on the PyPI project page. The read me contains two screenshots of ViRelAy's UI: One of the light-mode UI and one of the dark-mode UI. The read me uses a GitHub feature that allows us to display the light-mode screenshot when the user uses GitHub's light-mode, and the dark-mode screenshot when the user uses GitHub's dark-mode. PyPI does not support this feature and would display both screenshots. Therefore, the dark-mode screenshot was removed from the read me before it was included in the package using the "Hatch Fancy PyPI Readme" plugin.
+  - To put emphasis on the fact that ViRelAy supports both light-mode and dark-mode, both screenshots are now replaced with a single image that contains a split-screen montage of ViRelAy's light-mode and dark-mode UIs.
+- The source files for the ViRelAy logo and the ViRelAy UI have been cleaned up:
+  - Logo Source File:
+    - Converted the title of the logo to a path, because the font is from Google Fonts and not available in the SVG. It would be possible to embed the font, but this would increase the size of the SVG significantly and would require us to include the license.
+    - The logo is available as two versions: with and without title. The source file, however, only contained the version with the title. To produce the PNG with only the logo, the title would have to be hidden and the page size adjusted manually. This is cumbersome, for this reason, a second page was added to the SVG that contains the logo without the title.
+    - Named and cleaned up all objects and groups in the SVG.
+  - UI Source Files: Previously, there were three source files: one for the light-mode UI, one for the dark-mode UI, and one that contained a split-screen montage of both. These were all converted to a single source file that contains multiple pages, one for each UI mode (light and dark) and one for the split-screen montage.
+
 ## v0.6.1
 
 *Released on April 15, 2025.*
 
-### General
+### General Updates in v0.6.1
 
 - Renamed the `master` branch to `main` in order to avoid any links to sensitive topics.
   - All references to the `master` branch in the repository were updated to `main`.

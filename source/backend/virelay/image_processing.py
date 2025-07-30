@@ -3,11 +3,10 @@
 import math
 from typing import Literal, TypeAlias
 
-import numpy
-import numpy.typing
 import matplotlib.cm
-from PIL import Image
+import numpy
 from numpy.typing import NDArray
+from PIL import Image
 
 
 BorderMethod: TypeAlias = Literal['fill_zeros', 'fill_ones', 'edge_repeat', 'mirror_edge', 'wrap_around']

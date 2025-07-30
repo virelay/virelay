@@ -1,19 +1,19 @@
 """Performs a meta-analysis on an attribution database and writes them into an analysis database, from which a ViRelAy project can be created."""
 
-import json
 import argparse
+import json
 
 import h5py
 import numpy
-from numpy.typing import NDArray
 from corelay.base import Param
-from corelay.processor.base import Processor
-from corelay.processor.affinity import SparseKNN
-from corelay.processor.distance import SciPyPDist
-from corelay.processor.flow import Sequential, Parallel
 from corelay.pipeline.spectral import SpectralClustering
-from corelay.processor.embedding import TSNEEmbedding, UMAPEmbedding, EigenDecomposition
-from corelay.processor.clustering import KMeans, DBSCAN, HDBSCAN, AgglomerativeClustering
+from corelay.processor.affinity import SparseKNN
+from corelay.processor.base import Processor
+from corelay.processor.clustering import AgglomerativeClustering, DBSCAN, HDBSCAN, KMeans
+from corelay.processor.distance import SciPyPDist
+from corelay.processor.embedding import EigenDecomposition, TSNEEmbedding, UMAPEmbedding
+from corelay.processor.flow import Parallel, Sequential
+from numpy.typing import NDArray
 
 
 class Flatten(Processor):

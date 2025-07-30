@@ -1,14 +1,14 @@
 """Contains the command-line interface for the ViRelAy application."""
 
-import os
-import atexit
 import argparse
+import atexit
+import os
 
 import flask
 
 from virelay import __version__
-from virelay.server import Server
 from virelay.model import Workspace
+from virelay.server import Server
 
 
 def run_cli_app() -> None:

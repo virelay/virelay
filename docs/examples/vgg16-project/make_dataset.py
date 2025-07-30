@@ -1,11 +1,11 @@
 """Converts the CIFAR-10 dataset into the correct HDF5 format that is required by ViRelAy."""
 
-import json
 import argparse
+import json
 
 import h5py
-import torch
 import numpy
+import torch
 from torchvision.datasets import CIFAR10
 
 

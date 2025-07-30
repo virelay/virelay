@@ -1,24 +1,24 @@
 """Represents the server of ViRelAy, which contains the backend REST API and serves the frontend web app."""
 
+import functools
 import io
 import logging
-import traceback
 import threading
-import functools
+import traceback
 import webbrowser
+from importlib.resources import as_file, files
 from typing import Any, BinaryIO, cast
-from importlib.resources import files, as_file
 
-import numpy
 import flask
 import flask_cors
-from PIL import Image
-from numpy.typing import NDArray
+import numpy
 from flask.typing import RouteCallable
-from typing_extensions import TypedDict, NotRequired
+from numpy.typing import NDArray
+from PIL import Image
+from typing_extensions import NotRequired, TypedDict
 
-from virelay.model import Workspace
 from virelay.image_processing import render_heatmap
+from virelay.model import Workspace
 
 
 class Server:

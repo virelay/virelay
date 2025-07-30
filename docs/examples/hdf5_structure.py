@@ -65,7 +65,7 @@ def make_group_example() -> None:
             labels_group[key] = attribution_labels.astype(numpy.float32)
 
         # Predictions are the model output logits
-        attribution_predictions = numpy.array([[0, 1], [.5, .5], [1, 0]])
+        attribution_predictions = numpy.array([[0, 1], [0.5, 0.5], [1, 0]])
         predictions_group = attributions_file.require_group('prediction')
         for key, prediction in zip(attribution_keys, attribution_predictions):
             predictions_group[key] = prediction.astype(numpy.float32)
@@ -166,7 +166,7 @@ def make_dataset_example() -> None:
         attributions_file['label'] = attribution_labels.astype(numpy.float32)
 
         # Predictions are the model output logits
-        attribution_predictions = numpy.array([[0, 1], [.5, .5], [1, 0]])
+        attribution_predictions = numpy.array([[0, 1], [0.5, 0.5], [1, 0]])
         attributions_file['prediction'] = attribution_predictions.astype(numpy.float32)
 
     # Using datasets in the input/attribution does not change the analysis file structure

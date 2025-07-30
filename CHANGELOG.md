@@ -22,6 +22,10 @@
   - UI Source Files: Previously, there were three source files: one for the light-mode UI, one for the dark-mode UI, and one that contained a split-screen montage of both. These were all converted to a single source file that contains multiple pages, one for each UI mode (light and dark) and one for the split-screen montage.
 - Cleaned up the CSPell configuration by removing unnecessary words from its dictionary that are no longer used in the project.
 
+### Backend REST API Updates in v1.0.0
+
+- Sorted the Python imports. They are now categorized by standard library imports, third-party library imports, and local imports, each separated by a blank line. Each category is sub-categorized into regular imports and "from-imports", which are not separated by blank lines. Each sub-category is sorted alphabetically. Both the imports of the `virelay` package and the imports of the unit tests in the `tests` package were sorted.
+
 ## v0.6.1
 
 *Released on April 15, 2025.*

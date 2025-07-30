@@ -2,9 +2,9 @@
 project for ViRelAy.
 """
 
-import os
-import json
 import argparse
+import json
+import os
 
 import h5py
 import numpy

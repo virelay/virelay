@@ -1,21 +1,21 @@
 """Contains the fixtures that are needed for the unit tests."""
 
-import os
 import json
+import os
 import random
 from typing import Iterator
 
-import yaml
 import h5py
 import numpy
 import pytest
-from PIL import Image
-from pytest import TempPathFactory
+import yaml
 from flask import Flask
 from flask.testing import FlaskClient
+from PIL import Image
+from pytest import TempPathFactory
 
-from virelay.server import Server
 from virelay.model import Workspace
+from virelay.server import Server
 
 NUMBER_OF_CLASSES = 3
 NUMBER_OF_SAMPLES = 40

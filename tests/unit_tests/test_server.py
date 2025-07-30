@@ -1,16 +1,16 @@
 """Contains the tests for the REST server of ViRelAy."""
 
-import os
-import io
-import re
 import glob
+import io
+import os
+import re
 
 import numpy
-from PIL import Image
 from flask import Flask
 from flask.testing import FlaskClient
+from PIL import Image
 
-from virelay.server import http_ok, http_bad_request, http_not_found, send_image_file, format_exception
+from virelay.server import format_exception, http_bad_request, http_not_found, http_ok, send_image_file
 
 NUMBER_OF_CLASSES = 3
 NUMBER_OF_SAMPLES = 40

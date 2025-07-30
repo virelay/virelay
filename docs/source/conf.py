@@ -2,21 +2,21 @@
 
 # pylint: disable=invalid-name
 
+import inspect
 import os
 import re
 import sys
-import inspect
-from types import ModuleType
-from datetime import datetime
 from collections.abc import Sequence
+from datetime import datetime
 from subprocess import run, CalledProcessError
+from types import ModuleType
 from typing import Any, Iterator, TypeAlias, Literal
 
-from sphinx.application import Sphinx
 from pybtex.database import Entry
 from pybtex.plugin import register_plugin
-from pybtex.style.labels import BaseLabelStyle
 from pybtex.style.formatting.plain import Style as PlainStyle
+from pybtex.style.labels import BaseLabelStyle
+from sphinx.application import Sphinx
 
 
 LanguageDomain: TypeAlias = Literal['py', 'c', 'cpp', 'javascript']
@@ -54,9 +54,8 @@ def setup(app: Sphinx) -> None:
         app (Sphinx): The Sphinx application.
     """
 
-    # Sets the name of the directory into which generated documentation files are to be written and makes sure that the
-    # directory exists (this is done by signing up for the config-inited event, which is emitted when the configuration
-    # has been fully initialized)
+    # Sets the name of the directory into which generated documentation files are to be written and makes sure that the directory exists (this is done
+    # by signing up for the config-inited event, which is emitted when the configuration has been fully initialized)
     app.add_config_value('generated_path', '_generated', 'env')
     app.connect(
         'config-inited',
@@ -71,9 +70,8 @@ def get_latest_git_tag() -> str:
         str: Returns the name of the latest Git tag in the source code repository. If no tags are available, then "main" is returned.
     """
 
-    # Tries to get the most recent tag in the source code repository using the git describe command, which returns the
-    # closest tag that can be reached from the specified revision, which in this case is the latest commit on main,
-    # if no tags are available, then "main" is returned as a fallback
+    # Tries to get the most recent tag in the source code repository using the git describe command, which returns the closest tag that can be reached
+    # from the specified revision, which in this case is the latest commit on main, if no tags are available, then "main" is returned as a fallback
     try:
         return run(
             ['git', 'describe', '--tags', 'HEAD'],
@@ -289,7 +287,8 @@ project = 'ViRelAy'
 project_copyright = f'{datetime.now().year}, ViRelAy'
 author = 'ViRelAy Contributors'
 
-# Specifies the Sphinx extensions that are used by this documentation
+# Specifies the Sphinx extensions that are used by this documentation; the pybtex.style.formatting plugin is registered explicitly, which is used to
+# format citations of bibliography entries
 extensions = [
     'sphinx_copybutton',
     'sphinx_rtd_theme',
@@ -303,13 +302,14 @@ extensions = [
     'sphinxcontrib.datatemplates',
     "sphinx_new_tab_link"
 ]
+register_plugin('pybtex.style.formatting', 'author_year_style', AuthorYearStyle)
 
 # Specifies the paths for the directories that contain extra templates and static files
 templates_path = ['_templates']
 html_static_path = ['_static']
 
-# Specifies a list of patterns, relative to source directory, that match files and directories to ignore when looking
-# for source files, in this case, nothing needs to be excluded
+# Specifies a list of patterns, relative to source directory, that match files and directories to ignore when looking for source files, in this case,
+# nothing needs to be excluded
 exclude_patterns: Sequence[str] = []
 
 # Configures the theme, custom CSS rules, and the favicon that are used for the HTML pages
@@ -332,8 +332,8 @@ bibtex_bibfiles = ['bibliography.bib']
 bibtex_default_style = 'author_year_style'
 bibtex_reference_style = 'author_year'
 
-# Configures the Sphinx plugin, which shortens external Links to the GitHub repository (also, a custom formatting style
-# is registered with Pybtex, which customizes the citation labels to use the format "[<first-author> et al., <year>]")
+# Configures the Sphinx plugin, which shortens external Links to the GitHub repository (also, a custom formatting style is registered with Pybtex,
+# which customizes the citation labels to use the format "[<first-author> et al., <year>]")
 LATEST_GIT_TAG = get_latest_git_tag()
 extlinks = {
     'repo': (
@@ -341,4 +341,3 @@ extlinks = {
         '%s'
     )
 }
-register_plugin('pybtex.style.formatting', 'author_year_style', AuthorYearStyle)

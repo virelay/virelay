@@ -1,25 +1,25 @@
 """Contains the tests for the model abstractions of ViRelAy."""
 
-import os
 import glob
+import os
 
 import h5py
 import numpy
 import pytest
 
 from virelay.model import (
-    DownSamplingMethod,
-    Project,
-    AttributionDatabase,
-    Attribution,
-    AnalysisDatabase,
     Analysis,
     AnalysisCategory,
+    AnalysisDatabase,
+    Attribution,
+    AttributionDatabase,
+    DownSamplingMethod,
     Hdf5Dataset,
     ImageDirectoryDataset,
-    Sample,
-    LabelMap,
     Label,
+    LabelMap,
+    Project,
+    Sample,
     UpSamplingMethod,
     Workspace
 )

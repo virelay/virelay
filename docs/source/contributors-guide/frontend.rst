@@ -38,7 +38,7 @@ To ensure that the frontend properly works, the backend REST API must be started
 
 .. code-block:: console
 
-    $ uv --directory source/backend run virelay '<project-file>' --debug-mode
+    $ uv run virelay '<project-file>' --debug-mode
 
 Building the Frontend
 =====================

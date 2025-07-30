@@ -3,10 +3,8 @@
 [project]
 
 # General project information, the Project supports Python 3.10, 3.11, 3.12 and 3.13; the version of the project is automatically determined from the
-# latest Git tag using the Hatch-VCS plugin and the read me is dynamically generated using the Hatch Fancy PyPI Readme plugin (this  is necessary,
-# because Hatch cannot access the root directory of the repository while building the wheel, which is where the read me is located; Hatch first builds
-# the source distribution from the files in the project directory, from where it can access top-level repository files, and then builds the wheel from
-# the source distribution by extracting it into a temporary directory, from where it cannot access the top-level repository files)
+# latest Git tag using the Hatch-VCS plugin and the read me is dynamically generated using the Hatch Fancy PyPI Readme plugin (this is necessary,
+# because the screenshots of ViRelAy in the read me needs to be replaced for the PyPI page)
 name = "virelay"
 description = """\
     ViRelAy is a web-based XAI tool for analyzing classifiers and their datasets by visualizing the source-data, attributions, clusterings, and \
@@ -85,6 +83,10 @@ virelay = "virelay.application:run_cli_app"
 # Configuration specified to the UV Python package manager
 [tool.uv]
 
+# Packages are built and installed into the virtual environment in editable mode and thus require a build backend, while virtual projects are not
+# built or installed; instead, only their dependencies are included in the virtual environment
+package = true
+
 # Dependencies that are only installed during the development of the project and are not included in the requirements of the published package
 dev-dependencies = [
 
@@ -124,43 +126,57 @@ requires = [
 ]
 build-backend = "hatchling.build"
 
-# Configures the Hatch-VCS plugin that is used to dynamically determine the version of the project based on the current Git tag
+# Specifies where the ViRelAy backend package is located, which should be included in the source distribution and the wheel; using the "packages"
+# option causes Hatch to only include the files in the specified package directory and to collapse the directory structure to the last component,
+# i.e., the source distribution and wheel will only contain the "virelay" directory and not the "source/backend/virelay" directory; for the wheel,
+# we need to specify both the "virelay" and the "source/backend/virelay" directories to be included as packages, because when the wheel is built, it
+# will be build from the source distribution, which now only contains the "virelay" directory, but when ViRelAy is installed as an editable package,
+# for example, when "uv run" is used, the package will be built from the repository, which means that the "source/backend/virelay" directory is
+# available; luckily, Hatch will automatically include directories that are available and ignore directories that are not available, so we can specify
+# both directories without causing any issues
+[tool.hatch.build.targets.sdist]
+packages = ["source/backend/virelay"]
+[tool.hatch.build.targets.wheel]
+packages = ["virelay", "source/backend/virelay"]
+
+# Configures the "Hatch-VCS" plugin that is used to dynamically determine the version of the project based on the current Git tag
 [tool.hatch.version]
 source = "vcs"
 fallback-version = "0.0.0"
-raw-options = { root = "../.." }
 
-# Configures the Hatch-VCS build hook, which is used to write the version of the project to the version file
-[tool.hatch.build.hooks.vcs]
-version-file = "virelay/version.py"
+# Configures the "Hatch-VCS" build hook, which is used to write the version of the project to the version file (here, the version file is only
+# included in the source distribution, because the wheel is built from the source distribution by extracting it into a temporary directory, therefore,
+# the "source/backend/virelay" directory will not be available during the wheel build; also, the version file is already included in the source
+# distribution, so it does not need to be copied again)
+[tool.hatch.build.targets.sdist.hooks.vcs]
+version-file = "source/backend/virelay/version.py"
 
-# Configures the Hatch Fancy PyPI Readme plugin to compose the content of the read me file from the project's read me file, which is located in the
-# root directory of the repository; any dark-mode-only images are removed from the read me file, because this is a feature only supported by GitHub,
-# PyPI would display both images in the read me file; since PyPI only has a light mode, the light-mode-only images remain in the read me file
+# Configures the Hatch Fancy PyPI Readme plugin to compose the content of the read me file from the project's read me file; the screenshot of ViRelAy
+# in the read me uses a GitHub feature that allows us to display a screenshot of ViRelAy's light-mode UI when the user uses GitHub's light-mode, and a
+# screenshot of the dark-mode UI, if the user uses GitHub's dark mode; PyPI does not support this feature, therefore, these two screenshots are
+# replaced with a single image of ViRelAy's light-mode UI using the Hatch Fancy PyPI Readme plugin
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
-path = "../../README.md"
+path = "README.md"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
 pattern = '\!\[[^\]]+\]\([^\)]+#gh-dark-mode-only\)\n?'
 replacement = ''
 
-# Configures the hatch-build-script plugin, which uses build hooks to run arbitrary build scripts during the build of the project; this is used to
-# the Angular frontend of the project and include its files in the source distribution (the wheel will be build by extracting the source distribution
-# into a temporary directory, therefore, the script is only run for the source distribution because it will already include the frontend files; also,
-# the relative path "../frontend" is no longer available in the temporary directory from where the wheel is build; no artifacts are copied here,
-# because the hatch-build-script plugin would copy the entire directory structure, which is not the way we want the files to be included; instead, the
-# frontend files are included using the force-include configuration below)
+# Configures the "hatch-build-script" plugin, which uses build hooks to run arbitrary build scripts during the build of the project; this is used to
+# build the Angular frontend of the project and include its files in the source distribution (the wheel will be build by extracting the source
+# distribution into a temporary directory, therefore, the script is only run for the source distribution because it will already include the frontend
+# files; also, the relative path "source/frontend" is no longer available in the temporary directory from where the wheel is build; no artifacts are
+# copied here, because the "hatch-build-script" plugin would copy the entire directory structure, which is not the way we want the files to be
+# included; instead, the frontend files are included using the force-include configuration below)
 [[tool.hatch.build.targets.sdist.hooks.build-scripts.scripts]]
-out_dir = "virelay/frontend"
-work_dir = "../frontend"
+work_dir = "source/frontend"
 commands = [
     "npm install",
     "npm run build"
 ]
-clean_artifacts = false
-artifacts = []
 
-# Includes the build artifacts of the Angular frontend in the source distribution of the project
+# Includes the build artifacts of the Angular frontend in the source distribution of the project; since the wheel is built from the source
+# distribution, the frontend files will also be included in the wheel
 [tool.hatch.build.targets.sdist.force-include]
-"../frontend/distribution/browser" = "virelay/frontend"
+"source/frontend/distribution/browser" = "virelay/frontend"

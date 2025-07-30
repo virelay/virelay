@@ -54,8 +54,8 @@ jobs:
         with:
           node-version: '22.14.0'
       - name: Install ViRelAy and its Dependencies
-        run: uv --directory source/backend sync --all-extras
+        run: uv sync --all-extras
       - name: Build the ViRelAy Project
-        run: uv --directory source/backend build
+        run: uv build
       - name: Publish the ViRelAy Project to PyPI
-        run: uv --directory source/backend publish
+        run: uv publish

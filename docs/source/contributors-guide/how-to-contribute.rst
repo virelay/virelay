@@ -74,7 +74,7 @@ A local build of the documentation can be created using the following command:
 
 .. code-block:: console
 
-    $ uv run --directory source/backend tox --conf ../../tests/config/tox.ini -e docs
+    $ uv run tox -e docs
 
 .. _testing-and-linting:
 
@@ -83,7 +83,7 @@ A local build of the documentation can be created using the following command:
 
 We use tox to run unit tests, linters and static type checkers on the backend REST API, as well as to build the documentation. If you've made any changes to the backend REST API or the documentation that require updates to configurations of the linters, type checker, or tox, please ensure that the relevant sections in the following configuration files are are revised accordingly:
 
-* **tox**: :repo:`tests/config/tox.ini`
+* **tox**: :repo:`tox.ini`
 * **PyLint**: :repo:`tests/config/pylint.ini`
 * **PyCodeStyle**: :repo:`tests/config/.pycodestyle`
 * **PyDocLint**: :repo:`tests/config/.pydoclint.toml`
@@ -93,7 +93,7 @@ To run tests and build the documentation locally using tox, execute the followin
 
 .. code-block:: console
 
-    $ uv --directory source/backend run tox --conf ../../tests/config/tox.ini run
+    $ uv run tox run
 
 To check the code quality of the frontend web app, we also use a range of linters, which can be run using the following commands:
 

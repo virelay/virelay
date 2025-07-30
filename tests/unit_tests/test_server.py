@@ -75,8 +75,6 @@ class TestServer:
 
         frontend_path = os.path.normpath(os.path.join(
             os.getcwd(),
-            '..',
-            '..',
             'source',
             'frontend',
             'distribution',

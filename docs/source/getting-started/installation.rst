@@ -29,5 +29,5 @@ If you'd like to try out the bleeding-edge development version or experiment wit
 
    $ git clone https://github.com/virelay/virelay.git
    $ cd virelay
-   $ uv --directory source/backend sync
-   $ uv --directory source/backend run virelay <project-file> [<project-file> ...]
+   $ uv sync
+   $ uv run virelay <project-file> [<project-file> ...]

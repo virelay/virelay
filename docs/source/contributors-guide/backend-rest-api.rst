@@ -22,7 +22,7 @@ Following the installation of uv, proceed to install the supported Python versio
 
 .. code-block:: console
 
-    $ uv --directory source/backend python install
+    $ uv python install
 
 Upon installing the supported Python versions, dependencies must be installed via the ``uv sync`` command. These dependencies encompass:
 
@@ -42,13 +42,13 @@ To leverage ViRelAy's backend functionality, ensure you have all required depend
 
 .. code-block:: console
 
-    $ uv --directory source/backend sync
+    $ uv sync
 
 To run ViRelAy, use the following command, providing the necessary project files as arguments:
 
 .. code-block:: console
 
-    $ uv --directory source/backend run virelay '<project-file>' ['<project-file>' ...]
+    $ uv run virelay '<project-file>' ['<project-file>' ...]
 
 Command Line Interface
 ======================
@@ -57,7 +57,7 @@ The ViRelAy command-line interface offers a convenient way to start the applicat
 
 .. code-block:: console
 
-    $ uv --directory source/backend run virelay [-h] [-v] [-d] [-H HOST] [-p PORT] project [project ...]
+    $ uv run virelay [-h] [-v] [-d] [-H HOST] [-p PORT] project [project ...]
 
 The CLI accepts several optional arguments to customize the execution environment:
 
@@ -106,38 +106,36 @@ Unit Testing
 
 The backend REST API incorporates an extensive unit test suite, striving for comprehensive code coverage at all times. This test framework is housed in a dedicated directory, :repo:`tests/unit_tests`, and leverages a shared fixture module, ``conftest``, to streamline testing efforts across the ViRelAy unit test modules. Each ViRelAy module is accompanied by a corresponding test module, where tests are structured according to their respective subjects (e.g., the module ``image_processing`` has a ``test_image_processing`` test module). The `PyTest framework <https://docs.pytest.org/en/stable/>`_ framework serves as the foundation for these tests, which utilize classes and functions to validate both class-based and function-based functionality, e.g., the ``Project`` class in the ``model`` module has a matching ``TestProject`` test class, and the ``render_heatmap`` function in the ``image_processing`` module is accompanied by a ``test_render_heatmap`` function.
 
-To ensure the highest quality of contributions, it is essential that all modifications or additions are thoroughly tested through successful execution of the test suite. The easiest way to run the unit tests is through tox. It enables you to run unit test in multiple Python environments, including Python versions 3.10 through 3.13, represented by the ``py310``, ``py311``, ``py312``, and  ``py313`` tox environments. Additionally, tox can be used to measure code coverage through the ``coverage`` environment, execute linters via the ``pylint``, ``pycodestyle`` and ``pydoclint`` environments, run the static type checker using the ``mypy`` environment, and build the documentation by running the ``docs`` environment. By invoking ``uv --directory source/backend run tox --conf ../../tests/config/tox.ini run`` in your terminal, you can execute all tox environments. To target a specific environment, leverage the ``-e`` parameter. For instance, to run unit tests for Python 3.10 and the PyLint linter, use the following command:
+To ensure the highest quality of contributions, it is essential that all modifications or additions are thoroughly tested through successful execution of the test suite. The easiest way to run the unit tests is through tox. It enables you to run unit test in multiple Python environments, including Python versions 3.10 through 3.13, represented by the ``py310``, ``py311``, ``py312``, and  ``py313`` tox environments. Additionally, tox can be used to measure code coverage through the ``coverage`` environment, execute linters via the ``pylint``, ``pycodestyle`` and ``pydoclint`` environments, run the static type checker using the ``mypy`` environment, and build the documentation by running the ``docs`` environment. By invoking ``uv run tox run`` in your terminal, you can execute all tox environments. To target a specific environment, leverage the ``-e`` parameter. For instance, to run unit tests for Python 3.10 and the PyLint linter, use the following command:
 
 .. code-block:: console
 
-    $ uv --directory source/backend run tox \
-        --conf ../../tests/config/tox.ini \
-        run -e py310,pylint
+    $ uv run tox run -e py310,pylint
 
 To manually execute the tests, utilize the ``pytest`` command-line interface to run the unit tests located in the ``tests/unit_tests`` directory:
 
 .. code-block:: console
 
-    $ uv --directory source/backend run pytest ../../tests/unit_tests
+    $ uv run pytest tests/unit_tests
 
 This will run all tests and report how many tests where successful and how many tests failed. To ensure comprehensive code coverage, it is essential to run unit tests in conjunction with code coverage analysis. Execute the following command to run all unit tests and generate a code coverage report:
 
 .. code-block:: console
 
-    $ uv --directory source/backend run pytest \
+    $ uv run pytest \
         --cov virelay \
-        --cov-config ../../tests/config/tox.ini \
-        ../../tests/unit_tests
+        --cov-config tox.ini \
+        tests/unit_tests
 
 The ``--cov`` argument specifies the module against which the code coverage is to be measured and the ``--cov-config`` argument specifies, that the tox configuration file also contains the configuration for the test coverage. This command will output detailed code coverage statistics. For a more extensive report in the form of an HTML website, append the ``--cov-report html`` argument:
 
 .. code-block:: console
 
-    $ uv --directory source/backend run pytest \
+    $ uv run pytest \
         --cov virelay \
-        --cov-config ../../tests/config/tox.ini \
+        --cov-config tox.ini \
         --cov-report html \
-        ../../tests/unit_tests
+        tests/unit_tests
 
 The unit tests are integrated into a continuous integration (CI) pipeline, which is executed upon the creation of each pull request. Pull requests with failing CI pipelines are not accepted.
 
@@ -157,37 +155,35 @@ Again, the easiest way to run all linters and the static type checker is through
 
 .. code-block:: console
 
-    $ uv --directory source/backend run tox \
-        --conf ../../tests/config/tox.ini \
-        run -e pylint,pycodestyle,pydoclint,mypy
+    $ uv run tox run -e pylint,pycodestyle,pydoclint,mypy
 
 Alternatively, these linters and the type checker can be executed individually:
 
 .. code-block:: console
 
-    $ uv --directory source/backend run pylint \
-        --rcfile ../../tests/config/.pylintrc \
+    $ uv run pylint \
+        --rcfile tests/config/.pylintrc \
         virelay \
-        ../../tests/unit_tests \
-        ../../docs/source/conf.py
+        tests/unit_tests \
+        docs/source/conf.py
 
-    $ uv --directory source/backend run pycodestyle \
-        --config ../../tests/config/.pycodestyle \
+    $ uv run pycodestyle \
+        --config tests/config/.pycodestyle \
         virelay \
-        ../../tests/unit_tests \
-        ../../docs/source/conf.py
+        tests/unit_tests \
+        docs/source/conf.py
 
-    $ uv --directory source/backend run pydoclint \
-        --config ../../tests/config/.pydoclint.toml \
+    $ uv run pydoclint \
+        --config tests/config/.pydoclint.toml \
         virelay \
-        ../../tests/unit_tests \
-        ../../docs/source/conf.py
+        tests/unit_tests \
+        docs/source/conf.py
 
-    $ uv --directory source/backend run mypy \
-        --config-file ../../tests/config/.mypy.ini \
+    $ uv run mypy \
+        --config-file tests/config/.mypy.ini \
         virelay \
-        ../../tests/unit_tests \
-        ../../docs/source/conf.py
+        tests/unit_tests \
+        docs/source/conf.py
 
 The example scripts in the documentation have dependencies that currently do not support Python 3.10 or later. For this reason they cannot be linted using the project's dependencies. They also require some extra dependencies that would have to be installed separately. For this reason, it is easier to run them using ``uv run`` with the ``--no-project`` flag, which will run the script without the project's dependencies. The ``--python`` and ``--with`` arguments specify the Python version and the dependencies that are to be used for the example scripts.
 
@@ -259,6 +255,6 @@ Finally, to build a publishable version of the backend REST API, which can be de
 
 .. code-block:: console
 
-    $ uv --directory source/backend build
+    $ uv build
 
 This will build the source distribution and the wheel for the package and store them in the :repo:`source/backend/dist` directory. The source distribution is a compressed archive containing the source code and the metadata required for installation, while the wheel is a binary distribution format that can be installed directly without the need for compilation. The wheel is the preferred format for distribution, as it is faster to install and more secure than the source distribution.

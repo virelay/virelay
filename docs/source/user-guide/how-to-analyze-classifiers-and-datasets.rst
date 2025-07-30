@@ -43,11 +43,6 @@ Our analysis reveals that some categories exhibit highly homogeneous embeddings,
 
 The class bird exhibits a homogeneous embedding with no apparent outliers, suggesting that the classifier has learned a robust and coherent classification strategy. In contrast, the horse class features multiple smaller outlier clusters, which may indicate the presence of multiple distinct classification strategies. Specifically, when these outlier clusters are small, it could be an indication of Clever Hans behavior, where the classifier has learned to exploit specific features in a small subset of training samples, thus suggesting that the samples have a common, easily exploitable feature.
 
-
-
-
-
-
 Investigating Anomalous Classification Strategies
 =================================================
 

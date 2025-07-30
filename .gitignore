@@ -36,6 +36,9 @@ htmlcov
 node_modules
 npm-debug.log
 
+# Build output of the backend
+dist/
+
 # Build output of the frontend
 source/frontend/distribution
 

@@ -151,17 +151,18 @@ fallback-version = "0.0.0"
 [tool.hatch.build.targets.sdist.hooks.vcs]
 version-file = "source/backend/virelay/version.py"
 
-# Configures the Hatch Fancy PyPI Readme plugin to compose the content of the read me file from the project's read me file; the screenshot of ViRelAy
-# in the read me uses a GitHub feature that allows us to display a screenshot of ViRelAy's light-mode UI when the user uses GitHub's light-mode, and a
-# screenshot of the dark-mode UI, if the user uses GitHub's dark mode; PyPI does not support this feature, therefore, these two screenshots are
-# replaced with a single image of ViRelAy's light-mode UI using the Hatch Fancy PyPI Readme plugin
+# Configures the "Hatch Fancy PyPI Readme" plugin to compose the content of the read me file from the project's read me file; the screenshot of
+# ViRelAy in the read me uses a GitHub feature that allows us to display a screenshot of ViRelAy's light-mode UI when the user uses GitHub's
+# light-mode, and a screenshot of the dark-mode UI, if the user uses GitHub's dark mode; PyPI does not support this feature, therefore, these two
+# screenshots are replaced with a single image that contains a split-screen montage of ViRelAy's light-mode and dark-mode UIs, using the Hatch Fancy
+# PyPI Readme plugin
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "README.md"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
-pattern = '\!\[[^\]]+\]\([^\)]+#gh-dark-mode-only\)\n?'
-replacement = ''
+pattern = '\!\[[^\]]+\]\([^\)]+#gh-(light|dark)-mode-only\)\n\!\[[^\]]+\]\([^\)]+#gh-(light|dark)-mode-only\)'
+replacement = '![ViRelAy Light & Dark Mode UI](https://raw.githubusercontent.com/virelay/virelay/refs/heads/main/design/virelay-ui.png)'
 
 # Configures the "hatch-build-script" plugin, which uses build hooks to run arbitrary build scripts during the build of the project; this is used to
 # build the Angular frontend of the project and include its files in the source distribution (the wheel will be build by extracting the source

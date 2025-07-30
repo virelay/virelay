@@ -20,6 +20,7 @@
     - The logo is available as two versions: with and without title. The source file, however, only contained the version with the title. To produce the PNG with only the logo, the title would have to be hidden and the page size adjusted manually. This is cumbersome, for this reason, a second page was added to the SVG that contains the logo without the title.
     - Named and cleaned up all objects and groups in the SVG.
   - UI Source Files: Previously, there were three source files: one for the light-mode UI, one for the dark-mode UI, and one that contained a split-screen montage of both. These were all converted to a single source file that contains multiple pages, one for each UI mode (light and dark) and one for the split-screen montage.
+- Cleaned up the CSPell configuration by removing unnecessary words from its dictionary that are no longer used in the project.
 
 ## v0.6.1
 

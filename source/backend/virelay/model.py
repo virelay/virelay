@@ -1,17 +1,17 @@
 """Contains the data model abstraction."""
 
+import glob
+import json
 import os
 import re
-import json
-import glob
 from dataclasses import dataclass
-from typing import Literal, TypeAlias, overload, TypedDict
+from typing import Literal, overload, TypeAlias, TypedDict
 
-import yaml
 import h5py
 import numpy
-from PIL import Image
+import yaml
 from numpy.typing import NDArray
+from PIL import Image
 
 from virelay.image_processing import add_border, center_crop, render_heatmap, render_superimposed_heatmap
 

@@ -4,8 +4,8 @@ import argparse
 
 import torch
 from torchvision import transforms
-from torchvision.models import vgg16
 from torchvision.datasets import CIFAR10
+from torchvision.models import vgg16
 
 
 def train_vgg(

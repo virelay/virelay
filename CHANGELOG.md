@@ -21,6 +21,7 @@
     - Named and cleaned up all objects and groups in the SVG.
   - UI Source Files: Previously, there were three source files: one for the light-mode UI, one for the dark-mode UI, and one that contained a split-screen montage of both. These were all converted to a single source file that contains multiple pages, one for each UI mode (light and dark) and one for the split-screen montage.
 - Cleaned up the CSPell configuration by removing unnecessary words from its dictionary that are no longer used in the project.
+- Cleaned up the `.gitignore` file by removing unnecessary entries that are no longer used in the project and sorting the remaining entries by category and alphabetically.
 
 ### Backend REST API Updates in v1.0.0
 

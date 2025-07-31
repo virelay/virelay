@@ -174,7 +174,7 @@ jobs:
         with:
           node-version: '22.14.0'
       - name: Install ESLint Global Configuration
-        run: npm --prefix tests/eslint install
+        run: npm --prefix tests/linters/eslint install
       - name: Install Frontend Dependencies
         run: npm --prefix source/frontend install
       - name: Run ESLint Linter
@@ -199,7 +199,7 @@ jobs:
         with:
           node-version: '22.14.0'
       - name: Install Stylelint Global Configuration
-        run: npm --prefix tests/stylelint install
+        run: npm --prefix tests/linters/stylelint install
       - name: Install Frontend Dependencies
         run: npm --prefix source/frontend install
       - name: Run Stylelint Linter
@@ -247,9 +247,9 @@ jobs:
         with:
           node-version: '22.14.0'
       - name: Install Markdownlint Global Configuration
-        run: npm --prefix tests/markdownlint install
+        run: npm --prefix tests/linters/markdownlint install
       - name: Run Markdown Linter
-        run: npm --prefix tests/markdownlint run markdownlint
+        run: npm --prefix tests/linters/markdownlint run markdownlint
 
   # Runs the spell checker CSpell to spell-check all files in the repository
   spell-check:
@@ -272,9 +272,9 @@ jobs:
         with:
           node-version: '22.14.0'
       - name: Install CSpell Global Configuration
-        run: npm --prefix tests/cspell install
+        run: npm --prefix tests/linters/cspell install
       - name: Run CSpell Spell Checker
-        run: npm --prefix tests/cspell run cspell
+        run: npm --prefix tests/linters/cspell run cspell
 
   # Builds the documentation using Sphinx
   build-documentation:

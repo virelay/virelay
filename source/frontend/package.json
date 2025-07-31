@@ -1,6 +1,6 @@
 {
   "name": "@virelay/frontend",
-  "version": "0.6.1",
+  "version": "1.0.0",
   "description": "ViRelAy is an XAI visualization tool for the analysis of the results of spectral relevance analysis (SpRAy) pipelines.",
   "keywords": [
     "ViRelAy",
@@ -42,7 +42,7 @@
     "build": "npx ng build --configuration production",
     "eslint": "npx eslint",
     "stylelint": "npx stylelint '**/*.scss'",
-    "html-validate": "npx html-validate --config ../../tests/config/.htmlvalidate.js '!(node_modules)/**/*.html'"
+    "html-validate": "npx html-validate --config ../../tests/linters/html-validate/.htmlvalidate.js '../../source/frontend/!(node_modules)/**/*.html'"
   },
   "private": true,
   "dependencies": {
@@ -72,8 +72,9 @@
     "@types/file-saver": "^2.0.7",
     "@types/plotly.js-basic-dist-min": "^2.12.4",
     "@types/three": "^0.175.0",
-    "@virelay/eslint-config": "file:../../tests/eslint",
-    "@virelay/stylelint-config": "file:../../tests/stylelint",
+    "@virelay/eslint-config": "file:../../tests/linters/eslint",
+    "@virelay/stylelint-config": "file:../../tests/linters/stylelint",
+    "@virelay/html-validate-config": "file:../../tests/linters/html-validate",
     "eslint": "^9.24.0",
     "html-validate-angular": "^7.0.1",
     "html-validate": "^9.5.2",

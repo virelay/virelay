@@ -84,10 +84,10 @@ A local build of the documentation can be created using the following command:
 We use tox to run unit tests, linters and static type checkers on the backend REST API, as well as to build the documentation. If you've made any changes to the backend REST API or the documentation that require updates to configurations of the linters, type checker, or tox, please ensure that the relevant sections in the following configuration files are are revised accordingly:
 
 * **tox**: :repo:`tox.ini`
-* **PyLint**: :repo:`tests/config/pylint.ini`
-* **PyCodeStyle**: :repo:`tests/config/.pycodestyle`
-* **PyDocLint**: :repo:`tests/config/.pydoclint.toml`
-* **MyPy**: :repo:`tests/config/.mypy.ini`
+* **PyLint**: :repo:`tests/linters/pylint.ini`
+* **PyCodeStyle**: :repo:`tests/linters/.pycodestyle`
+* **PyDocLint**: :repo:`tests/linters/.pydoclint.toml`
+* **MyPy**: :repo:`tests/linters/.mypy.ini`
 
 To run tests and build the documentation locally using tox, execute the following command from the project root:
 
@@ -105,21 +105,29 @@ To check the code quality of the frontend web app, we also use a range of linter
 
 If your changes require updates to the configurations of the frontend linters, please update the following configuration files:
 
-* **ESLint**: :repo:`tests/eslint/eslint.config.mjs`
-* **Stylelint**: :repo:`tests/stylelint/.stylelintrc.mjs`
-* **HTML-Validate**: :repo:`tests/config/.htmlvalidate.js`
+* **ESLint**: :repo:`tests/linters/eslint/eslint.config.mjs`
+* **Stylelint**: :repo:`tests/linters/stylelint/.stylelintrc.mjs`
+* **HTML-Validate**: :repo:`tests/linters/.htmlvalidate.js`
 
-Finally, we use a Markdown linter to ensure the quality of the read me and a spell checker to verify the correct spelling of all text, including code files. The Markdown linter and the spell checker can be run using the following commands:
+Finally, we use a Markdown linter to ensure the quality of the read me and a spell checker to verify the correct spelling of all text, including code files. The below commands install the dependencies for these packages. This is required to run the linters locally.
 
 .. code-block:: console
 
-    $ npm --prefix tests/markdownlint run markdownlint
-    $ npm --prefix tests/cspell run cspell
+    $ npm --prefix tests/linters/markdownlint install
+    $ npm --prefix tests/linters/cspell install
+
+
+The Markdown linter and the spell checker can be run using the following commands:
+
+.. code-block:: console
+
+    $ npm --prefix tests/linters/markdownlint run markdownlint
+    $ npm --prefix tests/linters/cspell run cspell
 
 If your changes require updates to the configurations of the Markdown linter or the spell checker, please update the following configuration files:
 
-* **Markdown Linter**: :repo:`tests/markdownlint/.markdownlint.yaml`
-* **Spell Checker**: :repo:`tests/cspell/.cspell.json`
+* **Markdown Linter**: :repo:`tests/linters/markdownlint/.markdownlint.yaml`
+* **Spell Checker**: :repo:`tests/linters/cspell/.cspell.json`
 
 Our continuous integration and deployment (CI/CD) pipeline is built using GitHub Actions Workflows. You can use the `act tool <https://nektosact.com/>`_ to test the GitHub Actions workflow locally. Install the act tool according to the `official installation instructions <https://nektosact.com/installation/index.html>`_. After the installation, the GitHub Actions workflow can be run locally using the following commands:
 
@@ -139,7 +147,6 @@ To ensure a successful review of your pull request, please verify that:
 * The documentation builds successfully.
 
 If any of these checks fail, we will not be able to accept the pull request.
-
 
 6. Update the Changelog
 -----------------------

@@ -1,0 +1,15 @@
+{
+  "name": "@virelay/html-validate-config",
+  "version": "1.0.0",
+  "description": "The HTMLValidate configuration for ViRelAy. Having the configuration in a separate package makes it easier to use in a monorepo.",
+  "author": {
+    "name": "David Neumann",
+    "email": "david.neumann@lecode.de"
+  },
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "dependencies": {
+    "html-validate-angular": "^7.0.1",
+    "html-validate": "^9.5.2"
+  }
+}

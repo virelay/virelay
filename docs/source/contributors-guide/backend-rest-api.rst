@@ -18,7 +18,7 @@ Managing the Backend REST API Project
 
 The backend REST API project leverages `uv <https://github.com/astral-sh/uv>`_, a Python package and project manager, to streamline its development lifecycle. For detailed instructions on installing and utilizing uv, please refer to its `comprehensive documentation <https://docs.astral.sh/uv/>`_. This tool enables the efficient installation of supported Python versions, management of virtual environments, handling of runtime and development dependencies, project building, and the execution ViRelAy.
 
-Following the installation of uv, proceed to install the supported Python versions, which comprise 3.10, 3.11, 3.12, and 3.13, as specified in the :repo:`source/backend/.python-versions` file. This can be accomplished via the following command:
+Following the installation of uv, proceed to install the supported Python versions, which comprise 3.10, 3.11, 3.12, and 3.13, as specified in the :repo:`.python-versions` file. This can be accomplished via the following command:
 
 .. code-block:: console
 
@@ -38,7 +38,7 @@ Upon installing the supported Python versions, dependencies must be installed vi
 * **MyPy** for static type checking
 * **tox** for executing tests, linters, the type checker, and building documentation
 
-To leverage ViRelAy's backend functionality, ensure you have all required dependencies in place. These are specified within the :repo:`source/backend/pyproject.toml` project configuration file and constrained to specific versions in the :repo:`source/backend/uv.lock` lock file. To install these dependencies, execute the following command:
+To leverage ViRelAy's backend functionality, ensure you have all required dependencies in place. These are specified within the :repo:`pyproject.toml` project configuration file and constrained to specific versions in the :repo:`uv.lock` lock file. To install these dependencies, execute the following command:
 
 .. code-block:: console
 
@@ -123,8 +123,9 @@ This will run all tests and report how many tests where successful and how many 
 .. code-block:: console
 
     $ uv run pytest \
+        --config-file tests/unit_tests/.pytest.ini \
         --cov virelay \
-        --cov-config tox.ini \
+        --cov-config tests/unit_tests/.coveragerc \
         tests/unit_tests
 
 The ``--cov`` argument specifies the module against which the code coverage is to be measured and the ``--cov-config`` argument specifies, that the tox configuration file also contains the configuration for the test coverage. This command will output detailed code coverage statistics. For a more extensive report in the form of an HTML website, append the ``--cov-report html`` argument:
@@ -132,8 +133,9 @@ The ``--cov`` argument specifies the module against which the code coverage is t
 .. code-block:: console
 
     $ uv run pytest \
+        --config-file tests/unit_tests/.pytest.ini \
         --cov virelay \
-        --cov-config tox.ini \
+        --cov-config tests/unit_tests/.coveragerc \
         --cov-report html \
         tests/unit_tests
 
@@ -144,12 +146,12 @@ Linting
 
 The backend REST API adheres to a rigorous code style, which is enforced by utilizing tools such as `PyLint <https://www.pylint.org/>`_, `PyCodeStyle <https://pycodestyle.pycqa.org/en/latest/intro.html>`_, and `PyDocLint <https://jsh9.github.io/pydoclint/>`_` for linting, in addition to `MyPy <https://mypy-lang.org/>`_ for static type checking. These checks are integral to identifying potential runtime bugs and ensuring the quality of our codebase. It is essential that contributors regularly run these tools and rectify any warnings that arise. Moreover, it is imperative to verify the absence of warnings before committing changes or creating pull requests. The linting and static type checking process is integrated into our CI pipeline, which automatically runs upon the creation of a pull request. Any pull request resulting in a failed build will not be accepted.
 
-The configuration files for each tool are located in the :repo:`tests/config` directory:
+The configuration files for each tool are located in the :repo:`tests/linters` directory:
 
-* **PyLint**: :repo:`tests/config/.pylintrc`
-* **PyCodeStyle**: :repo:`tests/config/.pycodestyle`
-* **PyDocLint**: :repo:`tests/config/.pydoclint.toml`
-* **MyPy**: :repo:`tests/config/.mypy.ini`
+* **PyLint**: :repo:`tests/linters/.pylintrc`
+* **PyCodeStyle**: :repo:`tests/linters/.pycodestyle`
+* **PyDocLint**: :repo:`tests/linters/.pydoclint.toml`
+* **MyPy**: :repo:`tests/linters/.mypy.ini`
 
 Again, the easiest way to run all linters and the static type checker is through tox:
 
@@ -162,26 +164,26 @@ Alternatively, these linters and the type checker can be executed individually:
 .. code-block:: console
 
     $ uv run pylint \
-        --rcfile tests/config/.pylintrc \
+        --rcfile tests/linters/.pylintrc \
         virelay \
         tests/unit_tests \
         docs/source/conf.py
 
     $ uv run pycodestyle \
-        --config tests/config/.pycodestyle \
+        --config tests/linters/.pycodestyle \
         virelay \
         tests/unit_tests \
         docs/source/conf.py
 
     $ uv run pydoclint \
-        --config tests/config/.pydoclint.toml \
-        virelay \
+        --config tests/linters/.pydoclint.toml \
+        source/backend/virelay \
         tests/unit_tests \
         docs/source/conf.py
 
     $ uv run mypy \
-        --config-file tests/config/.mypy.ini \
-        virelay \
+        --config-file tests/linters/.mypy.ini \
+        source/backend/virelay \
         tests/unit_tests \
         docs/source/conf.py
 
@@ -198,7 +200,7 @@ The example scripts in the documentation have dependencies that currently do not
         --with 'h5py==3.12.1' \
         --with 'pyyaml==6.0.2' \
         pylint \
-            --rcfile tests/config/.pylintrc \
+            --rcfile tests/linters/.pylintrc \
             --disable duplicate-code \
             docs/examples/*.py \
             docs/examples/**/*.py
@@ -212,7 +214,7 @@ The example scripts in the documentation have dependencies that currently do not
         --with 'h5py==3.12.1' \
         --with 'pyyaml==6.0.2' \
         pycodestyle \
-            --config tests/config/.pycodestyle \
+            --config tests/linters/.pycodestyle \
             docs/examples/*.py \
             docs/examples/**/*.py
 
@@ -225,7 +227,7 @@ The example scripts in the documentation have dependencies that currently do not
         --with 'h5py==3.12.1' \
         --with 'pyyaml==6.0.2' \
         pydoclint \
-            --config tests/config/.pydoclint.toml \
+            --config tests/linters/.pydoclint.toml \
             docs/examples/*.py \
             docs/examples/**/*.py
 
@@ -239,9 +241,8 @@ The example scripts in the documentation have dependencies that currently do not
         --with 'pyyaml==6.0.2' \
         --with 'types-PyYAML==6.0.12.20240917' \
         mypy \
-            --config-file tests/config/.mypy.ini \
+            --config-file tests/linters/.mypy.ini \
             --ignore-missing-imports \
-            docs/examples/*.py \
             docs/examples/**/*.py
 
 .. warning::
@@ -257,4 +258,4 @@ Finally, to build a publishable version of the backend REST API, which can be de
 
     $ uv build
 
-This will build the source distribution and the wheel for the package and store them in the :repo:`source/backend/dist` directory. The source distribution is a compressed archive containing the source code and the metadata required for installation, while the wheel is a binary distribution format that can be installed directly without the need for compilation. The wheel is the preferred format for distribution, as it is faster to install and more secure than the source distribution.
+This will build the source distribution and the wheel for the package and store them in the :repo:`dist` directory. The source distribution is a compressed archive containing the source code and the metadata required for installation, while the wheel is a binary distribution format that can be installed directly without the need for compilation. The wheel is the preferred format for distribution, as it is faster to install and more secure than the source distribution.

@@ -25,17 +25,17 @@
         "**/.cspell.json",
         "**/.git/!(COMMIT_EDITMSG)",
         "**/*.svg",
+        "**/dist",
         "**/docs/build",
         "**/docs/doctree",
+        "**/htmlcov",
         "**/node_modules",
-        "**/source/backend/dist",
-        "**/source/backend/htmlcov",
+        "**/source/backend/virelay/version.py",
         "**/source/frontend/distribution",
         "**/source/frontend/package-lock.json",
         "**/test-project",
         "**/unit_tests/coverage",
-        "**/uv.lock",
-        "**/virelay/version.py"
+        "**/uv.lock"
     ],
 
     // A list of dictionaries that should be added beyond the American English dictionary
@@ -113,6 +113,7 @@
         "colormaps",
         "copybutton",
         "corelay",
+        "coveragerc",
         "datatemplates",
         "dbscan",
         "Descriptionless",

@@ -27,11 +27,14 @@
   - The configuration for the HTML-Validate linter was converted to a Node.js package, so that it is easier to use and maintain.
   - The configurations for PyTest and Coverage.py were extracted from the tox configuration file and placed into their own files in the `tests/unit_tests` directory.
   - All references to the old configuration files in the `tests/config` directory have been updated to point to the new locations.
+- Fixed the Usage of uv in the tox Configuration
+  - A major problem in the tox configuration was fixed. Previously, tox-uv was always using the system Python version instead of the Python versions installed via uv. This meant that the Python versions specified in the environment names and the `base_python` option were ignored. This meant that the unit tests were not run with the correct Python version and the environments that used the `base_python` option were not created with the correct Python version. Previously, a fix was attempted by setting the `uv_python_preference` to `only-managed`, but this was not the entire solution. What finally fixed the issue was to always use the commands directly instead of running them through the `uv run` command.
 
 ### Backend REST API Updates in v1.0.0
 
 - Sorted the Python imports. They are now categorized by standard library imports, third-party library imports, and local imports, each separated by a blank line. Each category is sub-categorized into regular imports and "from-imports", which are not separated by blank lines. Each sub-category is sorted alphabetically. Both the imports of the `virelay` package and the imports of the unit tests in the `tests` package were sorted.
 - Converted the `dev-dependencies` section in the `pyproject.toml` file to a `dependency-groups` section, which is the new way to define dependencies, which is standardized across all Python tools. The `dev-dependencies` section was deprecated and will be removed in the future. Separate dependency groups were created for the testing, linting, and documentation dependencies. The `dev` dependency group includes all other dependency groups, so that the `dev` group can be used to install all dependencies at once.
+- The fix to the tox configuration caused some problems with the MyPy configuration to emerge: MyPy could not find the type information for PyTest and Sphinx. This was fixed by adding the `pytest-mypy` package and ignoring the `sphinx` package in the MyPy configuration.
 
 ## v0.6.1
 

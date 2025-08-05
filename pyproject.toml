@@ -95,6 +95,7 @@ linting = [
     "pycodestyle>=2.13.0,<3.0.0",
     "pydoclint>=0.6.5,<1.0.0",
     "mypy>=1.15.0,<2.0.0",
+    "pytest-mypy>=1.0.1,<2.0.0",
     "types-Flask-Cors>=5.0.0.20240902,<6.0.0",
     "types-PyYAML>=6.0.12.20250402,<7.0.0"
 ]

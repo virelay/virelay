@@ -22,10 +22,16 @@
   - UI Source Files: Previously, there were three source files: one for the light-mode UI, one for the dark-mode UI, and one that contained a split-screen montage of both. These were all converted to a single source file that contains multiple pages, one for each UI mode (light and dark) and one for the split-screen montage.
 - Cleaned up the CSPell configuration by removing unnecessary words from its dictionary that are no longer used in the project.
 - Cleaned up the `.gitignore` file by removing unnecessary entries that are no longer used in the project and sorting the remaining entries by category and alphabetically.
+- Restructured the `tests` directory to better organize unit tests and linter configurations:
+  - The configurations for the linters have been moved to a new directory called `tests/linters`.
+  - The configuration for the HTML-Validate linter was converted to a Node.js package, so that it is easier to use and maintain.
+  - The configurations for PyTest and Coverage.py were extracted from the tox configuration file and placed into their own files in the `tests/unit_tests` directory.
+  - All references to the old configuration files in the `tests/config` directory have been updated to point to the new locations.
 
 ### Backend REST API Updates in v1.0.0
 
 - Sorted the Python imports. They are now categorized by standard library imports, third-party library imports, and local imports, each separated by a blank line. Each category is sub-categorized into regular imports and "from-imports", which are not separated by blank lines. Each sub-category is sorted alphabetically. Both the imports of the `virelay` package and the imports of the unit tests in the `tests` package were sorted.
+- Converted the `dev-dependencies` section in the `pyproject.toml` file to a `dependency-groups` section, which is the new way to define dependencies, which is standardized across all Python tools. The `dev-dependencies` section was deprecated and will be removed in the future. Separate dependency groups were created for the testing, linting, and documentation dependencies. The `dev` dependency group includes all other dependency groups, so that the `dev` group can be used to install all dependencies at once.
 
 ## v0.6.1
 

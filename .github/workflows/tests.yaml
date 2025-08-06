@@ -16,18 +16,16 @@ on:
 # This workflow contains multiple jobs for unit testing, linting, type checking, spell checking, and building
 jobs:
 
-  # Runs the unit tests on Python 3.10, 3.11, 3.12, and 3.13
+  # Runs the unit tests on Python 3.11, 3.12, and 3.13
   unit-tests:
 
-    # The job will run on the latest version of Ubuntu using a matrix strategy, where the unit tests are run using Python 3.10, 3.11, 3.12, and 3.13
+    # The job will run on the latest version of Ubuntu using a matrix strategy, where the unit tests are run using Python 3.11, 3.12, and 3.13
     name: Unit Test ViRelAy Backend on Python ${{matrix.python-version}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - tox-environment: py310
-            python-version: "3.10.16"
           - tox-environment: py311
             python-version: "3.11.11"
           - tox-environment: py312

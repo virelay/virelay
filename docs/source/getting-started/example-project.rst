@@ -14,18 +14,12 @@ If you installed ViRelAy from the project's Git repository, then you already hav
     $ curl -o 'make_project.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/make_project.py'
     $ curl -o 'make_test_data.py' 'https://raw.githubusercontent.com/virelay/virelay/main/docs/examples/test-project/make_test_data.py'
 
-The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed using your favorite Python package manager, e.g., ``pip``. If you use ``pip`` it is recommended to create a virtual environment in order to not pollute your base environment. The test project scripts support many different clustering and embedding methods. To use the UMAP embedding method and the HDBSCAN clustering method, optional support for them has to be installed as well. Using ``pip``, this can be done like so:
+The test project scripts require CoRelAy to be installed, which is also available on PyPI and can be installed as an extra dependency of ViRelAy. If you use ``pip`` it is recommended to create a virtual environment in order to not pollute your base environment, which can be done like so:
 
 .. code-block:: console
 
     $ python3 -m venv .venv
-    $ .venv/bin/pip install virelay 'corelay[umap,hdbscan]'
-
-If the installation of the packages fails, this might be due to an outdated version of ``pip``. This can be solved by updating ``pip`` to the latest version: ``.venv/bin/pip install -U pip``.
-
-.. note::
-
-    Be aware that the example scripts have some dependencies that only support Python 3.9 to Python 3.12, but not Python 3.13.
+    $ .venv/bin/pip install 'virelay[examples]'
 
 A ViRelAy project consists of multiple files. In its most basic configuration the required files are:
 

@@ -18,7 +18,7 @@ Managing the Backend REST API Project
 
 The backend REST API project leverages `uv <https://github.com/astral-sh/uv>`_, a Python package and project manager, to streamline its development lifecycle. For detailed instructions on installing and utilizing uv, please refer to its `comprehensive documentation <https://docs.astral.sh/uv/>`_. This tool enables the efficient installation of supported Python versions, management of virtual environments, handling of runtime and development dependencies, project building, and the execution ViRelAy.
 
-Following the installation of uv, proceed to install the supported Python versions, which comprise 3.10, 3.11, 3.12, and 3.13, as specified in the :repo:`.python-versions` file. This can be accomplished via the following command:
+Following the installation of uv, proceed to install the supported Python versions, which comprise 3.11, 3.12, and 3.13, as specified in the :repo:`.python-versions` file. This can be accomplished via the following command:
 
 .. code-block:: console
 
@@ -106,11 +106,11 @@ Unit Testing
 
 The backend REST API incorporates an extensive unit test suite, striving for comprehensive code coverage at all times. This test framework is housed in a dedicated directory, :repo:`tests/unit_tests`, and leverages a shared fixture module, ``conftest``, to streamline testing efforts across the ViRelAy unit test modules. Each ViRelAy module is accompanied by a corresponding test module, where tests are structured according to their respective subjects (e.g., the module ``image_processing`` has a ``test_image_processing`` test module). The `PyTest framework <https://docs.pytest.org/en/stable/>`_ framework serves as the foundation for these tests, which utilize classes and functions to validate both class-based and function-based functionality, e.g., the ``Project`` class in the ``model`` module has a matching ``TestProject`` test class, and the ``render_heatmap`` function in the ``image_processing`` module is accompanied by a ``test_render_heatmap`` function.
 
-To ensure the highest quality of contributions, it is essential that all modifications or additions are thoroughly tested through successful execution of the test suite. The easiest way to run the unit tests is through tox. It enables you to run unit test in multiple Python environments, including Python versions 3.10 through 3.13, represented by the ``py310``, ``py311``, ``py312``, and  ``py313`` tox environments. Additionally, tox can be used to measure code coverage through the ``coverage`` environment, execute linters via the ``pylint``, ``pycodestyle`` and ``pydoclint`` environments, run the static type checker using the ``mypy`` environment, and build the documentation by running the ``docs`` environment. By invoking ``uv run tox run`` in your terminal, you can execute all tox environments. To target a specific environment, leverage the ``-e`` parameter. For instance, to run unit tests for Python 3.10 and the PyLint linter, use the following command:
+To ensure the highest quality of contributions, it is essential that all modifications or additions are thoroughly tested through successful execution of the test suite. The easiest way to run the unit tests is through tox. It enables you to run unit test in multiple Python environments, including Python versions 3.11 through 3.13, represented by the ``py311``, ``py312``, and  ``py313`` tox environments. Additionally, tox can be used to measure code coverage through the ``coverage`` environment, execute linters via the ``pylint``, ``pycodestyle`` and ``pydoclint`` environments, run the static type checker using the ``mypy`` environment, and build the documentation by running the ``docs`` environment. By invoking ``uv run tox run`` in your terminal, you can execute all tox environments. To target a specific environment, leverage the ``-e`` parameter. For instance, to run unit tests for Python 3.11 and the PyLint linter, use the following command:
 
 .. code-block:: console
 
-    $ uv run tox run -e py310,pylint
+    $ uv run tox run -e py311,pylint
 
 To manually execute the tests, utilize the ``pytest`` command-line interface to run the unit tests located in the ``tests/unit_tests`` directory:
 
@@ -167,87 +167,29 @@ Alternatively, these linters and the type checker can be executed individually:
         --rcfile tests/linters/.pylintrc \
         virelay \
         tests/unit_tests \
-        docs/source/conf.py
+        docs/source/conf.py \
+        docs/examples
 
     $ uv run pycodestyle \
         --config tests/linters/.pycodestyle \
         virelay \
         tests/unit_tests \
-        docs/source/conf.py
+        docs/source/conf.py \
+        docs/examples
 
     $ uv run pydoclint \
         --config tests/linters/.pydoclint.toml \
         source/backend/virelay \
         tests/unit_tests \
-        docs/source/conf.py
+        docs/source/conf.py \
+        docs/examples
 
     $ uv run mypy \
         --config-file tests/linters/.mypy.ini \
         source/backend/virelay \
         tests/unit_tests \
-        docs/source/conf.py
-
-The example scripts in the documentation have dependencies that currently do not support Python 3.10 or later. For this reason they cannot be linted using the project's dependencies. They also require some extra dependencies that would have to be installed separately. For this reason, it is easier to run them using ``uv run`` with the ``--no-project`` flag, which will run the script without the project's dependencies. The ``--python`` and ``--with`` arguments specify the Python version and the dependencies that are to be used for the example scripts.
-
-.. code-block:: console
-
-    $ uv run \
-        --no-project \
-        --python 3.9.21 \
-        --with 'pylint==3.3.6' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
-        pylint \
-            --rcfile tests/linters/.pylintrc \
-            --disable duplicate-code \
-            docs/examples/*.py \
-            docs/examples/**/*.py
-
-    $ uv run \
-        --no-project \
-        --python 3.9.21 \
-        --with 'pycodestyle==2.12.1' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
-        pycodestyle \
-            --config tests/linters/.pycodestyle \
-            docs/examples/*.py \
-            docs/examples/**/*.py
-
-    $ uv run \
-        --no-project \
-        --python 3.9.21 \
-        --with 'pydoclint==0.5.9' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
-        pydoclint \
-            --config tests/linters/.pydoclint.toml \
-            docs/examples/*.py \
-            docs/examples/**/*.py
-
-    $ uv run \
-        --no-project \
-        --python 3.9.21 \
-        --with 'mypy==1.12.0' \
-        --with 'zennit==0.5.1' \
-        --with 'corelay==0.2.1' \
-        --with 'h5py==3.12.1' \
-        --with 'pyyaml==6.0.2' \
-        --with 'types-PyYAML==6.0.12.20240917' \
-        mypy \
-            --config-file tests/linters/.mypy.ini \
-            --ignore-missing-imports \
-            docs/examples/**/*.py
-
-.. warning::
-
-    When using ZSH instead of Bash, it is necessary to modify the globbing pattern in the script. Specifically, the wildcard notation ``docs/examples/**/*.py`` will not only match files in the sub-directories of ``docs/examples``, but also in the directory itself, which includes the files that were already matched by the ``docs/examples/*.py`` pattern. This leads to inconsistencies with MyPy, which interprets multiple instances of the same file name as distinct modules and subsequently triggers errors.
+        docs/source/conf.py \
+        docs/examples
 
 Building
 ========

@@ -1,5 +1,7 @@
 """Uses LRP to generate attributions for a VGG16 model trained on CIFAR-10."""
 
+# pylint: disable=duplicate-code
+
 import argparse
 
 import h5py

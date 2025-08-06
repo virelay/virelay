@@ -11,14 +11,12 @@ Please note that you're free to substitute these specific model and dataset choi
 Prerequisites & Dependencies
 ============================
 
-Before creating your ViRelAy project, we recommend establishing a virtual environment to isolate dependencies and prevent conflicts with your system's Python installation. To get started, you'll need to install several packages that are essential for the project creation process.
-
-The required dependencies include Zennit for attribution computation (which also installs PyTorch), CoRelAy for analysis tasks (optional support for UMAP and HDBSCAN can be added as well), H5PY for HDF5 database generation, and PyYAML for creating the ViRelAy project file. The following code listing provides a concise summary of the installation process:
+Before creating your ViRelAy project, we recommend establishing a virtual environment to isolate dependencies and prevent conflicts with your system's Python installation. To get started, you'll need to install some packages that are essential for the project creation process. These dependencies are included as extra dependencies in the ViRelAy package, which can be installed using pip like so:
 
 .. code-block:: console
 
     $ python3 -m venv .venv
-    $ .venv/bin/pip install zennit 'corelay[umap,hdbscan]' h5py pyyaml
+    $ .venv/bin/pip install 'virelay[examples]'
 
 Accessing the ViRelAy Project Scripts
 =====================================

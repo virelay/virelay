@@ -143,7 +143,7 @@ If your changes require updates to the GitHub Actions workflows, please update t
 To ensure a successful review of your pull request, please verify that:
 
 * All linters and static type checkers pass without errors.
-* Unit tests succeed for all supported Python versions (3.10 - 3.13).
+* Unit tests succeed for all supported Python versions (3.11 - 3.13).
 * The documentation builds successfully.
 
 If any of these checks fail, we will not be able to accept the pull request.

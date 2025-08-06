@@ -1,7 +1,7 @@
 """Contains some helper functions for processing images."""
 
 import math
-from typing import Literal, TypeAlias
+from typing import cast, Literal, TypeAlias
 
 import matplotlib.cm
 import numpy
@@ -112,7 +112,8 @@ def render_heatmap(attribution_data: NDArray[numpy.float64], color_map: str) -> 
 
     # Checks if the raw attribution has more than one channel, in that case the channels are summed up
     if len(attribution_data.shape) == 3 and attribution_data.shape[-1] > 1:
-        attribution_data = numpy.sum(attribution_data, axis=2)
+        summed_attribution_data = numpy.sum(attribution_data, dtype=numpy.float64, axis=2)
+        attribution_data = cast(NDArray[numpy.float64], summed_attribution_data)
 
     # Checks the name of the color map and renders the heatmap image accordingly, if the color map is not supported, then an exception is raised
     if color_map in custom_color_maps:

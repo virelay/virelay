@@ -1,11 +1,13 @@
 """Converts the CIFAR-10 dataset into the correct HDF5 format that is required by ViRelAy."""
 
+# pylint: disable=duplicate-code
+
 import argparse
 import json
+import typing
 
 import h5py
 import numpy
-import torch
 from torchvision.datasets import CIFAR10
 
 
@@ -30,16 +32,16 @@ def create_dataset(dataset_file_path: str, samples_shape: tuple[int, ...], numbe
 def append_sample(
     dataset_file: h5py.File,
     index: int,
-    sample: torch.Tensor,
-    label: torch.Tensor
+    sample: numpy.ndarray[typing.Any, typing.Any],
+    label: numpy.ndarray[typing.Any, typing.Any]
 ) -> None:
     """Appends the specified sample to the dataset.
 
     Args:
         dataset_file (h5py.File): The file handle to the dataset to which the sample is to be appended.
         index (int): The index of the sample.
-        sample (torch.Tensor): The sample that is to be appended.
-        label (torch.Tensor): The ground-truth label of the sample.
+        sample (numpy.ndarray[typing.Any, typing.Any]): The sample that is to be appended.
+        label (numpy.ndarray[typing.Any, typing.Any]): The ground-truth label of the sample.
     """
 
     dataset_file['data'][index] = sample

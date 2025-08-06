@@ -35,6 +35,24 @@
 - Sorted the Python imports. They are now categorized by standard library imports, third-party library imports, and local imports, each separated by a blank line. Each category is sub-categorized into regular imports and "from-imports", which are not separated by blank lines. Each sub-category is sorted alphabetically. Both the imports of the `virelay` package and the imports of the unit tests in the `tests` package were sorted.
 - Converted the `dev-dependencies` section in the `pyproject.toml` file to a `dependency-groups` section, which is the new way to define dependencies, which is standardized across all Python tools. The `dev-dependencies` section was deprecated and will be removed in the future. Separate dependency groups were created for the testing, linting, and documentation dependencies. The `dev` dependency group includes all other dependency groups, so that the `dev` group can be used to install all dependencies at once.
 - The fix to the tox configuration caused some problems with the MyPy configuration to emerge: MyPy could not find the type information for PyTest and Sphinx. This was fixed by adding the `pytest-mypy` package and ignoring the `sphinx` package in the MyPy configuration.
+- Removed support for Python 3.10, as they are no longer supported by the latest versions of some of the dependencies.
+  - The supported Python versions are now 3.11, 3.12, and 3.13.
+  - References to the supported versions were removed from the documentation.
+  - The tox configuration was updated to no longer run the unit tests with Python 3.10.
+  - The GitHub Actions workflow for testing was updated to no longer run the unit tests with Python 3.10.
+
+### Documentation Updates in v1.0.0
+
+- The example scripts in the documentation previously had dependencies that were not compatible with the ViRelAy Python project, as some of their dependencies were incompatible with dependencies of the ViRelAy project. Now, all of the dependencies in the incompatible upstream projects were updated.
+  - The dependencies of the example scripts were now directly integrated as extra dependencies in the `pyproject.toml` file under the name `examples`.
+  - These extra dependencies were also integrated into the `dev` dependency group, so that they are during development.
+  - The documentation was updated to explain that the dependencies can now directly be installed by installing ViRelAy with the `examples` extra dependencies.
+  - Previously, the examples scripts had to be linted and type-checked separately from the ViRelAy project, as the incompatible dependencies had to be installed separately. Now, the example scripts are linted and type-checked together with the ViRelAy project and the unit tests.
+    - The instructions for running the linters and the static type checker in the documentation were updated to show how to lint and type-check the example scripts.
+    - The tox configuration was also updated to now lint and type-check the example scripts together with the ViRelAy project and the unit tests.
+    - As they are now linted as part of the ViRelAy project, some code duplication issues were raised by PyLint, which were fixed by disabling the `duplicate-code` PyLint check for the example scripts. Since the scripts are standalone scripts and not modules, it would be difficult to refactor them to avoid the code duplication, as they are not meant to be used as modules.
+    - Also, since some of the updated dependencies are now typed, some typing problems were raised by MyPy, which were fixed by correcting the relevant type hints in either the example scripts or the ViRelAy project.
+    - As CoRelAy has received a major update, the `meta_analysis.py` script was updated to use the new syntax for declaring slots. Also, the same script is available as an example in the CoRelAy documentation, so the two versions of the script were synchronized.
 
 ## v0.6.1
 

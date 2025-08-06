@@ -2,7 +2,7 @@
 
 ## v1.0.0
 
-*Release date to be determined.*
+*Released on August 6, 2025.*
 
 ### General Updates in v1.0.0
 
@@ -43,6 +43,25 @@
 
 ### Documentation Updates in v1.0.0
 
+- Updated the documentation:
+  - Updated the `.readthedocs.yaml` to fix the way that the virtual environment is created using uv. Also, the Python version was updated to 3.13 and the Ubuntu version was updated to always use the latest version.
+  - A custom CSS file was added to the documentation to change the alignment of the documentation text to be justified and to automatically break long words. This was done to improve the readability of the documentation and to align it with usual scientific documents.
+  - The width of the labels in the bibliography was set to a fixed size, so that the labels all have the same width. This was done, because they looked inconsistent and messy before.
+  - The images of the documentation were moved from the `docs/images` directory to a new `docs/source/images` directory, because they belong to the source of the documentation.
+  - Updated the `modules.rst` template of the AutoSummary Sphinx extensions:
+    - Now, `:signatures: none` is used instead of `:nosignatures:`, which is now recommended by the Sphinx AutoSummary documentation.
+    - Removed the extra spaces using dashes in the blocks (e.g., `{%- if attributes %}` instead of `{% if attributes %}`).
+    - Added special members like `__bool__`, `__call__`, and `__delete__`, so that they are included in the documentation, if they are present.
+    - The rubric titles now just use a string (e.g., `.. rubric:: Module Attributes` instead of `.. rubric:: {{ _('Module Attributes') }}`)
+    - The template file was moved to a sub-directory `_templates/autosummary`, because this way it is automatically recognized by the Sphinx Autosummary extension and no longer needs to be referenced in `api-reference/index.rst` file.
+  - The usage of `:signatures: none` instead of `:nosignatures:` was also applied to the `api-reference/index.rst` file.
+  - The configuration for Sphinx was updated:
+    - The `sphinx.ext.imgmath` and the `sphinxcontrib.datatemplates` extensions were removed, because there were not used in the documentation.
+    - The `docs/source/conf.py` file was generally updated to reflect the changes that were made to the Sphinx configuration in CoRelAy.
+  - The invocation of Sphinx in tox to build the documentation was updated to include the `--fresh-env` option, so that the documentation is always built in a fresh environment. This solves some issues with the documentation build, where the documentation was not updated correctly after changes were made to the source code or the documentation itself.
+- Updated the read me:
+  - Fixed the order of the properties in the BibTeX entry of the project paper.
+  - Added badges for the build status of the documentation and the latest version of the package available on PyPI.
 - The example scripts in the documentation previously had dependencies that were not compatible with the ViRelAy Python project, as some of their dependencies were incompatible with dependencies of the ViRelAy project. Now, all of the dependencies in the incompatible upstream projects were updated.
   - The dependencies of the example scripts were now directly integrated as extra dependencies in the `pyproject.toml` file under the name `examples`.
   - These extra dependencies were also integrated into the `dev` dependency group, so that they are during development.

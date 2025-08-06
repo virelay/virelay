@@ -40,6 +40,23 @@
   - References to the supported versions were removed from the documentation.
   - The tox configuration was updated to no longer run the unit tests with Python 3.10.
   - The GitHub Actions workflow for testing was updated to no longer run the unit tests with Python 3.10.
+- Updated the versions of Python that are specified in the `.python-versions` file and the `pyproject.toml` file to the latest patch versions of Python 3.11, 3.12, and 3.13:
+  - Python 3.13.2 → 3.13.5,
+  - Python 3.12.9 → 3.12.11, and
+  - Python 3.11.11 → 3.11.13
+- Updated the dependencies of the backend REST API to their respective latest versions.
+
+### Frontend Updates in v1.0.0
+
+- Updated the dependencies of the frontend project to their respective latest versions.
+
+### CI/CD Updates in v1.0.0
+
+- The actions used in the GitHub Actions workflow configuration file were updated to their latest versions.
+- Updated the Node.js version used in the GitHub Actions workflow to the latest LTS version, which is currently 20.18.0.
+- Updated the uv version used in the GitHub Actions workflow to the latest version, which is currently 0.8.5.
+- The `uv.lock` file is now disabled when synchronizing the package versions during deployment. This causes uv to assume that the lock file will not change and will raise an error if it does. This way, the deployment will fail if the lock file is not up-to-date and not silently ignore the changes and deploy anyway.
+- During the deployment, the tags are now explicitly fetched from the remote repository, so that the build system is able to determine the latest version of the package, which is used to set the version of the package being build and deployed.
 
 ### Documentation Updates in v1.0.0
 

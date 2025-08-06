@@ -152,7 +152,7 @@ def render_superimposed_heatmap(
 
     # Renders the heatmap
     heatmap_array = render_heatmap(attribution_data, color_map)
-    heatmap = Image.fromarray(heatmap_array, 'RGB')
+    heatmap = Image.fromarray(heatmap_array)
 
     # Takes the attribution data, and normalizes it to the range [0, 1], this will be used as the alpha channel top superimpose the heatmap onto the
     # specified image, the positive and negative parts of the attribution data are considered separately, because otherwise the negative attributions
@@ -160,10 +160,10 @@ def render_superimposed_heatmap(
     absolute_maximum_attribution_value = numpy.max(numpy.abs(attribution_data))
     positive_attributions_mask_array = numpy.maximum(attribution_data, 0)
     positive_attributions_mask_array = positive_attributions_mask_array / absolute_maximum_attribution_value * 0.9
-    positive_attributions_mask = Image.fromarray((positive_attributions_mask_array * 255).astype(numpy.uint8), 'L')
+    positive_attributions_mask = Image.fromarray((positive_attributions_mask_array * 255).astype(numpy.uint8))
     negative_attributions_mask_array = numpy.abs(numpy.minimum(attribution_data, 0))
     negative_attributions_mask_array = negative_attributions_mask_array / absolute_maximum_attribution_value * 0.9
-    negative_attributions_mask = Image.fromarray((negative_attributions_mask_array * 255).astype(numpy.uint8), 'L')
+    negative_attributions_mask = Image.fromarray((negative_attributions_mask_array * 255).astype(numpy.uint8))
 
     # Superimposes the positive and the negative attributions onto the specified image
     loaded_image_to_superimpose = Image.fromarray(image_to_superimpose.astype(numpy.uint8)).convert('LA').convert('RGB')

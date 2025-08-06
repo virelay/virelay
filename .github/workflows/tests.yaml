@@ -27,11 +27,11 @@ jobs:
       matrix:
         include:
           - tox-environment: py311
-            python-version: "3.11.11"
+            python-version: "3.11.13"
           - tox-environment: py312
-            python-version: "3.12.9"
+            python-version: "3.12.11"
           - tox-environment: py313
-            python-version: "3.13.2"
+            python-version: "3.13.5"
 
     # The job contains several steps: 1) checking out the repository, 2) installing the Python project management tool uv, 3) installing the correct
     # Python version, 4) setting up the test environment by installing ViRelAy and its dependencies, 5) installing Node.js for building the frontend,
@@ -43,9 +43,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
-          version: 0.6.13
+          version: 0.8.5
       - name: Install Python
         run: uv python install ${{ matrix.python-version }}
       - name: Install ViRelAy and its Dependencies
@@ -53,7 +53,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '22.18.0'
       - name: Run Unit Tests
         run: uv run tox run -e ${{ matrix.tox-environment }}
 
@@ -71,11 +71,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
-          version: 0.6.13
+          version: 0.8.5
       - name: Install Python
-        run: uv python install 3.13.2 3.9.21
+        run: uv python install 3.13.5
       - name: Install ViRelAy and its Dependencies
         run: uv sync --all-extras --dev
       - name: Run PyLint Linter
@@ -95,14 +95,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
-          version: 0.6.13
+          version: 0.8.5
       - name: Install Python
-        run: uv python install 3.13.2 3.9.21
+        run: uv python install 3.13.5
       - name: Install ViRelAy and its Dependencies
         run: uv sync --all-extras --dev
-      - name: Run PyLint Linter
+      - name: Run PyCodeStyle Linter
         run: uv run tox run -e pycodestyle
 
   # Runs the PyDocLint docstring linter
@@ -119,14 +119,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
-          version: 0.6.13
+          version: 0.8.5
       - name: Install Python
-        run: uv python install 3.13.2 3.9.21
+        run: uv python install 3.13.5
       - name: Install ViRelAy and its Dependencies
         run: uv sync --all-extras --dev
-      - name: Run PyLint Linter
+      - name: Run PyDocLint Linter
         run: uv run tox run -e pydoclint
 
   # Runs the MyPy static type checker
@@ -143,14 +143,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
-          version: 0.6.13
+          version: 0.8.5
       - name: Install Python
-        run: uv python install 3.13.2 3.9.21
+        run: uv python install 3.13.5
       - name: Install ViRelAy and its Dependencies
         run: uv sync --all-extras --dev
-      - name: Run PyLint Linter
+      - name: Run MyPy Static Type Checker
         run: uv run tox run -e mypy
 
   # Runs the ESLint linter
@@ -170,7 +170,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '22.18.0'
       - name: Install ESLint Global Configuration
         run: npm --prefix tests/linters/eslint install
       - name: Install Frontend Dependencies
@@ -195,7 +195,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '22.18.0'
       - name: Install Stylelint Global Configuration
         run: npm --prefix tests/linters/stylelint install
       - name: Install Frontend Dependencies
@@ -220,7 +220,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '22.18.0'
       - name: Install Frontend Dependencies
         run: npm --prefix source/frontend install
       - name: Run HTML-Validate Linter
@@ -243,7 +243,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '22.18.0'
       - name: Install Markdownlint Global Configuration
         run: npm --prefix tests/linters/markdownlint install
       - name: Run Markdown Linter
@@ -268,7 +268,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '22.18.0'
       - name: Install CSpell Global Configuration
         run: npm --prefix tests/linters/cspell install
       - name: Run CSpell Spell Checker
@@ -291,11 +291,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
-          version: 0.6.13
+          version: 0.8.5
       - name: Install Python
-        run: uv python install 3.13.2 3.9.21
+        run: uv python install 3.13.5
       - name: Install TeX Live for Pybtex
         run: sudo apt-get update -y && sudo apt-get install -y texlive texlive-latex-extra dvipng
       - name: Build Documentation

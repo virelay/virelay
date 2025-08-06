@@ -37,18 +37,6 @@ export enum ServiceExceptionKind {
 }
 
 /**
- * Represents an enumeration for non-standard HTTP status codes.
- */
-enum NonStandardHttpStatusCode {
-
-    /**
-     * The HTTP status code 0 is not defined by the HTTP standard but is often used by browsers to signal that the server did not respond to the
-     * request.
-     */
-    NoResponse = 0,
-}
-
-/**
  * Represents an exception that is thrown when a service encounters an error.
  */
 export class ServiceException extends Error {
@@ -88,29 +76,33 @@ export class ServiceException extends Error {
             );
         }
 
+        // Sets the extra data of the error
+        this.errorData = errorDetails.httpErrorResponse.error;
+
+        // Checks if the error code is 0, in that case the service is unavailable
+        if (errorDetails.httpErrorResponse.status === 0) {
+            this.kind = ServiceExceptionKind.ServiceUnavailable;
+            return;
+        }
+
         // Checks the status code of the HTTP response to determine the kind of error that occurred
-        switch (errorDetails.httpErrorResponse.status) {
-            case Number(NonStandardHttpStatusCode.NoResponse):
-                this.kind = ServiceExceptionKind.ServiceUnavailable;
-                break;
-            case Number(HttpStatusCode.Unauthorized):
+        const statusCode: HttpStatusCode = errorDetails.httpErrorResponse.status
+        switch (statusCode) {
+            case HttpStatusCode.Unauthorized:
                 this.kind = ServiceExceptionKind.PermissionDenied;
                 break;
-            case Number(HttpStatusCode.NotFound):
+            case HttpStatusCode.NotFound:
                 this.kind = ServiceExceptionKind.NotFound;
                 break;
-            case Number(HttpStatusCode.InternalServerError):
+            case HttpStatusCode.InternalServerError:
                 this.kind = ServiceExceptionKind.InternalServerError;
                 break;
-            case Number(HttpStatusCode.UnprocessableEntity):
+            case HttpStatusCode.UnprocessableEntity:
                 this.kind = ServiceExceptionKind.ValidationError;
                 break;
             default:
                 this.kind = ServiceExceptionKind.Unknown;
         }
-
-        // Sets the extra data of the error.
-        this.errorData = errorDetails.httpErrorResponse.error;
     }
 
     // #endregion

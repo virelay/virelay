@@ -14,7 +14,7 @@ Please note that starting ViRelAy using the provided command-line interface will
 
 After launching ViRelAy, you will be greeted with a user interface like in the following screenshot. The exact setup will depend on the project(s) that you have loaded, but in this instance the randomly generated test project is shown:
 
-.. figure:: ../../images/getting-started/basic-usage/virelay-ui.png
+.. figure:: ../images/getting-started/basic-usage/virelay-ui.png
     :alt: ViRelAy UI
     :align: center
 
@@ -22,7 +22,7 @@ After launching ViRelAy, you will be greeted with a user interface like in the f
 
 At the very top of the ViRelAy UI, all loaded projects are displayed in tabs. Clicking a project tab will switch to the selected project. Figure 2 shows what the project selection looks like, when multiple projects are loaded.
 
-.. figure:: ../../images/getting-started/basic-usage/project-selection.png
+.. figure:: ../images/getting-started/basic-usage/project-selection.png
     :alt: Project Selection in the ViRelAy UI
     :align: center
 
@@ -30,7 +30,7 @@ At the very top of the ViRelAy UI, all loaded projects are displayed in tabs. Cl
 
 At the very bottom of the ViRelAy UI, some basic information about the currently selected project is displayed: the name of the project, the name of the dataset, on which the model was trained, and the name of the classifier model itself. Figure 3 shows the project info pane for the test project.
 
-.. figure:: ../../images/getting-started/basic-usage/project-info-pane.png
+.. figure:: ../images/getting-started/basic-usage/project-info-pane.png
     :alt: Project Info Pane in the ViRelAy UI
     :align: center
 
@@ -38,7 +38,7 @@ At the very bottom of the ViRelAy UI, some basic information about the currently
 
 In the center of the ViRelAy UI, the embedding viewer is situated. The embedding viewer displays the embedding vectors of the currently selected embedding method for the samples of the currently selected sample category. The embedding vectors are visualized as a point cloud. Each analysis in a project can contain multiple embedding methods. The colors of the embedding vectors correspond to the cluster they belong to, according to the currently selected clustering method.
 
-.. figure:: ../../images/getting-started/basic-usage/embedding-viewer.png
+.. figure:: ../images/getting-started/basic-usage/embedding-viewer.png
     :alt: Embedding Viewer in the ViRelAy UI
     :align: center
 
@@ -52,7 +52,7 @@ On the far right of the ViRelAy UI, the eigenvalues of the embedding, if availab
 
 Finally, at the top of the ViRelAy UI, below the project selection, the toolbox can be found. The toolbox allows the user to navigate the data of the current project. The toolbox can be seen in Figure 5.
 
-.. figure:: ../../images/getting-started/basic-usage/toolbox.png
+.. figure:: ../images/getting-started/basic-usage/toolbox.png
     :alt: Toolbox in the ViRelAy UI
     :align: center
 

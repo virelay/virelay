@@ -62,7 +62,7 @@ In the ViRelAy user interface, loaded projects are displayed as tabs at the top 
 
 Clicking a project tab will navigate the user to the respective project's page. The project selection can be seen in Figure 1.
 
-.. figure:: ../../images/user-guide/features/project-selection.png
+.. figure:: ../images/user-guide/features/project-selection.png
     :alt: Project Selection in the ViRelAy UI
     :align: center
 
@@ -70,7 +70,7 @@ Clicking a project tab will navigate the user to the respective project's page. 
 
 The currently selected project's name, dataset, and model are displayed in the footer of the ViRelAy UI within the project info pane (cf. Figure 2).
 
-.. figure:: ../../images/user-guide/features/project-info-pane.png
+.. figure:: ../images/user-guide/features/project-info-pane.png
     :alt: The Project Info Pane in the ViRelAy UI
     :align: center
 
@@ -83,7 +83,7 @@ An analysis represents the output of a quantitative analysis pipeline created wi
 
 Each ViRelAy project can comprise multiple analyses, which can be accessed through the toolbox located at the top of the UI, below the project selection area (cf. Figure 3).
 
-.. figure:: ../../images/user-guide/features/analysis-selection.png
+.. figure:: ../images/user-guide/features/analysis-selection.png
     :alt: Analysis Selection in the ViRelAy UI
     :align: center
 
@@ -96,7 +96,7 @@ As stated above, an analysis comprises visual representations of attribution clu
 
 In the ViRelAy UI, category selection is performed through the toolbox at the top of the screen. Additionally, the toolbox enables users to select embedding methods and clustering techniques. The embedding viewer, situated at the center of the UI, displays embedding vectors from the current category using the selected embedding method and clustering technique. The embedding vectors are color-coded according to the selected clustering technique. The tools for navigating analyses can be seen in Figure 4.
 
-.. figure:: ../../images/user-guide/features/category-embedding-clustering-selection.png
+.. figure:: ../images/user-guide/features/category-embedding-clustering-selection.png
     :alt: Category Selection, Embedding Selection, and Clustering Selection in the ViRelAy UI
     :align: center
 
@@ -104,7 +104,7 @@ In the ViRelAy UI, category selection is performed through the toolbox at the to
 
 When working with high-dimensional embeddings (i.e., more than two dimensions), users can customize the axes used for visualization. The toolbox provides a dimension selection interface, allowing users to choose which dimensions are displayed on the X and Y axes of the embedding viewer (cf. Figure 5).
 
-.. figure:: ../../images/user-guide/features/embedding-dimensions-selection.png
+.. figure:: ../images/user-guide/features/embedding-dimensions-selection.png
     :alt: Embedding Dimension Selection in the ViRelAy UI
     :align: center
 
@@ -115,7 +115,7 @@ Navigating Embeddings
 
 The central component of the ViRelAy user interface is the embedding viewer, located in the center of the window. This interactive visualization displays the embedding vectors for the sample of the currently selected sample category using the chosen embedding method. The points are colored according to their cluster affiliation based on the currently selected clustering algorithm. Figure 6 illustrates an example of an embedding being visualized in the embedding viewer.
 
-.. figure:: ../../images/user-guide/features/embedding-viewer.png
+.. figure:: ../images/user-guide/features/embedding-viewer.png
     :alt: The Embedding Viewer in the ViRelAy UI
     :align: center
 
@@ -129,7 +129,7 @@ The embedding viewer supports two primary modes of interaction:
 
 When hovering over an embedding vector in the embedding viewer, a preview of the corresponding dataset sample (i.e., the input of the classifier) is displayed at the top left corner of the visualization. This can be seen in Figure 7.
 
-.. figure:: ../../images/user-guide/features/sample-preview.png
+.. figure:: ../images/user-guide/features/sample-preview.png
     :alt: The Sample Preview in the Embedding Viewer of the ViRelAy UI
     :align: center
 
@@ -137,7 +137,7 @@ When hovering over an embedding vector in the embedding viewer, a preview of the
 
 To select a subset of embedding vectors, click and hold the left mouse button and draw a selection rectangle over the desired points. To highlight the selected embedding vectors, they are displayed with an increased saturation. This process can be observed in Figure 8.
 
-.. figure:: ../../images/user-guide/features/embedding-vector-selection.png
+.. figure:: ../images/user-guide/features/embedding-vector-selection.png
     :alt: Selecting Embedding Vectors in the Embedding Viewer of the ViRelAy UI
     :align: center
 
@@ -147,7 +147,7 @@ On the far right side of the user interface, several additional features are ava
 
 **Eigenvalue Plot**: If the currently selected embedding method uses eigenvalue decomposition, this plot displays the eigenvalues in ascending order. Large changes between successive eigenvalues are referred to as *eigengaps*, which can be used to determine the optimal number of clusters. Hovering over the eigenvalues will display the number of clusters the eigenvalue corresponds to. An example of an eigenvalue plot can be seen in Figure 9.
 
-.. figure:: ../../images/user-guide/features/eigenvalue-plot.png
+.. figure:: ../images/user-guide/features/eigenvalue-plot.png
     :alt: The Eigenvalue Plot in the ViRelAy UI
     :align: center
 
@@ -155,7 +155,7 @@ On the far right side of the user interface, several additional features are ava
 
 **Cluster Quick Selection**: Below the eigenvalue plot, a list of all clusters for the currently selected clustering algorithm is displayed. By clicking on one of these buttons, you can quickly select all embedding vectors belonging to that cluster. Figure 10 illustrates shows the quick selection buttons for the clusters.
 
-.. figure:: ../../images/user-guide/features/cluster-quick-selection.png
+.. figure:: ../images/user-guide/features/cluster-quick-selection.png
     :alt: The Cluster Quick Selection in the ViRelAy UI
     :align: center
 
@@ -168,7 +168,7 @@ When embedding vectors are selected in the embedding viewer, the sample viewer a
 
 To facilitate the analysis of misclassified samples, hovering over the image with the mouse pointer reveals the predicted label from the classifier. This information enables users to identify and inspect samples that were incorrectly classified. An example of samples being displayed in the sample viewer can be seen in Figure 11.
 
-.. figure:: ../../images/user-guide/features/sample-viewer.png
+.. figure:: ../images/user-guide/features/sample-viewer.png
     :alt: The Sample Viewer in the ViRelAy UI
     :align: center
 
@@ -182,7 +182,7 @@ Depending on the currently selected visualization mode, the sample viewer visual
 
 The selection of visualization modes is facilitated through a button group in the toolbox (cf. Figure 12).
 
-.. figure:: ../../images/user-guide/features/sample-image-display-mode-selection.png
+.. figure:: ../images/user-guide/features/sample-image-display-mode-selection.png
     :alt: Sample Viewer Display Mode Selection in the ViRelAy UI
     :align: center
 
@@ -190,7 +190,7 @@ The selection of visualization modes is facilitated through a button group in th
 
 The overlay mode superimposes the heatmap onto the input image, thus enabling us to directly see the underlying image features, while the attribution mode only shows the heatmap in input space. When the attributions are fine and detailed it usually makes sense to directly view the heatmaps, as the image details can be seen in the heatmaps. When the attributions are coarse, it is harder to correlate the heatmap to the corresponding image regions, therefore, the overlay mode makes it easier to find the actual image features that were attributed. Figure 13 shows the same sample in all 3 modes.
 
-.. figure:: ../../images/user-guide/features/sample-image-display-modes.png
+.. figure:: ../images/user-guide/features/sample-image-display-modes.png
     :alt: Sample Image in All Display Modes
     :align: center
 
@@ -200,7 +200,7 @@ Heatmaps provide an intuitive representation of attribution values by highlighti
 
 The heatmaps are rendered using a selected color map, which can be chosen from a variety of options within the toolbox (cf. Figure 14). This allows users to customize their visualization according to their preferences and better interpret attribution values.
 
-.. figure:: ../../images/user-guide/features/color-map-selection.png
+.. figure:: ../images/user-guide/features/color-map-selection.png
     :alt: Color Map Selection in the ViRelAy UI
     :align: center
 
@@ -208,7 +208,7 @@ The heatmaps are rendered using a selected color map, which can be chosen from a
 
 Depending on the size of the sample images and heatmaps, the sample viewer will either display the image smooth or pixelated. The smooth mode is used for larger images, while the pixelated mode is used for smaller images. This makes it easier for users to inspect samples and heatmaps without losing important details: when the sample images and heatmaps are small, smoothing the image could potentially smear out important details, while pixelating large images could potentially hide small details (cf. Figure 15).
 
-.. figure:: ../../images/user-guide/features/image-sampling-modes.png
+.. figure:: ../images/user-guide/features/image-sampling-modes.png
     :alt: Sample image in both smooth and pixelation image sampling modes
     :align: center
 
@@ -216,7 +216,7 @@ Depending on the size of the sample images and heatmaps, the sample viewer will 
 
 Although the sample viewer automatically selects the appropriate mode based on the size of the sample images and heatmaps, i.e., if the sample images or heatmaps are smaller than the image element on the screen, the pixelated mode is used, while the smooth mode is used for sample images and heatmaps that are larger than the image element, users can manually override this behavior by clicking the "Smooth" or "Pixelated" buttons in the toolbox. This allows for greater flexibility in visualizing samples and heatmaps according to user preferences (cf. Figure 16).
 
-.. figure:: ../../images/user-guide/features/image-sampling-mode-selection.png
+.. figure:: ../images/user-guide/features/image-sampling-mode-selection.png
     :alt: Image Sampling Mode Selection in the ViRelAy UI
     :align: center
 
@@ -238,7 +238,7 @@ To capture your analysis progress or save specific findings for later reference,
 * Color map configurations and ample viewer display mode
 * Currently displayed samples and selected embedding vectors
 
-.. figure:: ../../images/user-guide/features/import-export-share-buttons.png
+.. figure:: ../images/user-guide/features/import-export-share-buttons.png
     :alt: Import, Export & Share Buttons in the ViRelAy UI
     :align: center
 
@@ -256,7 +256,7 @@ For collaborative work or knowledge transfer, users can share their findings by 
 
 When the recipient opens this sharable link, ViRelAy will restore the exact same state that was present when the link was generated (cf. Figure 18). This ensures seamless collaboration and knowledge transfer between team members or stakeholders.
 
-.. figure:: ../../images/user-guide/features/share-link-dialog.png
+.. figure:: ../images/user-guide/features/share-link-dialog.png
     :alt: Share Link Dialog in the ViRelAy UI
     :align: center
 

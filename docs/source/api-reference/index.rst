@@ -6,9 +6,8 @@ The following section provides an exhaustive documentation of the ViRelAy backen
 
 .. autosummary::
     :toctree:
-    :nosignatures:
+    :signatures: none
     :recursive:
-    :template: modules.rst
 
     virelay.application
     virelay.image_processing

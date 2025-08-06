@@ -13,7 +13,7 @@ This guide is based on an in-depth analysis of a Fisher vector classifier traine
 
 Upon opening the project, users will be presented with the familiar interface, as depicted in Figure 1 below.
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/fisher-vector-classifier-pascal-voc-project.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/fisher-vector-classifier-pascal-voc-project.png
     :alt: Fisher Vector Classifier Pascal VOC Project
     :align: center
 
@@ -35,7 +35,7 @@ In this specific case, *k*-means clustering does not appear to yield substantial
 
 Our analysis reveals that some categories exhibit highly homogeneous embeddings, while others display heterogeneous distributions with notable outliers. A striking contrast is observed between the class bird and horse, as depicted in Figure 2.
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/comparison-class-bird-vs-class-horse.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/comparison-class-bird-vs-class-horse.png
     :alt: Comparison of Class Bird vs. Class Horse
     :align: center
 
@@ -50,7 +50,7 @@ Upon identifying a potential candidate for an anomalous classification strategy,
 
 To facilitate this investigation, hover your mouse pointer over the samples in the outlier classes to visually inspect the corresponding input images. Figure 3 shows the input image of one of the samples in the tear-shaped outlier cluster of the horse class.
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/input-sample-inspection.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/input-sample-inspection.png
     :alt: Visual Inspection of an Input Sample of Class Horse
     :align: center
 
@@ -61,7 +61,7 @@ In some cases, it may not be immediately apparent why a particular image is clas
 
 Figure 4 illustrates a subset of samples that were selected from the tear-shaped outlier cluster, which all exhibit similar characteristics that are not immediately evident upon initial inspection. However, upon closer examination, certain features become apparent, such as copyright notices at the bottom of each image (Figure 3).
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/input-images-of-outlier-cluster.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/input-images-of-outlier-cluster.png
     :alt: Input Images of an Outlier Cluster in the Class Horse
     :align: center
 
@@ -71,7 +71,7 @@ This observation raises the hypothesis that the classifier may be exploiting the
 
 To achieve this, switch to the sample viewer's attribution mode or overlay display mode (cf. Figure 5). The attribution view displays a heatmap in input space highlighting which pixels contributed positively or negatively to the classification result. Positive attribution indicates that an image region contributed positively towards the classification outcome, while negative attribution suggests that it contradicted the predicted class. The heatmap is a visual representation of the numerical attribution, the color map used to render the heatmaps can be selected in the toolbox at the top of the ViRelAy user interface.
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/sample-viewer-display-mode-overlay.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/sample-viewer-display-mode-overlay.png
     :alt: Sample Viewer Display Mode
     :align: center
 
@@ -79,7 +79,7 @@ To achieve this, switch to the sample viewer's attribution mode or overlay displ
 
 The overlay mode superimposes the heatmap onto the input image, thus enabling us to directly see the underlying image features. When the attributions are fine and detailed the best option is to directly view the heatmaps, as the details of the image are evident from the heatmap itself. In cases where attributions are coarse, the overlay mode is more effective for correlating heatmap regions with corresponding image features. In this example, the attributions are indeed relatively coarse, making the overlay mode a suitable choice (cf. Figure 6).
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/input-images-with-attribution-overlay-of-outlier-cluster.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/input-images-with-attribution-overlay-of-outlier-cluster.png
     :alt: Input Images of the Outlier Cluster in the Class Horse with Attribution Overlay
     :align: center
 
@@ -96,7 +96,7 @@ To facilitate further analysis and sharing of findings, it is recommended to sav
 
 Saving your findings also enables easy documentation and sharing with others. The export, import, and share buttons are conveniently located at the top of the ViRelAy user interface (cf. Figure 7).
 
-.. figure:: ../../images/user-guide/how-to-analyze-classifiers-and-datasets/import-export-share-buttons.png
+.. figure:: ../images/user-guide/how-to-analyze-classifiers-and-datasets/import-export-share-buttons.png
     :alt: Import, Export & Share Buttons in the ViRelAy UI
     :align: center
 

@@ -2,6 +2,8 @@
 project for ViRelAy.
 """
 
+# pylint: disable=duplicate-code
+
 import argparse
 import json
 import os

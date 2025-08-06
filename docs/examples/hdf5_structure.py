@@ -1,5 +1,5 @@
 """Contains functions, which generate example dataset, attribution, and analysis HDF5 files. These functions are mainly for documentation purposes to
-show the structure of the different HDF5 files that are used in ViRelAy projects.
+show the structure of the different HDF5 files that can be generated using CoRelAy for the usage in ViRelAy projects.
 """
 
 import h5py

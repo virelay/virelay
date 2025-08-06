@@ -2,9 +2,9 @@
 # The project's basic metadata and dependencies
 [project]
 
-# General project information, the Project supports Python 3.10, 3.11, 3.12 and 3.13; the version of the project is automatically determined from the
-# latest Git tag using the Hatch-VCS plugin and the read me is dynamically generated using the Hatch Fancy PyPI Readme plugin (this is necessary,
-# because the screenshots of ViRelAy in the read me needs to be replaced for the PyPI page)
+# General project information, the Project supports Python 3.11, 3.12 and 3.13; the version of the project is automatically determined from the latest
+# Git tag using the Hatch-VCS plugin and the read me is dynamically generated using the Hatch Fancy PyPI Readme plugin (this is necessary, because the
+# screenshots of ViRelAy in the read me needs to be replaced for the PyPI page)
 name = "virelay"
 description = """\
     ViRelAy is a web-based XAI tool for analyzing classifiers and their datasets by visualizing the source-data, attributions, clusterings, and \
@@ -23,7 +23,7 @@ keywords = [
     "Artificial Intelligence"
 ]
 license = "AGPL-3.0-or-later"
-requires-python = ">=3.10"
+requires-python = ">=3.11.11"
 dynamic = [
     "readme",
     "version"
@@ -62,11 +62,23 @@ classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Typing :: Typed"
+]
+
+# Groups of extra dependencies that are not included in the requirements of the published package, but users may install them optionally; installing
+# them provides additional functionality, but is not required to use the package
+[project.optional-dependencies]
+
+# Dependencies required for running the example scripts in the documentation
+examples = [
+    "numba>=0.61.2,<1.0.0",
+    "corelay[umap, hdbscan]>=1.0.0,<2.0.0",
+    "zennit>=1.0.0,<2.0.0",
+    "scipy>=1.15.3,<2.0.0",
+    "scikit-image>=0.25.2,<1.0.0"
 ]
 
 # Groups of development dependencies that are not included in the requirements of the published package; they can be installed separately or
@@ -80,13 +92,23 @@ dev = [
     { include-group = "docs" }
 ]
 
+# Extra dependencies of the project, which may be installed optionally when installing the package; these are needed for testing and linting
+optional-dependencies = [
+    "numba>=0.61.2,<1.0.0",
+    "corelay[umap, hdbscan]>=1.0.0,<2.0.0",
+    "zennit>=1.0.0,<2.0.0",
+    "scipy>=1.15.3,<2.0.0",
+    "scikit-image>=0.25.2,<1.0.0"
+]
+
 # Dependencies required for testing
 testing = [
     "tox>=4.25.0,<5.0.0",
     "tox-uv>=1.25.0,<2.0.0",
     "pytest>=8.3.5,<9.0.0",
     "pytest-cov>=6.1.1,<7.0.0",
-    "coverage>=7.8.0,<8.0.0"
+    "coverage>=7.8.0,<8.0.0",
+    { include-group = "optional-dependencies" }
 ]
 
 # Dependencies required for linting
@@ -96,8 +118,10 @@ linting = [
     "pydoclint>=0.6.5,<1.0.0",
     "mypy>=1.15.0,<2.0.0",
     "pytest-mypy>=1.0.1,<2.0.0",
+    "scipy-stubs>=1.15.3.0,<2.0.0",
     "types-Flask-Cors>=5.0.0.20240902,<6.0.0",
-    "types-PyYAML>=6.0.12.20250402,<7.0.0"
+    "types-PyYAML>=6.0.12.20250402,<7.0.0",
+    { include-group = "optional-dependencies" }
 ]
 
 # Dependencies required for building the documentation

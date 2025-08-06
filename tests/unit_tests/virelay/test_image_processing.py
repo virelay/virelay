@@ -93,7 +93,7 @@ def test_center_crop() -> None:
 def test_render_heatmap_unknown_color_map() -> None:
     """Tests the function for rendering heatmap images using an unknown color map."""
 
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
     with pytest.raises(ValueError):
         render_heatmap(attribution_data, 'unknown-color-map')
 
@@ -102,7 +102,7 @@ def test_render_heatmap_blue_white_red() -> None:
     """Tests the function for rendering heatmap images using the blue-white-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -126,7 +126,7 @@ def test_render_heatmap_afm_hot() -> None:
     """Tests the function for rendering heatmap images using the afm-hot color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -150,7 +150,7 @@ def test_render_heatmap_jet() -> None:
     """Tests the function for rendering heatmap images using the jet color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -174,7 +174,7 @@ def test_render_heatmap_seismic() -> None:
     """Tests the function for rendering heatmap images using the seismic color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -198,7 +198,7 @@ def test_render_heatmap_gray_red() -> None:
     """Tests the function for rendering heatmap images using the gray-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -222,7 +222,7 @@ def test_render_heatmap_black_green() -> None:
     """Tests the function for rendering heatmap images using the black-green color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -246,7 +246,7 @@ def test_render_heatmap_black_fire_red() -> None:
     """Tests the function for rendering heatmap images using the black-fire-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -270,7 +270,7 @@ def test_render_heatmap_black_yellow() -> None:
     """Tests the function for rendering heatmap images using the black-yellow color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -294,7 +294,7 @@ def test_render_heatmap_with_multiple_dimensions() -> None:
     """Tests the function for rendering heatmap images, where the attribution data has multiple channel dimensions."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.stack([numpy.linspace(-1.0, 1.0, 10).reshape(10, 1)] * 2, axis=2)
+    attribution_data = numpy.stack([numpy.linspace(-1.0, 1.0, 10, dtype=numpy.float64).reshape(10, 1)] * 2, axis=2)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -318,7 +318,7 @@ def test_render_superimposed_heatmap_unknown_color_map() -> None:
     """Tests the rendering of heatmap images that are then superimposed onto another image using the attribution data as
     alpha-channel using an unknown color map."""
 
-    attribution_data = numpy.linspace(-1.0, 1.0, 10).reshape(5, 2)
+    attribution_data = numpy.linspace(-1.0, 1.0, 10, dtype=numpy.float64).reshape(5, 2)
     superimpose = numpy.ones((5, 2, 3))
     with pytest.raises(ValueError):
         render_superimposed_heatmap(attribution_data, superimpose, 'unknown-color-map')
@@ -329,7 +329,7 @@ def test_render_superimposed_heatmap() -> None:
     alpha-channel."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1.0, 1.0, 10).reshape(5, 2)
+    attribution_data = numpy.linspace(-1.0, 1.0, 10, dtype=numpy.float64).reshape(5, 2)
     superimpose = numpy.ones((5, 2, 3))
 
     # Validates the colors assigned by the heatmap
@@ -355,7 +355,7 @@ def test_render_superimposed_heatmap_with_multiple_dimensions() -> None:
     alpha-channel, where the attribution data has multiple channel dimensions."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.stack([numpy.linspace(-1.0, 1.0, 10).reshape(5, 2)] * 2, axis=2)
+    attribution_data = numpy.stack([numpy.linspace(-1.0, 1.0, 10, dtype=numpy.float64).reshape(5, 2)] * 2, axis=2)
     superimpose = numpy.ones((5, 2, 3))
 
     # Validates the colors assigned by the heatmap
@@ -380,7 +380,7 @@ def test_generate_heatmap_image_using_matplotlib_bwr() -> None:
     """Tests the function for generating heatmaps using the bwr color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -403,7 +403,7 @@ def test_generate_heatmap_image_using_matplotlib_afmhot() -> None:
     """Tests the function for generating heatmaps using the afmhot color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -426,7 +426,7 @@ def test_generate_heatmap_image_using_matplotlib_jet() -> None:
     """Tests the function for generating heatmaps using the jet color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -449,7 +449,7 @@ def test_generate_heatmap_image_using_matplotlib_seismic() -> None:
     """Tests the function for generating heatmaps using the seismic color map of Matplotlib."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -472,7 +472,7 @@ def test_generate_heatmap_image_gray_red() -> None:
     """Tests the function for generating heatmaps using the gray-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -495,7 +495,7 @@ def test_generate_heatmap_image_black_green() -> None:
     """Tests the function for generating heatmaps using the black-green color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -518,7 +518,7 @@ def test_generate_heatmap_image_black_fire_red() -> None:
     """Tests the function for generating heatmaps using the black-fire-red color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
@@ -541,7 +541,7 @@ def test_generate_heatmap_image_black_yellow() -> None:
     """Tests the function for generating heatmaps using the black-yellow color map."""
 
     # Creates the raw heatmap on which the tests are performed
-    attribution_data = numpy.linspace(-1, 1, 10).reshape(10, 1)
+    attribution_data = numpy.linspace(-1, 1, 10, dtype=numpy.float64).reshape(10, 1)
 
     # Validates the colors assigned by the heatmap
     expected_heatmap = numpy.array(
